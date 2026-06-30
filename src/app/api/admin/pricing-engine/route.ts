@@ -27,11 +27,11 @@ export async function GET() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recommendations = products.map((product) => {
+    const recommendations = products.map((product: any) => {
       // Safely check order items and calculate sales velocity
       const recentSales = (product.orderItems || [])
-        .filter(item => item.order && new Date(item.order.createdAt) >= thirtyDaysAgo)
-        .reduce((sum, item) => sum + item.quantity, 0);
+        .filter((item: any) => item.order && new Date(item.order.createdAt) >= thirtyDaysAgo)
+        .reduce((sum: number, item: any) => sum + item.quantity, 0);
 
       let strategy = "STABLE";
       let recommendedPrice = product.price;

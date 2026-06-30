@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     }
 
     let serverTotalAmount = 0;
-    const itemsValidationList = [];
+    const itemsValidationList: any[] = [];
 
     for (const item of cartItems) {
       const dbProduct = await db.product.findUnique({
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         isPaid: false, // Marked as unpaid until payment verified
         status: "PENDING",
         items: {
-          create: itemsValidationList.map((item) => ({
+          create: itemsValidationList.map((item: any) => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
