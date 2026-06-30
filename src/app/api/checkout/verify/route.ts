@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Perform DB transaction: Update Order and Decrement Product Stock
-    await db.$transaction(async (tx) => {
+    await db.$transaction(async (tx: any) => {
       // Mark the order as paid and processing
       await tx.order.update({
         where: { id: orderId },
