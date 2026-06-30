@@ -90,27 +90,27 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.1)] hover:scale-[1.02] transition-all duration-300 p-4 flex flex-col justify-between group">
+              <div key={product.id} className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-md hover:shadow-[0_15px_30px_-5px_rgba(37,99,235,0.25)] hover:scale-[1.03] hover:border-slate-700 transition-all duration-300 p-5 flex flex-col justify-between group text-white">
                 <Link href={`/products/${product.id}`} className="block group cursor-pointer">
-                  <div className="relative aspect-square w-full bg-gray-50 rounded-xl overflow-hidden mb-4 group-hover:scale-[1.02] transition-transform duration-200">
+                  <div className="relative aspect-square w-full bg-white rounded-2xl overflow-hidden mb-4 group-hover:scale-[1.01] transition-transform duration-200 p-4">
                     {/* Floating Urgency/Status Badges */}
                     {product.stock <= 5 && product.stock > 0 && (
-                      <span className="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm animate-pulse">
+                      <span className="absolute top-3 left-3 bg-rose-600/90 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg z-10 shadow-sm animate-pulse">
                         ⚡ Low Stock
                       </span>
                     )}
                     {product.stock === 0 && (
-                      <span className="absolute top-2.5 left-2.5 bg-slate-800 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm">
+                      <span className="absolute top-3 left-3 bg-slate-850/90 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg z-10 shadow-sm">
                         Sold Out
                       </span>
                     )}
                     {product.stock > 12 && product.price > 30000 && (
-                      <span className="absolute top-2.5 left-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm">
+                      <span className="absolute top-3 left-3 bg-slate-900/90 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg z-10 shadow-sm">
                         🔥 Trending
                       </span>
                     )}
                     {product.stock > 5 && product.stock <= 12 && (
-                      <span className="absolute top-2.5 left-2.5 bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm">
+                      <span className="absolute top-3 left-3 bg-blue-600/95 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg z-10 shadow-sm">
                         ✨ Popular
                       </span>
                     )}
@@ -121,28 +121,28 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                       className="object-contain p-2"
                     />
                   </div>
-                  <h3 className="text-sm font-extrabold text-gray-950 group-hover:text-blue-600 transition line-clamp-1 mb-1">{product.name}</h3>
-                  <p className="text-xs text-blue-600 font-bold mb-3">{product.category}</p>
+                  <h3 className="text-sm font-extrabold text-slate-100 group-hover:text-blue-400 transition line-clamp-1 mb-1">{product.name}</h3>
+                  <p className="text-xs text-blue-400 font-extrabold mb-3">{product.category}</p>
                 </Link>
                 <div>
-                  <div className="flex items-baseline gap-2 flex-wrap mb-1">
-                    <span className="text-base font-black text-gray-950">₹{product.price.toLocaleString("en-IN")}</span>
+                  <div className="flex items-baseline gap-2 flex-wrap mb-2">
+                    <span className="text-base font-black text-white">₹{product.price.toLocaleString("en-IN")}</span>
                     {product.mrp && product.mrp > product.price && (
                       <>
-                        <span className="text-xs text-gray-400 line-through font-medium">₹{product.mrp.toLocaleString("en-IN")}</span>
-                        <span className="text-xs font-bold text-green-600">({Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off)</span>
+                        <span className="text-xs text-slate-400 line-through font-medium">₹{product.mrp.toLocaleString("en-IN")}</span>
+                        <span className="text-xs font-black text-green-400">({Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off)</span>
                       </>
                     )}
                   </div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className={`text-[10px] font-black uppercase tracking-wider ${product.stock > 0 ? "text-green-400" : "text-red-400"}`}>
                       {product.stock > 0 ? `In Stock (${product.stock})` : "Out of Stock"}
                     </span>
                     <Link
                       href={`/products/${product.id}`}
-                      className="text-[11px] font-bold text-blue-600 hover:text-blue-500 transition"
+                      className="text-[11px] font-bold text-blue-400 hover:text-blue-300 transition"
                     >
-                      View Details →
+                      Details →
                     </Link>
                   </div>
                   <HomeAddToCartButton product={product} />
