@@ -115,7 +115,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col text-slate-900">
           {/* Header */}
           <div className="p-6 border-b border-gray-250 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">Your Shopping Cart</h2>

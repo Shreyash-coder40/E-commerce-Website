@@ -46,32 +46,40 @@ export default function Navbar({ session }: NavbarProps) {
           {session?.user ? (
             <div className="flex items-center gap-4 flex-wrap">
               {session.user.role === "ADMIN" && (
-                <>
-                  <Link
-                    href="/admin/dashboard"
-                    className="text-xs font-bold text-blue-400 bg-blue-950/40 hover:bg-blue-950/60 border border-blue-900/50 px-4 py-2 rounded-xl transition"
-                  >
-                    📈 Admin Dashboard
-                  </Link>
-                  <Link
-                    href="/admin/add-product"
-                    className="text-xs font-bold text-emerald-400 bg-emerald-950/40 hover:bg-emerald-950/60 border border-emerald-900/50 px-4 py-2 rounded-xl transition"
-                  >
-                    ➕ Add Product
-                  </Link>
-                  <Link
-                    href="/admin/manage-products"
-                    className="text-xs font-bold text-amber-400 bg-amber-950/40 hover:bg-amber-950/60 border border-amber-900/50 px-4 py-2 rounded-xl transition"
-                  >
-                    📦 Manage Inventory
-                  </Link>
-                  <Link
-                    href="/admin/feedback"
-                    className="text-xs font-bold text-teal-400 bg-teal-950/40 hover:bg-teal-950/60 border border-teal-900/50 px-4 py-2 rounded-xl transition"
-                  >
-                    💬 Q&A & Reviews
-                  </Link>
-                </>
+                <div className="relative group">
+                  <button className="text-xs font-bold text-blue-400 bg-blue-950/40 hover:bg-blue-950/60 border border-blue-900/50 px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                    🛠️ Admin Tools
+                    <svg className="h-3 w-3 transition-transform group-hover:rotate-180 duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl py-2 hidden group-hover:block hover:block z-50 transition-all">
+                    <Link
+                      href="/admin/dashboard"
+                      className="block px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    >
+                      📈 Dashboard
+                    </Link>
+                    <Link
+                      href="/admin/add-product"
+                      className="block px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    >
+                      ➕ Add Product
+                    </Link>
+                    <Link
+                      href="/admin/manage-products"
+                      className="block px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    >
+                      📦 Manage Inventory
+                    </Link>
+                    <Link
+                      href="/admin/feedback"
+                      className="block px-4 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                    >
+                      💬 Q&A & Reviews
+                    </Link>
+                  </div>
+                </div>
               )}
               <Link
                 href="/orders"
