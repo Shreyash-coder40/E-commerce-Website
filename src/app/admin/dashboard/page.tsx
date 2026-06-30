@@ -159,7 +159,7 @@ export default async function AdminDashboardPage() {
               {lowStockProducts.length === 0 ? (
                 <div className="text-center py-12 text-sm text-green-600 font-medium">✓ All storage inventory healthy.</div>
               ) : (
-                lowStockProducts.map((product) => (
+                lowStockProducts.map((product: any) => (
                   <div key={product.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-sm">
                     <div className="truncate">
                       <h4 className="font-bold text-gray-950 truncate">{product.name}</h4>
