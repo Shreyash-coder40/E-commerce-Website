@@ -96,7 +96,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           },
         },
         theme: {
-          color: "#4f46e5",
+          color: "#2563eb",
         },
       };
 
@@ -140,7 +140,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-xl border" />
                   <div className="flex-1">
                     <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</h4>
-                    <p className="text-xs text-indigo-600 font-extrabold mt-0.5">₹{item.price.toLocaleString("en-IN")}</p>
+                    <p className="text-xs text-blue-600 font-extrabold mt-0.5">₹{item.price.toLocaleString("en-IN")}</p>
                     
                     <div className="flex items-center gap-2 mt-2">
                       <button 
@@ -175,7 +175,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl text-sm shadow transition disabled:bg-indigo-400 active:scale-[0.98]"
+                className="mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-4 rounded-xl text-sm shadow transition disabled:bg-blue-400 active:scale-[0.98]"
               >
                 {loading ? "Processing Payment..." : "Confirm & Pay"}
               </button>

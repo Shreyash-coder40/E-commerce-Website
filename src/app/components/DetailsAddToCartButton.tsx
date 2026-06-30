@@ -46,7 +46,7 @@ export default function DetailsAddToCartButton({ product }: AddToCartButtonProps
       className={`w-full py-4 rounded-xl text-sm font-bold shadow-md transition flex items-center justify-center gap-2 text-white ${
         isOutOfStock
           ? "bg-gray-300 cursor-not-allowed shadow-none"
-          : "bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]"
+          : "bg-blue-600 hover:bg-blue-500 active:scale-[0.98]"
       }`}
     >
       {isOutOfStock ? "❌ Out of Stock" : "🛒 Add to Shopping Cart"}
