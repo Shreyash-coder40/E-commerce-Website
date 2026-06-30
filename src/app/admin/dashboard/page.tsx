@@ -124,7 +124,7 @@ export default async function AdminDashboardPage() {
               {recentOrders.length === 0 ? (
                 <div className="text-center py-12 text-sm text-gray-500">No transactions recorded.</div>
               ) : (
-                recentOrders.map((order) => (
+                recentOrders.map((order: any) => (
                   <div key={order.id} className="p-4 sm:p-6 flex items-center justify-between gap-4 text-sm hover:bg-gray-50/50 transition">
                     <div className="truncate flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
