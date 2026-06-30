@@ -137,7 +137,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             ) : (
               cart.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-100 pb-4">
-                  <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-xl border" />
+                  <img src={item.image} alt={item.name} className="w-16 h-16 object-contain rounded-xl border bg-gray-50 p-1" />
                   <div className="flex-1">
                     <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</h4>
                     <p className="text-xs text-blue-600 font-extrabold mt-0.5">₹{item.price.toLocaleString("en-IN")}</p>
