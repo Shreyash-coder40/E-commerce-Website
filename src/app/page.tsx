@@ -32,14 +32,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const featuredProduct = products[0] || null;
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen py-8">
+    <div className="bg-slate-950 text-white min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProductFilters categories={categoriesList} currentPage={1} totalPages={1} />
 
         {/* Asymmetrical High-End Designer Hero Section */}
         {featuredProduct && !category && !search && (
-          <div className="mb-12 relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px]">
-            {/* Asymmetrical Matte Black Block Slicing Into Ice-White Canvas */}
+          <div className="mb-12 relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px]">
+            {/* Asymmetrical Block Slicing Into Canvas */}
             <div className="p-8 md:p-12 md:max-w-[50%] flex flex-col justify-center z-10">
               <span className="text-xs font-black uppercase tracking-widest text-blue-500 mb-3">★ Featured Drop</span>
               <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight text-white mb-4">
@@ -157,19 +157,19 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="mt-16 space-y-16">
             
             {/* Interactive Brands Spotlight */}
-            <div className="bg-white border border-slate-150 rounded-3xl p-8 shadow-sm">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-sm">
               <div className="text-center max-w-lg mx-auto mb-8">
                 <span className="text-xs font-bold uppercase tracking-widest text-blue-500">Curated Collections</span>
-                <h3 className="text-xl font-black text-slate-900 mt-2">Partnered Technology Houses</h3>
-                <p className="text-xs text-slate-500 mt-1">We partner directly with brand manufacturers to source authentic products.</p>
+                <h3 className="text-xl font-black text-white mt-2">Partnered Technology Houses</h3>
+                <p className="text-xs text-slate-400 mt-1">We partner directly with brand manufacturers to source authentic products.</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center text-center">
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">APPLE</div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">SONY</div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">SAMSUNG</div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">NIKE</div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">LOGITECH</div>
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-transparent hover:border-slate-200 transition-all font-black text-slate-400 hover:text-slate-900 cursor-default select-none">DELL</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">APPLE</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">SONY</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">SAMSUNG</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">NIKE</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">LOGITECH</div>
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-850 hover:border-slate-800 transition-all font-black text-slate-400 hover:text-white cursor-default select-none">DELL</div>
               </div>
             </div>
  
@@ -194,34 +194,34 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         )}
  
         {/* Trust Signals Section */}
-        <div className="mt-20 border-t border-slate-200 pt-12 pb-6">
+        <div className="mt-20 border-t border-slate-800 pt-12 pb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-4 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
               <span className="text-2xl">🛡️</span>
               <div>
-                <h4 className="text-sm font-bold text-slate-900">SSL Secure Checkout</h4>
-                <p className="text-xs text-slate-500">256-bit encrypted connection</p>
+                <h4 className="text-sm font-bold text-white">SSL Secure Checkout</h4>
+                <p className="text-xs text-slate-400">256-bit encrypted connection</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-4 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
               <span className="text-2xl">📦</span>
               <div>
-                <h4 className="text-sm font-bold text-slate-900">Guaranteed Safe Delivery</h4>
-                <p className="text-xs text-slate-500">Insured trackable shipping</p>
+                <h4 className="text-sm font-bold text-white">Guaranteed Safe Delivery</h4>
+                <p className="text-xs text-slate-400">Insured trackable shipping</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-4 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
               <span className="text-2xl">🤝</span>
               <div>
-                <h4 className="text-sm font-bold text-slate-900">30-Day Return Window</h4>
-                <p className="text-xs text-slate-500">No questions asked refunds</p>
+                <h4 className="text-sm font-bold text-white">30-Day Return Window</h4>
+                <p className="text-xs text-slate-400">No questions asked refunds</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-4 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
               <span className="text-2xl">💬</span>
               <div>
-                <h4 className="text-sm font-bold text-slate-900">24/7 Shopper Support</h4>
-                <p className="text-xs text-slate-500">Expert live assistance</p>
+                <h4 className="text-sm font-bold text-white">24/7 Shopper Support</h4>
+                <p className="text-xs text-slate-400">Expert live assistance</p>
               </div>
             </div>
           </div>
