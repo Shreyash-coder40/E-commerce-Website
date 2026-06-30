@@ -92,7 +92,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             {products.map((product) => (
               <div key={product.id} className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-md hover:shadow-[0_15px_30px_-5px_rgba(37,99,235,0.25)] hover:scale-[1.03] hover:border-slate-700 transition-all duration-300 p-5 flex flex-col justify-between group text-white">
                 <Link href={`/products/${product.id}`} className="block group cursor-pointer">
-                  <div className="relative aspect-square w-full bg-white rounded-2xl overflow-hidden mb-4 group-hover:scale-[1.01] transition-transform duration-200 p-4">
+                  <div className="relative aspect-square w-full bg-slate-950/50 border border-slate-800/50 rounded-2xl overflow-hidden mb-4 group-hover:scale-[1.01] transition-transform duration-200 p-4">
                     {/* Floating Urgency/Status Badges */}
                     {product.stock <= 5 && product.stock > 0 && (
                       <span className="absolute top-3 left-3 bg-rose-600/90 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg z-10 shadow-sm animate-pulse">
