@@ -99,7 +99,45 @@ export default function ProductFilters({
             ))}
           </select>
         </div>
+      </div>
 
+      {/* Horizontal Category Pills Bar */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <button
+          onClick={() => updateQueryParams("category", "")}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl border transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm ${
+            !currentCategory
+              ? "bg-slate-900 border-slate-900 text-white shadow-[0_4px_12px_rgba(15,23,42,0.15)]"
+              : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+          }`}
+        >
+          🌐 All Items
+        </button>
+        {categories.map((cat) => {
+          let icon = "📦";
+          if (cat.toLowerCase().includes("mobile")) icon = "📱";
+          else if (cat.toLowerCase().includes("audio")) icon = "🎧";
+          else if (cat.toLowerCase().includes("elect")) icon = "💻";
+          else if (cat.toLowerCase().includes("foot")) icon = "👟";
+          else if (cat.toLowerCase().includes("wear")) icon = "⌚";
+          else if (cat.toLowerCase().includes("gaming")) icon = "🎮";
+          else if (cat.toLowerCase().includes("access")) icon = "⌨️";
+
+          return (
+            <button
+              key={cat}
+              onClick={() => updateQueryParams("category", cat)}
+              className={`px-4 py-2.5 text-xs font-bold rounded-xl border transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                currentCategory === cat
+                  ? "bg-blue-600 border-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.2)]"
+                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <span>{icon}</span>
+              <span>{cat}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Pagination Controller Row Layout */}
