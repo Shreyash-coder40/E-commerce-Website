@@ -61,7 +61,7 @@ export async function POST(req: Request) {
 
       if (dbOrder && !dbOrder.isPaid) {
         console.log(`[Webhook] Processing fulfillment for order: ${orderId}`);
-        await db.$transaction(async (tx) => {
+        await db.$transaction(async (tx: any) => {
           await tx.order.update({
             where: { id: orderId },
             data: {
