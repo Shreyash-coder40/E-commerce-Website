@@ -4,6 +4,7 @@ import Link from "next/link";
 import ProductFilters from "@/app/components/ProductFilters";
 import Image from "next/image";
 import HomeAddToCartButton from "@/app/components/HomeAddToCartButton";
+import CopyCouponButton from "@/app/components/CopyCouponButton";
 
 export const dynamic = "force-dynamic";
 
@@ -185,12 +186,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                   <span className="text-xs font-bold text-slate-400 uppercase">Coupon Code:</span>
                   <span className="text-sm font-black text-blue-400 tracking-wider font-mono">NEXT15</span>
                 </div>
-                <button 
-                  onClick={() => alert("Coupon code NEXT15 copied to clipboard!")}
-                  className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-6 py-3.5 rounded-xl transition shadow-lg shadow-blue-600/20 active:scale-95 cursor-pointer uppercase tracking-wider whitespace-nowrap"
-                >
-                  Copy Code
-                </button>
+                <CopyCouponButton code="NEXT15" />
               </div>
             </div>
  
