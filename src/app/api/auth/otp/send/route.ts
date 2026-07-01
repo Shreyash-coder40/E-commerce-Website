@@ -101,8 +101,11 @@ export async function POST(req: Request) {
 
       console.log(`[Twilio SMS Gateway] OTP SMS dispatched successfully to ${phone}`);
     } else {
-      // Fallback logging in local development mode
-      console.log(`[SMS Gateway Mock Fallback] Phone: ${phone}, OTP: ${otpCode}`);
+      console.warn(`[SMS Gateway Mock Fallback] Phone: ${phone}, OTP: ${otpCode}`);
+      return NextResponse.json(
+        { error: "SMS Gateway is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER env variables in your Vercel Dashboard, then redeploy." },
+        { status: 500 }
+      );
     }
 
     // Return success without returning the otpCode inside the JSON response for maximum security
