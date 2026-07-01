@@ -20,7 +20,7 @@ export default function HomeAddToCartButton({ product }: { product: any }) {
   return (
     <button
       onClick={handleAdd}
-      className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-md tracking-wide active:scale-[0.98] cursor-pointer shadow-blue-600/10 hover:shadow-blue-500/20"
+      className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs transition shadow-md tracking-wide active:scale-[0.98] cursor-pointer shadow-indigo-600/15 hover:shadow-indigo-500/25"
     >
       Add to Cart
     </button>

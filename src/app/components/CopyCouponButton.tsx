@@ -22,7 +22,7 @@ export default function CopyCouponButton({ code }: CopyCouponButtonProps) {
   return (
     <button 
       onClick={handleCopy}
-      className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-6 py-3.5 rounded-xl transition shadow-lg shadow-blue-600/20 active:scale-95 cursor-pointer uppercase tracking-wider whitespace-nowrap"
+      className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold px-6 py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 active:scale-95 cursor-pointer uppercase tracking-wider whitespace-nowrap"
     >
       {copied ? "✓ Copied!" : "Copy Code"}
     </button>
