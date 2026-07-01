@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSession } from "next-auth/react";
-
 interface AlertSubscriptionManagerProps {
   productId: string;
   stock: number;
   currentPrice: number;
+  session: any;
 }
 
-export default function AlertSubscriptionManager({ productId, stock, currentPrice }: AlertSubscriptionManagerProps) {
-  const { data: session } = useSession();
+export default function AlertSubscriptionManager({ productId, stock, currentPrice, session }: AlertSubscriptionManagerProps) {
   const [email, setEmail] = useState("");
   const [targetPrice, setTargetPrice] = useState("");
   const [type, setType] = useState<"BACK_IN_STOCK" | "PRICE_DROP">(stock === 0 ? "BACK_IN_STOCK" : "PRICE_DROP");

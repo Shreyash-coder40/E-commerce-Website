@@ -198,6 +198,7 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
                 productId={product.id} 
                 stock={product.stock} 
                 currentPrice={currentPrice} 
+                session={session}
               />
 
             </div>
