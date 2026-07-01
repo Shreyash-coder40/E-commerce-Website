@@ -8,45 +8,12 @@ import Link from "next/link";
 export default function LoginPage() {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [loginMode, setLoginMode] = useState<"PASSWORD" | "OTP">("PASSWORD");
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSendOtp = async () => {
-    setError("");
-    if (!phoneNumber || phoneNumber.trim().length < 8) {
-      setError("Please enter a valid phone number (including country code, e.g., +919999999999).");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: phoneNumber.trim() }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to generate OTP.");
-      }
-
-      setOtpSent(true);
-      alert("✅ OTP has been sent successfully to your phone number!");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,41 +51,21 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       } else {
-        if (loginMode === "PASSWORD") {
-          // Handle Standard User Login
-          const loginRes = await signIn("credentials", {
-            redirect: false,
-            email: formData.email,
-            password: formData.password,
-          });
+        // Handle Standard User Login
+        const loginRes = await signIn("credentials", {
+          redirect: false,
+          email: formData.email,
+          password: formData.password,
+        });
 
-          if (loginRes?.error) {
-            setError("Invalid email or password. Please check your credentials and try again.");
-            setLoading(false);
-            return;
-          }
-
-          router.push("/");
-          router.refresh();
-        } else {
-          // Handle OTP Authentication
-          if (!phoneNumber || !otp) {
-            throw new Error("Phone number and OTP code are required.");
-          }
-
-          const loginRes = await signIn("credentials", {
-            redirect: false,
-            phoneNumber: phoneNumber.trim(),
-            otp: otp.trim(),
-          });
-
-          if (loginRes?.error) {
-            throw new Error("Invalid phone number or verification code. Please check and try again.");
-          }
-
-          router.push("/");
-          router.refresh();
+        if (loginRes?.error) {
+          setError("Invalid email or password. Please check your credentials and try again.");
+          setLoading(false);
+          return;
         }
+
+        router.push("/");
+        router.refresh();
       }
     } catch (err: any) {
       setError(err.message);
@@ -144,46 +91,12 @@ export default function LoginPage() {
                 setIsSignUp(!isSignUp);
                 setError("");
               }}
-              className="font-bold text-indigo-600 hover:text-indigo-500 transition duration-150 ease-in-out"
+              className="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150 ease-in-out"
             >
               {isSignUp ? "already have an account? Sign In" : "register a new account today"}
             </button>
           </p>
         </div>
-
-        {/* Tab Selection (Only shown for Sign In mode) */}
-        {!isSignUp && (
-          <div className="flex bg-gray-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => {
-                setLoginMode("PASSWORD");
-                setError("");
-              }}
-              className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
-                loginMode === "PASSWORD"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-gray-500 hover:text-gray-950"
-              }`}
-            >
-              🔑 Password Login
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLoginMode("OTP");
-                setError("");
-              }}
-              className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
-                loginMode === "OTP"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "text-gray-500 hover:text-gray-950"
-              }`}
-            >
-              📱 Phone OTP Login
-            </button>
-          </div>
-        )}
 
         {error && (
           <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 font-bold border border-red-200 shadow-sm">
@@ -191,116 +104,60 @@ export default function LoginPage() {
           </div>
         )}
 
-        {loginMode === "OTP" && !isSignUp ? (
-          /* Phone number + OTP Verification Form */
-          <div className="mt-8 space-y-6">
-            <div className="space-y-4">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="-space-y-px rounded-md shadow-sm">
+            {isSignUp && (
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone Number</label>
-                <div className="flex gap-2">
-                  <input
-                    type="tel"
-                    required
-                    disabled={otpSent}
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="flex-1 appearance-none rounded-xl border border-gray-300 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    placeholder="e.g. +919999999999"
-                  />
-                  <button
-                    type="button"
-                    disabled={loading || otpSent}
-                    onClick={handleSendOtp}
-                    className="px-4 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-500 transition shadow disabled:bg-indigo-300"
-                  >
-                    {loading ? "Sending..." : otpSent ? "Sent ✔" : "Send OTP"}
-                  </button>
-                </div>
+                <label className="sr-only">Full Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="relative block w-full appearance-none rounded-t-md border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="Full Name"
+                />
               </div>
-
-              {otpSent && (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">6-Digit OTP Code</label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-gray-300 px-3 py-3 text-black font-extrabold text-center tracking-widest text-lg placeholder-gray-300 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      placeholder="• • • • • •"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-indigo-400 transition-all shadow-md"
-                  >
-                    {loading ? "Verifying..." : "Verify & Sign In"}
-                  </button>
-                </form>
-              )}
+            )}
+            <div>
+              <label className="sr-only">Email address</label>
+              <input
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`relative block w-full appearance-none border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm ${
+                  isSignUp ? "" : "rounded-t-md"
+                }`}
+                placeholder="Email address"
+              />
+            </div>
+            <div>
+              <label className="sr-only">Password</label>
+              <input
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleInputChange}
+                className="relative block w-full appearance-none rounded-b-md border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                placeholder="Password"
+              />
             </div>
           </div>
-        ) : (
-          /* Standard Email/Password Form */
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="-space-y-px rounded-md shadow-sm">
-              {isSignUp && (
-                <div>
-                  <label className="sr-only">Full Name</label>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="relative block w-full appearance-none rounded-t-md border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Full Name"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="sr-only">Email address</label>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`relative block w-full appearance-none border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm ${
-                    isSignUp ? "" : "rounded-t-md"
-                  }`}
-                  placeholder="Email address"
-                />
-              </div>
-              <div>
-                <label className="sr-only">Password</label>
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="relative block w-full appearance-none rounded-b-md border border-gray-350 px-3 py-3 text-black font-semibold placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Password"
-                />
-              </div>
-            </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative flex w-full justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-indigo-400 transition-all shadow-md"
-              >
-                {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
-              </button>
-            </div>
-          </form>
-        )}
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative flex w-full justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-indigo-400 transition-all shadow-md"
+            >
+              {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
+            </button>
+          </div>
+        </form>
 
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
