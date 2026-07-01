@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import AddToCartButton from "@/app/components/DetailsAddToCartButton";
 import ProductInteractiveTabs from "./ProductInteractiveTabs";
 import PincodeChecker from "@/app/components/PincodeChecker";
+import AlertSubscriptionManager from "@/app/components/AlertSubscriptionManager";
 
 // FIXED: Global dynamic flags to stop Next.js from aggressively caching old product documents
 export const dynamic = "force-dynamic";
@@ -165,6 +166,13 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
                 🔒 Secured transaction verification managed via encrypted platform databases.
               </p>
             </div>
+
+            {/* Smart Price Drop & Back in Stock Alerts Engine */}
+            <AlertSubscriptionManager 
+              productId={product.id} 
+              stock={product.stock} 
+              currentPrice={currentPrice} 
+            />
 
           </div>
 

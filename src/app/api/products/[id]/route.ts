@@ -45,6 +45,15 @@ export async function PUT(
     const body = await req.json();
     const { name, description, price, category, stock } = body;
 
+    // Fetch old details to compare price & stock updates
+    const oldProduct = await db.product.findUnique({
+      where: { id: resolvedParams.id },
+    });
+
+    if (!oldProduct) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+
     const updatedProduct = await db.product.update({
       where: { id: resolvedParams.id },
       data: {
@@ -54,6 +63,67 @@ export async function PUT(
         category,
         stock: parseInt(stock),
       },
+    });
+
+    // Run notifications check in the background asynchronously to prevent HTTP lag
+    process.nextTick(async () => {
+      try {
+        const oldStock = oldProduct.stock;
+        const newStock = updatedProduct.stock;
+        const oldPrice = oldProduct.price;
+        const newPrice = updatedProduct.price;
+
+        const isBackInStock = oldStock === 0 && newStock > 0;
+        const isPriceDropped = newPrice < oldPrice;
+
+        if (isBackInStock) {
+          const subs = await db.alertSubscription.findMany({
+            where: {
+              productId: updatedProduct.id,
+              type: "BACK_IN_STOCK",
+              isNotified: false,
+            },
+          });
+
+          if (subs.length > 0) {
+            for (const sub of subs) {
+              console.log(`[Alert Notification Engine] Dispatching BACK_IN_STOCK email to ${sub.email} for product ${updatedProduct.name}`);
+            }
+
+            await db.alertSubscription.updateMany({
+              where: { id: { in: subs.map((s) => s.id) } },
+              data: { isNotified: true },
+            });
+          }
+        }
+
+        if (isPriceDropped) {
+          const subs = await db.alertSubscription.findMany({
+            where: {
+              productId: updatedProduct.id,
+              type: "PRICE_DROP",
+              isNotified: false,
+              OR: [
+                { targetPrice: null },
+                { targetPrice: { gte: newPrice } },
+              ],
+            },
+          });
+
+          if (subs.length > 0) {
+            for (const sub of subs) {
+              console.log(`[Alert Notification Engine] Dispatching PRICE_DROP email to ${sub.email} for product ${updatedProduct.name} (Dropped from ₹${oldPrice} to ₹${newPrice})`);
+            }
+
+            await db.alertSubscription.updateMany({
+              where: { id: { in: subs.map((s) => s.id) } },
+              data: { isNotified: true },
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Alert subscription background processing error:", err);
+      }
     });
 
     return NextResponse.json({ message: "Product updated successfully.", updatedProduct }, { status: 200 });
