@@ -12,12 +12,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const phone = phoneNumber.trim();
+    let phone = phoneNumber.trim().replace(/\s+/g, "");
     if (phone.length < 8) {
       return NextResponse.json(
         { error: "Please enter a valid phone number" },
         { status: 400 }
       );
+    }
+
+    // Smart formatting: Auto-prepend +91 for 10-digit Indian numbers
+    if (/^\d{10}$/.test(phone)) {
+      phone = `+91${phone}`;
+    } else if (/^\d{12}$/.test(phone) && phone.startsWith("91")) {
+      phone = `+${phone}`;
+    } else if (!phone.startsWith("+")) {
+      phone = `+${phone}`;
     }
 
     // Generate 6-digit random code
@@ -57,14 +66,49 @@ export async function POST(req: Request) {
       });
     }
 
-    // Simulate sending SMS by logging it to the console
-    console.log(`[SMS Gateway Mock] OTP Code for ${phone}: ${otpCode}`);
+    // Dispatch live SMS via Twilio if environment keys are present
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
-    // Return the OTP code in the response to make manual testing convenient
+    if (accountSid && authToken && twilioPhone) {
+      const authString = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+      
+      const twilioRes = await fetch(
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${authString}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            To: phone,
+            From: twilioPhone,
+            Body: `Your NextShop verification code is: ${otpCode}. Valid for 5 minutes.`,
+          }),
+        }
+      );
+
+      if (!twilioRes.ok) {
+        const errData = await twilioRes.json();
+        console.error("Twilio send message call failed:", errData);
+        return NextResponse.json(
+          { error: errData.message || "Failed to dispatch SMS through Twilio." },
+          { status: 500 }
+        );
+      }
+
+      console.log(`[Twilio SMS Gateway] OTP SMS dispatched successfully to ${phone}`);
+    } else {
+      // Fallback logging in local development mode
+      console.log(`[SMS Gateway Mock Fallback] Phone: ${phone}, OTP: ${otpCode}`);
+    }
+
+    // Return success without returning the otpCode inside the JSON response for maximum security
     return NextResponse.json({
       success: true,
       message: "OTP sent successfully.",
-      otpCode,
     });
   } catch (error: any) {
     console.error("OTP send error:", error);

@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [testOtp, setTestOtp] = useState(""); // Visual debug helper for easier evaluation
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,10 +41,7 @@ export default function LoginPage() {
       }
 
       setOtpSent(true);
-      if (data.otpCode) {
-        setTestOtp(data.otpCode);
-      }
-      alert(`🔑 [Mock SMS Gateway] OTP generated and saved: ${data.otpCode}`);
+      alert("✅ OTP has been sent successfully to your phone number!");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -236,22 +232,6 @@ export default function LoginPage() {
                       placeholder="• • • • • •"
                     />
                   </div>
-
-                  {testOtp && (
-                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-center justify-between">
-                      <div>
-                        <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-wider">Evaluation Debug Helper</p>
-                        <p className="text-sm font-black text-indigo-950 mt-1">Mock OTP Received: <span className="bg-indigo-200 px-2 py-0.5 rounded text-indigo-700 tracking-wider font-extrabold">{testOtp}</span></p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setOtp(testOtp)}
-                        className="text-[10px] bg-indigo-600 text-white font-bold px-2 py-1 rounded hover:bg-indigo-500"
-                      >
-                        Auto-Fill
-                      </button>
-                    </div>
-                  )}
 
                   <button
                     type="submit"
