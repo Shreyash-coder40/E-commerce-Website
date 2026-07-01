@@ -113,14 +113,26 @@ export default async function OrderHistoryPage() {
                   <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center flex-wrap gap-2 text-xs font-bold">
                     <span className="text-gray-500">Estimated Delivery:</span>
                     <span className="text-gray-900" suppressHydrationWarning>
-                      {(() => {
-                        const est = new Date(order.createdAt);
-                        est.setDate(est.getDate() + 4);
-                        return est.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-                      })()}
+                      {order.estimatedDelivery ? (
+                        new Date(order.estimatedDelivery).toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })
+                      ) : (
+                        (() => {
+                          const est = new Date(order.createdAt);
+                          est.setDate(est.getDate() + 4);
+                          return est.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+                        })()
+                      )}
                     </span>
                   </div>
                 </div>
+
+                {/* Snapsoted delivery address for this order */}
+                {order.shippingAddress && (
+                  <div className="bg-gray-50/50 border-b border-gray-150 p-4 sm:p-6 text-xs border-t border-gray-200">
+                    <p className="font-semibold text-gray-500 uppercase tracking-wider mb-1">Fulfillment Address</p>
+                    <p className="font-bold text-gray-900">{order.shippingAddress}</p>
+                  </div>
+                )}
 
                 {/* Sub-item purchase entries listing */}
                 <div className="divide-y divide-gray-100 p-4 sm:p-6">
@@ -140,6 +152,26 @@ export default async function OrderHistoryPage() {
                       <p className="text-sm font-bold text-gray-800">₹{(item.price * item.quantity).toLocaleString("en-IN")}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Price breakdown summary logs */}
+                <div className="bg-gray-50/30 p-4 sm:p-6 text-xs text-slate-500 font-semibold space-y-1.5 border-t border-gray-150">
+                  <div className="flex justify-between">
+                    <span>Items Subtotal:</span>
+                    <span className="text-gray-900">₹{Number(order.totalAmount - (order.shippingCost || 0) - (order.taxAmount || 0)).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>GST Tax (18%):</span>
+                    <span className="text-gray-900">₹{Number(order.taxAmount || 0).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping Charges:</span>
+                    <span className="text-gray-900">{(order.shippingCost || 0) === 0 ? "FREE" : `₹${order.shippingCost}`}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-extrabold text-indigo-600 border-t border-gray-200 pt-2.5 mt-2.5">
+                    <span>Total Charge Settled:</span>
+                    <span>₹{order.totalAmount.toLocaleString("en-IN")}</span>
+                  </div>
                 </div>
 
               </div>

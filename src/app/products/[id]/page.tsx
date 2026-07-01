@@ -6,6 +6,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import AddToCartButton from "@/app/components/DetailsAddToCartButton";
 import ProductInteractiveTabs from "./ProductInteractiveTabs";
+import PincodeChecker from "@/app/components/PincodeChecker";
 
 // FIXED: Global dynamic flags to stop Next.js from aggressively caching old product documents
 export const dynamic = "force-dynamic";
@@ -153,6 +154,9 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
                 </p>
               </div>
             </div>
+
+            {/* Pincode Availability Checker */}
+            <PincodeChecker />
 
             {/* Checkout Action Button Section */}
             <div className="pt-4 border-t border-gray-100">

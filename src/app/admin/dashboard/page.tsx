@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import DashboardCharts from "./DashboardCharts";
+import AdminOrderManager from "@/app/components/AdminOrderManager";
 
 export const revalidate = 0; // Forces Next.js to bypass caches and read live data on every single visit
 
@@ -22,7 +23,8 @@ export default async function AdminDashboardPage() {
     paidOrdersCount,
     lowStockProducts,
     recentOrders,
-    allHistoricalOrders
+    allHistoricalOrders,
+    allCustomersWithOrders
   ] = await Promise.all([
     db.order.aggregate({
       where: { isPaid: true },
@@ -37,14 +39,45 @@ export default async function AdminDashboardPage() {
     }),
     db.order.findMany({
       orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { user: { select: { name: true, email: true } } },
+      include: { 
+        user: { select: { name: true, email: true } },
+        items: { include: { product: true } }
+      },
     }),
     // Fetch order history specifically to power the chart engine metrics
     db.order.findMany({
       where: { isPaid: true },
       select: { id: true, totalAmount: true, createdAt: true },
     }),
+    db.user.findMany({
+      where: {
+        orders: { some: {} }
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        addresses: true,
+        orders: {
+          select: {
+            id: true,
+            totalAmount: true,
+            isPaid: true,
+            status: true,
+            createdAt: true,
+            shippingCost: true,
+            taxAmount: true,
+            items: {
+              include: {
+                product: { select: { name: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: "desc" }
+        }
+      }
+    })
   ]);
 
   const totalRevenue = revenueData._sum.totalAmount || 0;
@@ -114,43 +147,13 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Bottom Split List Tables Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden lg:col-span-2">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="text-base font-bold text-gray-950">Recent Checkout Invoices</h3>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {recentOrders.length === 0 ? (
-                <div className="text-center py-12 text-sm text-gray-500">No transactions recorded.</div>
-              ) : (
-                recentOrders.map((order: any) => (
-                  <div key={order.id} className="p-4 sm:p-6 flex items-center justify-between gap-4 text-sm hover:bg-gray-50/50 transition">
-                    <div className="truncate flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-bold text-gray-950 truncate">Customer: {order.user?.name || "Anonymous Shopper"}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          order.isPaid 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {order.isPaid ? "PAID" : "PENDING"}
-                        </span>
-                        <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-medium">
-                          {order.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{order.user?.email}</p>
-                    </div>
-                    <div className="text-right whitespace-nowrap">
-                      <p className="font-extrabold text-indigo-600">₹{order.totalAmount.toLocaleString("en-IN")}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+        {/* Order and Customer Management Hub Row */}
+        <div className="mb-10">
+          <AdminOrderManager initialOrders={recentOrders} initialCustomers={allCustomersWithOrders} />
+        </div>
 
+        {/* Bottom Split List Tables Area */}
+        <div className="grid grid-cols-1 gap-8">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 bg-gray-50/50">
               <h3 className="text-base font-bold text-gray-950">Fulfillment Stock Alerts</h3>

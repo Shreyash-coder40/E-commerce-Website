@@ -23,6 +23,7 @@ model User {
   orders        Order[]
   reviews       Review[]
   qas           QuestionAnswer[]
+  addresses     Address[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -113,15 +114,20 @@ model QuestionAnswer {
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items       OrderItem[] // List of products purchased in this order
-  totalAmount Float
-  isPaid      Boolean     @default(false)
-  status      OrderStatus @default(PENDING)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                 String      @id @default(uuid())
+  userId             String
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items              OrderItem[] // List of products purchased in this order
+  totalAmount        Float
+  isPaid             Boolean     @default(false)
+  status             OrderStatus @default(PENDING)
+  shippingAddress    String?     // Concatenated full delivery address
+  pincode            String?     // Shipping postal/zip code
+  shippingCost       Float       @default(0)
+  taxAmount          Float       @default(0)
+  estimatedDelivery  DateTime?   // Dynamically calculated arrival time
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 }
 
 enum OrderStatus {
@@ -140,4 +146,23 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Float // Captures the price at the exact moment of purchase
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipientName String
+  phone         String
+  streetAddress String
+  apartment     String?
+  city          String
+  state         String
+  country       String   @default("India")
+  zipCode       String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
 }

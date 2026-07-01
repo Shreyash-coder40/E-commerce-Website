@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     // 2. Parse and Validate Cart Payload
     const body = await req.json();
     const cartItems = body.cartItems || body.items;
+    const { shippingName, shippingPhone, shippingAddress, pincode, shippingCost, taxAmount, estimatedDelivery } = body;
 
     if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ error: "Your shopping cart is empty." }, { status: 400 });
@@ -61,13 +62,21 @@ export async function POST(req: Request) {
       });
     }
 
+    // Include dynamic shipping fee and taxes in the total transaction amount
+    const finalTotalAmount = serverTotalAmount + (Number(shippingCost) || 0) + (Number(taxAmount) || 0);
+
     // 3. Create Pending Order in Database
     const savedOrder = await db.order.create({
       data: {
         userId: dbUser.id,
-        totalAmount: serverTotalAmount,
+        totalAmount: finalTotalAmount,
         isPaid: false, // Marked as unpaid until payment verified
         status: "PENDING",
+        shippingAddress: shippingAddress ? `${shippingName || "Recipient"} (${shippingPhone || ""}) - ${shippingAddress}` : null,
+        pincode: pincode || null,
+        shippingCost: Number(shippingCost) || 0,
+        taxAmount: Number(taxAmount) || 0,
+        estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
         items: {
           create: itemsValidationList.map((item: any) => ({
             productId: item.productId,
@@ -78,8 +87,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Create Razorpay Payment Order
-    const amountInPaisa = Math.round(serverTotalAmount * 100);
+    // 4. Create Razorpay Payment Order using the grand total amount
+    const amountInPaisa = Math.round(finalTotalAmount * 100);
     const rzpOrder = await razorpay.orders.create({
       amount: amountInPaisa,
       currency: "INR",
