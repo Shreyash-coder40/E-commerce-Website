@@ -25,8 +25,15 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
   console.log("--> ProductDetailsPage resolvedParams:", resolvedParams);
 
   if (!resolvedParams?.id) {
-    console.log("--> ProductDetailsPage: resolvedParams.id is missing, calling notFound()");
-    notFound();
+    return (
+      <div className="p-10 max-w-xl mx-auto my-10 bg-red-50 border border-red-200 text-red-800 rounded-2xl">
+        <h1 className="text-lg font-bold">Debug Info: ID Parameter Missing</h1>
+        <p className="text-xs text-red-600 mt-2">Next.js failed to resolve parameters or the segment is blank.</p>
+        <pre className="mt-4 p-4 bg-slate-900 text-slate-100 text-xs rounded-xl overflow-auto">
+          {JSON.stringify({ resolvedParams }, null, 2)}
+        </pre>
+      </div>
+    );
   }
 
   // 1. Fetch data from database engine securely with relations and session check
@@ -50,11 +57,19 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
     console.error("--> ProductDetailsPage: Prisma DB lookup failed with error:", dbErr);
   }
 
-  console.log(`--> ProductDetailsPage: query resolved for id "${resolvedParams.id}". Found?`, !!productRaw);
-
   if (!productRaw) {
-    console.log(`--> ProductDetailsPage: productRaw not found for id "${resolvedParams.id}", calling notFound()`);
-    notFound();
+    return (
+      <div className="p-10 max-w-xl mx-auto my-10 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl">
+        <h1 className="text-lg font-bold">Debug Info: Product Not Found in Database</h1>
+        <p className="text-xs text-amber-600 mt-2">We queried the database using the ID below, but it returned null.</p>
+        <div className="mt-4 space-y-2 text-xs font-semibold">
+          <p>Requested ID: <span className="text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{resolvedParams.id}</span></p>
+        </div>
+        <pre className="mt-4 p-4 bg-slate-900 text-slate-100 text-xs rounded-xl overflow-auto">
+          {JSON.stringify({ resolvedParams }, null, 2)}
+        </pre>
+      </div>
+    );
   }
 
   // 2. Explicitly cast product parameters to include optional fields to clear TypeScript error
