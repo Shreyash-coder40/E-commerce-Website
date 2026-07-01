@@ -22,28 +22,38 @@ interface ProductPageProps {
 export default async function ProductDetailsPage({ params }: ProductPageProps) {
   // Await the dynamic parameters promise first to prevent undefined id execution faults
   const resolvedParams = await params;
+  console.log("--> ProductDetailsPage resolvedParams:", resolvedParams);
 
   if (!resolvedParams?.id) {
+    console.log("--> ProductDetailsPage: resolvedParams.id is missing, calling notFound()");
     notFound();
   }
 
   // 1. Fetch data from database engine securely with relations and session check
   const session = await auth();
-  const productRaw = await db.product.findUnique({
-    where: { id: resolvedParams.id },
-    include: {
-      reviews: {
-        orderBy: { createdAt: "desc" },
-        include: { user: { select: { name: true } } },
+  let productRaw = null;
+  try {
+    productRaw = await db.product.findUnique({
+      where: { id: resolvedParams.id },
+      include: {
+        reviews: {
+          orderBy: { createdAt: "desc" },
+          include: { user: { select: { name: true } } },
+        },
+        qas: {
+          orderBy: { createdAt: "desc" },
+          include: { user: { select: { name: true } } },
+        },
       },
-      qas: {
-        orderBy: { createdAt: "desc" },
-        include: { user: { select: { name: true } } },
-      },
-    },
-  });
+    });
+  } catch (dbErr: any) {
+    console.error("--> ProductDetailsPage: Prisma DB lookup failed with error:", dbErr);
+  }
+
+  console.log(`--> ProductDetailsPage: query resolved for id "${resolvedParams.id}". Found?`, !!productRaw);
 
   if (!productRaw) {
+    console.log(`--> ProductDetailsPage: productRaw not found for id "${resolvedParams.id}", calling notFound()`);
     notFound();
   }
 
