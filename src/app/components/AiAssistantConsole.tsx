@@ -285,19 +285,19 @@ export default function AiAssistantConsole() {
               <div className="space-y-2">
                 <button
                   onClick={() => handleSendMessage("Show me the profit and loss report")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   📊 Profit & Loss analysis
                 </button>
                 <button
                   onClick={() => handleSendMessage("Which products need restocking based on sales velocity?")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   🚨 Inventory Restocking warning
                 </button>
                 <button
                   onClick={() => handleSendMessage("Summarize the reviews for Nike Shoes")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   💬 Review Sentiment Check
                 </button>

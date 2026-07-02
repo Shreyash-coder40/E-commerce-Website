@@ -80,12 +80,33 @@ export async function POST(req: Request) {
       };
     });
 
-    // C. Scan message for product reference (name or ID) to fetch reviews context dynamically
+    // C. Query all customer reviews in the store database
+    const allReviews = await db.review.findMany({
+      select: {
+        productId: true,
+        rating: true,
+        comment: true,
+        product: { select: { name: true } },
+        user: { select: { name: true } }
+      }
+    });
+
+    // D. Query all Q&A questions and answers in the store database
+    const allQAs = await db.questionAnswer.findMany({
+      select: {
+        id: true,
+        productId: true,
+        question: true,
+        answer: true,
+        product: { select: { name: true } }
+      }
+    });
+
+    // E. Scan message for product references to build reviewsContext fallback
     let reviewsContext = "";
     let matchedProduct = null;
-
     const lowerMsg = message.toLowerCase();
-    // Try to find a product mentioned in the message text
+
     for (const p of productsList) {
       if (lowerMsg.includes(p.id.toLowerCase()) || lowerMsg.includes(p.name.toLowerCase())) {
         matchedProduct = p;
@@ -94,18 +115,12 @@ export async function POST(req: Request) {
     }
 
     if (matchedProduct) {
-      const reviews = await db.review.findMany({
-        where: { productId: matchedProduct.id },
-        include: { user: { select: { name: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 20
-      });
-
-      if (reviews.length > 0) {
-        reviewsContext = `Here are the active customer reviews for the product "${matchedProduct.name}" (ID: ${matchedProduct.id}) to analyze:\n` +
-          reviews.map((r, i) => `${i + 1}. Rating: ${r.rating}/5, Comment: "${r.comment}" (by ${r.user?.name || "Anonymous"})`).join("\n");
+      const prodReviews = allReviews.filter((r) => r.productId === matchedProduct!.id);
+      if (prodReviews.length > 0) {
+        reviewsContext = `Here are the active customer reviews for "${matchedProduct.name}" (ID: ${matchedProduct.id}):\n` +
+          prodReviews.map((r, i) => `${i + 1}. Rating: ${r.rating}/5, Comment: "${r.comment}" (by ${r.user?.name || "Anonymous"})`).join("\n");
       } else {
-        reviewsContext = `There are currently no customer reviews submitted for the product "${matchedProduct.name}" (ID: ${matchedProduct.id}).`;
+        reviewsContext = `There are currently no customer reviews submitted for "${matchedProduct.name}" (ID: ${matchedProduct.id}).`;
       }
     }
 
@@ -133,8 +148,11 @@ Financial Metrics:
 * Returned Order Loss (Approved returns count: ${returnedOrders.length}): Total Loss ₹${totalReturnLosses.toLocaleString("en-IN")}
 * Returns Log: ${JSON.stringify(returnedOrders)}
 
-Dynamic Reviews Context (summarize when asked about feedback/sentiment/reviews for this product):
-${reviewsContext || "No specific product reviews loaded in context for this message."}
+Reviews Database Feed (summarize sentiment, ratings, or feedback details when asked):
+${JSON.stringify(allReviews)}
+
+Question & Answers Feed (answer questions or check unanswered items when asked):
+${JSON.stringify(allQAs)}
 
 You have the authority to create and update products.
 1. Adding products: If requested to add/create a product, parse the parameters (name, category, price, stock). If you have them, end your message with a JSON action code block:
