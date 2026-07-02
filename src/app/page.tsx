@@ -180,11 +180,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 
                 {/* Samsung */}
                 <div className="group flex flex-col items-center justify-center p-3 w-full h-24 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
-                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5 shadow-sm">
+                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden bg-transparent">
                     <img
                       src="https://images.samsung.com/is/image/samsung/assets/global/about-us/brand/logo/256_144_4.png?$512_N_PNG$"
                       alt="Samsung"
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-screen"
                     />
                   </div>
                   <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Samsung</span>
@@ -192,11 +192,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
                 {/* Nike */}
                 <div className="group flex flex-col items-center justify-center p-3 w-full h-24 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
-                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5 shadow-sm">
+                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden bg-transparent">
                     <img
                       src="https://nmp.about.nike.com/originals/about/prod/cf68f541-fc92-4373-91cb-086ae0fe2f88/002-nike-logos-swoosh-white.jpg?s=0d91b6d512f3b96eb15376bfb84bd503140904583667147c21ca3d6c4594e7d2"
                       alt="Nike"
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain mix-blend-multiply invert dark:invert-0 dark:mix-blend-screen"
                     />
                   </div>
                   <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Nike</span>
@@ -204,11 +204,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
                 {/* Apple */}
                 <div className="group flex flex-col items-center justify-center p-3 w-full h-24 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
-                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5 shadow-sm">
+                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden bg-transparent">
                     <img
                       src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrrlnydtYrQvW8qJkFeha6TSYKGScNLtuBQd7j-WsavbrlZJxrKwCGHLU&s=10"
                       alt="Apple"
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain mix-blend-multiply dark:invert dark:mix-blend-screen"
                     />
                   </div>
                   <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Apple</span>
@@ -216,11 +216,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
                 {/* YSL */}
                 <div className="group flex flex-col items-center justify-center p-3 w-full h-24 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
-                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5 shadow-sm">
+                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden bg-transparent">
                     <img
                       src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsXvPC0ap_HPqmlzizArYFArvdl4AmXq7eCJIGT0QE0yWsuWwEDA1OAeE&s=10"
                       alt="YSL"
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain mix-blend-multiply dark:invert dark:mix-blend-screen"
                     />
                   </div>
                   <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">YSL</span>
@@ -228,11 +228,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
                 {/* Rolex */}
                 <div className="group flex flex-col items-center justify-center p-3 w-full h-24 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
-                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5 shadow-sm">
+                  <div className="h-10 w-16 relative flex items-center justify-center overflow-hidden bg-transparent">
                     <img
                       src="https://i.pinimg.com/236x/cf/ba/0b/cfba0bef4af32f8747efd16beb3d04ca.jpg"
                       alt="Rolex"
-                      className="max-h-full max-w-full object-contain"
+                      className="max-h-full max-w-full object-contain mix-blend-multiply dark:invert dark:mix-blend-screen"
                     />
                   </div>
                   <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Rolex</span>
