@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import DashboardCharts from "./DashboardCharts";
 import AdminOrderManager from "@/app/components/AdminOrderManager";
+import AdminAiChatbot from "@/app/components/AdminAiChatbot";
 
 export const revalidate = 0; // Forces Next.js to bypass caches and read live data on every single visit
 
@@ -178,6 +179,7 @@ export default async function AdminDashboardPage() {
         </div>
 
       </div>
+      <AdminAiChatbot />
     </div>
   );
 }
