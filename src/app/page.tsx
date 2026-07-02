@@ -32,26 +32,26 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const featuredProduct = products[0] || null;
 
   return (
-    <div className="bg-[#090A0F] text-slate-100 min-h-screen py-8">
+    <div className="bg-background text-foreground min-h-screen py-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Category Pills & Search Component */}
         <ProductFilters categories={categoriesList} currentPage={1} totalPages={1} />
 
-        {/* Asymmetrical High-End Designer Hero Section */}
+        {/* Asymmetrical High-End Designer Hero Section with Fade In Animation */}
         {featuredProduct && !category && !search && (
-          <div className="mb-12 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121829] via-[#0F1321] to-[#0A0D17] border border-slate-800/80 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px] shadow-indigo-950/20">
+          <div className="mb-12 relative overflow-hidden rounded-3xl bg-card-bg border border-card-border shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px] shadow-indigo-500/5 dark:shadow-indigo-950/20 animate-fade-in transition-all duration-300">
             {/* Asymmetrical Matte Black Block Slicing Into Ice-White Canvas */}
             <div className="p-8 md:p-12 md:max-w-[50%] flex flex-col justify-center z-10">
-              <span className="text-xs font-black uppercase tracking-widest text-indigo-400 mb-3">★ Featured Drop</span>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight text-white mb-4">
+              <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3">★ Featured Drop</span>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight text-card-text-primary mb-4">
                 {featuredProduct.name}
               </h1>
-              <p className="text-sm text-slate-400 mb-6 line-clamp-3">
+              <p className="text-sm text-card-text-secondary mb-6 line-clamp-3">
                 {featuredProduct.description}
               </p>
               <div className="flex items-center gap-4">
-                <span className="text-2xl font-black text-white">₹{featuredProduct.price.toLocaleString("en-IN")}</span>
+                <span className="text-2xl font-black text-card-text-primary">₹{featuredProduct.price.toLocaleString("en-IN")}</span>
                 <Link
                   href={`/products/${featuredProduct.id}`}
                   className="text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 px-6 py-3.5 rounded-xl transition shadow-lg shadow-indigo-500/20 uppercase tracking-wider cursor-pointer active:scale-95"
@@ -61,9 +61,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               </div>
             </div>
             {/* Sliced Block Graphic & Product Image */}
-            <div className="relative w-full md:w-[50%] h-[300px] md:h-[400px] bg-slate-950/60 flex items-center justify-center p-6 md:p-12 overflow-hidden border-t md:border-t-0 md:border-l border-slate-800/60">
+            <div className="relative w-full md:w-[50%] h-[300px] md:h-[400px] bg-slate-50 dark:bg-slate-950/60 flex items-center justify-center p-6 md:p-12 overflow-hidden border-t md:border-t-0 md:border-l border-card-border transition-colors duration-300">
               <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-indigo-600/10 to-transparent pointer-events-none" />
-              <div className="relative w-full h-full transform hover:scale-105 transition-transform duration-300">
+              <div className="relative w-full h-full transform hover:scale-105 transition-transform duration-300 animate-float">
                 <Image
                   src={featuredProduct.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
                   alt={featuredProduct.name}
@@ -77,9 +77,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         )}
 
         {products.length === 0 ? (
-          <div className="text-center py-20 bg-[#121829]/60 border border-slate-800/80 rounded-3xl p-8 shadow-sm">
-            <h2 className="text-lg font-black text-white mb-2">🛍️ No Products Found</h2>
-            <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto">
+          <div className="text-center py-20 bg-card-bg border border-card-border rounded-3xl p-8 shadow-sm animate-fade-in">
+            <h2 className="text-lg font-black text-card-text-primary mb-2">🛍️ No Products Found</h2>
+            <p className="text-sm text-card-text-secondary mb-6 max-w-md mx-auto">
               Your inventory catalog is currently empty.
             </p>
             <Link
@@ -91,11 +91,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
         ) : (
           /* Responsive Layout: 2 columns on mobile, 3 on tablet, 4 on desktop, with proportional sizing */
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
             {products.map((product) => (
-              <div key={product.id} className="bg-[#121829]/60 backdrop-blur-md border border-slate-800/80 rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_20px_45px_-15px_rgba(99,102,241,0.25)] hover:scale-[1.02] hover:border-indigo-500/40 transition-all duration-300 p-3.5 sm:p-5 flex flex-col justify-between group text-white">
+              <div key={product.id} className="bg-card-bg border border-card-border rounded-3xl overflow-hidden shadow-sm hover:shadow-[0_20px_45px_-15px_var(--card-hover-shadow)] hover:scale-[1.02] hover:border-indigo-500/40 transition-all duration-300 p-3.5 sm:p-5 flex flex-col justify-between group text-card-text-primary">
                 <Link href={`/products/${product.id}`} className="block group cursor-pointer">
-                  <div className="relative aspect-square w-full bg-slate-950/40 border border-slate-800/40 rounded-2xl overflow-hidden mb-3 sm:mb-4 group-hover:scale-[1.01] transition-transform duration-200 p-2 sm:p-4">
+                  <div className="relative aspect-square w-full bg-slate-50 dark:bg-slate-950/40 border border-card-border rounded-2xl overflow-hidden mb-3 sm:mb-4 group-hover:scale-[1.01] transition-transform duration-200 p-2 sm:p-4">
                     {/* Floating Urgency/Status Badges */}
                     {product.stock <= 5 && product.stock > 0 && (
                       <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-rose-600/90 backdrop-blur-sm text-white text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-0.5 sm:py-1 rounded-md z-10 shadow-sm animate-pulse">
@@ -124,26 +124,26 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                       className="object-contain p-2"
                     />
                   </div>
-                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-100 group-hover:text-indigo-400 transition line-clamp-1 mb-0.5 sm:mb-1">{product.name}</h3>
-                  <p className="text-[10px] sm:text-xs text-indigo-400 font-extrabold mb-1.5 sm:mb-3">{product.category}</p>
+                  <h3 className="text-xs sm:text-sm font-extrabold text-card-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-1 mb-0.5 sm:mb-1">{product.name}</h3>
+                  <p className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-extrabold mb-1.5 sm:mb-3">{product.category}</p>
                 </Link>
                 <div>
                   <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap mb-1 sm:mb-2">
-                    <span className="text-sm sm:text-base font-black text-white">₹{product.price.toLocaleString("en-IN")}</span>
+                    <span className="text-sm sm:text-base font-black text-card-text-primary">₹{product.price.toLocaleString("en-IN")}</span>
                     {product.mrp && product.mrp > product.price && (
                       <>
-                        <span className="text-[10px] sm:text-xs text-slate-500 line-through font-medium">₹{product.mrp.toLocaleString("en-IN")}</span>
-                        <span className="text-[9px] sm:text-xs font-black text-emerald-400">({Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off)</span>
+                        <span className="text-[10px] sm:text-xs text-card-text-secondary line-through font-medium">₹{product.mrp.toLocaleString("en-IN")}</span>
+                        <span className="text-[9px] sm:text-xs font-black text-emerald-600 dark:text-emerald-400">({Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off)</span>
                       </>
                     )}
                   </div>
                   <div className="flex justify-between items-center mb-3 sm:mb-4">
-                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${product.stock > 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${product.stock > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
                       {product.stock > 0 ? `In Stock (${product.stock})` : "Out of Stock"}
                     </span>
                     <Link
                       href={`/products/${product.id}`}
-                      className="text-[10px] sm:text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition"
+                      className="text-[10px] sm:text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition"
                     >
                       Details →
                     </Link>
@@ -160,52 +160,52 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="mt-16 space-y-16">
             
             {/* Interactive Brands Spotlight with Custom Vector SVG Logos */}
-            <div className="bg-[#121829]/40 border border-slate-800/60 rounded-3xl p-8 shadow-xl">
+            <div className="bg-card-bg border border-card-border rounded-3xl p-8 shadow-sm">
               <div className="text-center max-w-lg mx-auto mb-8">
-                <span className="text-xs font-bold uppercase tracking-widest text-indigo-400">Curated Collections</span>
-                <h3 className="text-xl font-black text-white mt-2">Partnered Technology Houses</h3>
-                <p className="text-xs text-slate-400 mt-1">We partner directly with brand manufacturers to source authentic products.</p>
+                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Curated Collections</span>
+                <h3 className="text-xl font-black text-card-text-primary mt-2">Partnered Technology Houses</h3>
+                <p className="text-xs text-card-text-secondary mt-1">We partner directly with brand manufacturers to source authentic products.</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center justify-items-center">
                 
                 {/* Apple SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-6 w-6 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.69-1.12 1.83-.98 2.94 1.07.08 2.15-.52 2.81-1.33z"/>
                   </svg>
                 </div>
 
                 {/* Sony SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-4 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
                     <path d="M12 4h-8v3h7v3h-7v4h8v3h-12v-16h12v3zm18 0c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 9c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm18-9h-7v13h-3v-13h-7v-3h17v3zm18 10.3l-5.2-10.3h3.4l3.5 7.1 3.5-7.1h3.4l-5.2 10.3v5.7h-3.4v-5.7z"/>
                   </svg>
                 </div>
 
                 {/* Samsung SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-4 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
                     <path d="M10 2h-6v4h6c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2h-8v3h8c2.8 0 5-2.2 5-5v-2c0-2.8-2.2-5-5-5zm18 0l-5 13h-3l-5-13h3.5l3 8.5 3-8.5h3.5zm18 0h-8c-2.8 0-5 2.2-5 5v2c0 2.8 2.2 5 5 5h8v-3h-8c-1.1 0-2-.9-2-2v-2c0-1.1.9-2 2-2h8v-3zm18 0h-3v13h8v-3h-5v-10zm18 6.5c0-3.6-2.9-6.5-6.5-6.5s-6.5 2.9-6.5 6.5 2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5zm-3 0c0 1.9-1.6 3.5-3.5 3.5s-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5z"/>
                   </svg>
                 </div>
 
                 {/* Nike SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-5 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-5 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <path d="M2.5 14.3c3.8-1.5 7.6-1.7 11.2-.5 4.2 1.3 7.6 4.3 9.8 7.9.3.4.1.9-.3.9-.7 0-1.5-.2-2.2-.5-5.3-2.1-10.7-2.3-15.9-.6-2.1.7-4.1 1.9-5.9 3.4-.3.2-.7 0-.7-.4-.1-3.6 1.3-7.5 4-10.2z"/>
                   </svg>
                 </div>
 
                 {/* Logitech SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-6 w-6 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <path d="M12 2a10 10 0 1010 10h-3a7 7 0 11-7-7v-3zm7 7a7 7 0 00-7-7v3a4 4 0 014 4h3z"/>
                   </svg>
                 </div>
 
                 {/* Dell SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-[#090A0F]/60 border border-slate-800/80 hover:border-indigo-500/40 hover:bg-[#121829] transition-all duration-300 cursor-default">
-                  <svg className="h-6 w-6 text-slate-400 group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
+                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                  <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/>
                     <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="6.5" fontWeight="bold" fontFamily="sans-serif">DELL</text>
                   </svg>
@@ -214,7 +214,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               </div>
             </div>
  
-            {/* Premium Coupon Promo Box */}
+            {/* Premium Coupon Promo Box (Maintained Dark for visual emphasis / call-to-action pop) */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121829] to-[#0A0D17] border border-slate-800/80 text-white shadow-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent pointer-events-none" />
               <div className="z-10 text-center md:text-left">
@@ -235,34 +235,34 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         )}
  
         {/* Trust Signals Section */}
-        <div className="mt-20 border-t border-slate-800 pt-12 pb-6">
+        <div className="mt-20 border-t border-card-border pt-12 pb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex items-center gap-4 p-4 bg-[#121829]/40 border border-slate-800/60 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all duration-300">
+            <div className="flex items-center gap-4 p-4 bg-card-bg border border-card-border rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300">
               <span className="text-2xl">🛡️</span>
               <div>
-                <h4 className="text-sm font-bold text-white">SSL Secure Checkout</h4>
-                <p className="text-xs text-slate-400">256-bit encrypted connection</p>
+                <h4 className="text-sm font-bold text-card-text-primary">SSL Secure Checkout</h4>
+                <p className="text-xs text-card-text-secondary">256-bit encrypted connection</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-[#121829]/40 border border-slate-800/60 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all duration-300">
+            <div className="flex items-center gap-4 p-4 bg-card-bg border border-card-border rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300">
               <span className="text-2xl">📦</span>
               <div>
-                <h4 className="text-sm font-bold text-white">Guaranteed Safe Delivery</h4>
-                <p className="text-xs text-slate-400">Insured trackable shipping</p>
+                <h4 className="text-sm font-bold text-card-text-primary">Guaranteed Safe Delivery</h4>
+                <p className="text-xs text-card-text-secondary">Insured trackable shipping</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-[#121829]/40 border border-slate-800/60 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all duration-300">
+            <div className="flex items-center gap-4 p-4 bg-card-bg border border-card-border rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300">
               <span className="text-2xl">🤝</span>
               <div>
-                <h4 className="text-sm font-bold text-white">30-Day Return Window</h4>
-                <p className="text-xs text-slate-400">No questions asked refunds</p>
+                <h4 className="text-sm font-bold text-card-text-primary">30-Day Return Window</h4>
+                <p className="text-xs text-slate-500">No questions asked refunds</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-[#121829]/40 border border-slate-800/60 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all duration-300">
+            <div className="flex items-center gap-4 p-4 bg-card-bg border border-card-border rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300">
               <span className="text-2xl">💬</span>
               <div>
-                <h4 className="text-sm font-bold text-white">24/7 Shopper Support</h4>
-                <p className="text-xs text-slate-400">Expert live assistance</p>
+                <h4 className="text-sm font-bold text-card-text-primary">24/7 Shopper Support</h4>
+                <p className="text-xs text-card-text-secondary">Expert live assistance</p>
               </div>
             </div>
           </div>

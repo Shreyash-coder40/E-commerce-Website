@@ -1,0 +1,61 @@
+/* Anti‑Gravity Design Language */
+/* Background with subtle gradient */
+body {
+  background: linear-gradient(135deg, #f0f4ff, #e6e8ff);
+  background-attachment: fixed;
+}
+
+/* Container grid for product listings */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+/* Floating product card */
+.product-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover lift effect */
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* Glowing accent */
+.product-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.product-card:hover::before { opacity: 1; }
+
+/* Minimalist typography */
+.product-card h2,
+.product-card .price {
+  margin: 0.5rem 0;
+  font-weight: 400;
+  color: var(--card-text-primary, #0F172A);
+}
+
+/* Thinner icons */
+.product-card svg {
+  stroke-width: 1.2;
+}
+
+/* Breathing room – margin between consecutive elements */
+.product-card * + * {
+  margin-top: 0.75rem;
+}

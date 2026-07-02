@@ -3,14 +3,17 @@ import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  PENDING: ["PROCESSING", "CANCELLED"],
-  PROCESSING: ["SHIPPED", "CANCELLED"],
-  SHIPPED: ["DELIVERED", "CANCELLED"], // Match standard OrderStatus enum states (PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED)
-  DELIVERED: [],
+  PENDING: ["PROCESSING", "CANCELLED", "CANCELLATION_PENDING"],
+  PROCESSING: ["SHIPPED", "CANCELLED", "CANCELLATION_PENDING"],
+  SHIPPED: ["DELIVERED", "CANCELLED"],
+  DELIVERED: ["RETURN_REQUESTED"],
+  CANCELLATION_PENDING: ["CANCELLED", "PROCESSING", "PENDING"],
+  RETURN_REQUESTED: ["RETURN_APPROVED", "RETURN_REJECTED"],
+  RETURN_APPROVED: [],
+  RETURN_REJECTED: [],
   CANCELLED: [],
 };
 
-// Stub for triggering notification
 async function triggerFulfillmentNotification(orderId: string, oldStatus: string, newStatus: string, userEmail: string) {
   console.log(`[Notification Stub] Sending email alert to ${userEmail}: Your order #${orderId} status has changed from ${oldStatus} to ${newStatus}.`);
 }
@@ -29,7 +32,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { status: targetStatus } = body;
+    const { status: targetStatus, adminNotes } = body;
 
     if (!targetStatus) {
       return NextResponse.json({ error: "Status parameter is required." }, { status: 400 });
@@ -47,7 +50,7 @@ export async function PUT(
 
     const currentStatus = order.status;
 
-    // 2. Validate transition path to prevent skips/illegal loops
+    // 2. Validate transition path
     const allowed = VALID_TRANSITIONS[currentStatus] || [];
     if (!allowed.includes(targetStatus)) {
       return NextResponse.json({ 
@@ -55,11 +58,58 @@ export async function PUT(
       }, { status: 400 });
     }
 
-    // 3. Update status in DB
-    const updatedOrder = await db.order.update({
-      where: { id },
-      data: { status: targetStatus as any },
-    });
+    // Prepare admin notes with decision timestamp
+    const decisionTimestamp = new Date();
+    const formattedNotes = adminNotes 
+      ? `[Decision: ${decisionTimestamp.toLocaleString()}] ${adminNotes}`
+      : `[Decision: ${decisionTimestamp.toLocaleString()}] Status updated to ${targetStatus}`;
+
+    let updatedOrder;
+
+    // 3. Update status in DB and adjust inventory if cancellation or return approved
+    if (targetStatus === "CANCELLED" || targetStatus === "RETURN_APPROVED") {
+      updatedOrder = await db.$transaction(async (tx: any) => {
+        // Update Order
+        const ord = await tx.order.update({
+          where: { id },
+          data: { 
+            status: targetStatus as any,
+            adminNotes: formattedNotes
+          },
+        });
+
+        // Retrieve items in this order
+        const orderItems = await tx.orderItem.findMany({
+          where: { orderId: id },
+        });
+
+        // Increment stock levels (restoring inventory)
+        for (const item of orderItems) {
+          const product = await tx.product.findUnique({
+            where: { id: item.productId },
+          });
+
+          if (product) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: product.stock + item.quantity,
+              },
+            });
+          }
+        }
+
+        return ord;
+      });
+    } else {
+      updatedOrder = await db.order.update({
+        where: { id },
+        data: { 
+          status: targetStatus as any,
+          adminNotes: formattedNotes
+        },
+      });
+    }
 
     // 4. Trigger alert notification stub
     await triggerFulfillmentNotification(order.id, currentStatus, targetStatus, order.user.email);

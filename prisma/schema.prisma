@@ -130,6 +130,10 @@ model Order {
   shippingCost       Float       @default(0)
   taxAmount          Float       @default(0)
   estimatedDelivery  DateTime?   // Dynamically calculated arrival time
+  cancellationReason String?
+  returnReason       String?
+  requestTimestamp   DateTime?
+  adminNotes         String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 }
@@ -140,6 +144,10 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  CANCELLATION_PENDING
+  RETURN_REQUESTED
+  RETURN_APPROVED
+  RETURN_REJECTED
 }
 
 model OrderItem {

@@ -53,7 +53,7 @@ export default function ProductFilters({
         <form onSubmit={handleSearchSubmit} className="flex-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
-              className="h-5 w-5 text-slate-500"
+              className="h-5 w-5 text-slate-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -71,7 +71,7 @@ export default function ProductFilters({
             name="search"
             defaultValue={searchParams.get("search") || ""}
             placeholder="Search for items, clothing, electronics..."
-            className="w-full pl-10 pr-4 py-3 bg-[#121829]/60 border border-slate-800 rounded-xl text-sm font-medium text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition"
+            className="w-full pl-10 pr-4 py-3 bg-input-bg border border-input-border rounded-xl text-sm font-medium text-input-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition"
           />
         </form>
  
@@ -80,7 +80,7 @@ export default function ProductFilters({
           <select
             value={currentCategory}
             onChange={(e) => updateQueryParams("category", e.target.value)}
-            className="w-full px-4 py-3 bg-[#121829]/60 border border-slate-800 rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition appearance-none cursor-pointer"
+            className="w-full px-4 py-3 bg-input-bg border border-input-border rounded-xl text-sm font-medium text-input-text focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition appearance-none cursor-pointer"
             style={{
               backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/></svg>")`,
               backgroundPosition: "right 1rem center",
@@ -89,9 +89,9 @@ export default function ProductFilters({
               paddingRight: "2.5rem"
             }}
           >
-            <option value="" className="bg-[#0B0F19]">All Categories</option>
+            <option value="" className="bg-card-bg text-card-text-primary">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat} className="bg-[#0B0F19]">
+              <option key={cat} value={cat} className="bg-card-bg text-card-text-primary">
                 {cat}
               </option>
             ))}
@@ -105,8 +105,8 @@ export default function ProductFilters({
           onClick={() => updateQueryParams("category", "")}
           className={`px-4 py-2.5 text-xs font-bold rounded-xl border transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm ${
             !currentCategory
-              ? "bg-gradient-to-r from-indigo-600 to-violet-600 border-transparent text-white shadow-[0_4px_15px_rgba(99,102,241,0.3)]"
-              : "bg-[#121829]/40 border-slate-800 text-slate-400 hover:bg-[#121829]/80 hover:text-white"
+              ? "bg-gradient-to-r from-indigo-600 to-violet-600 border-transparent text-white shadow-[0_4px_15px_rgba(99,102,241,0.25)]"
+              : "bg-pill-unselected-bg border border-pill-unselected-border text-pill-unselected-text hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-foreground"
           }`}
         >
           🌐 All Items
@@ -127,8 +127,8 @@ export default function ProductFilters({
               onClick={() => updateQueryParams("category", cat)}
               className={`px-4 py-2.5 text-xs font-bold rounded-xl border transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm ${
                 currentCategory === cat
-                  ? "bg-gradient-to-r from-indigo-600 to-violet-600 border-transparent text-white shadow-[0_4px_15px_rgba(99,102,241,0.3)]"
-                  : "bg-[#121829]/40 border-slate-800 text-slate-400 hover:bg-[#121829]/80 hover:text-white"
+                  ? "bg-gradient-to-r from-indigo-600 to-violet-600 border-transparent text-white shadow-[0_4px_15px_rgba(99,102,241,0.25)]"
+                  : "bg-pill-unselected-bg border border-pill-unselected-border text-pill-unselected-text hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-foreground"
               }`}
             >
               <span>{icon}</span>
@@ -140,22 +140,22 @@ export default function ProductFilters({
  
       {/* Pagination Controller Row Layout */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-          <p className="text-xs font-semibold text-slate-400">
-            Showing page <span className="text-white font-extrabold">{currentPage}</span> of <span className="text-white font-extrabold">{totalPages}</span>
+        <div className="flex items-center justify-between pt-4 border-t border-card-border">
+          <p className="text-xs font-semibold text-card-text-secondary">
+            Showing page <span className="text-card-text-primary font-extrabold">{currentPage}</span> of <span className="text-card-text-primary font-extrabold">{totalPages}</span>
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => updateQueryParams("page", String(currentPage - 1))}
               disabled={currentPage <= 1}
-              className="px-4 py-2 bg-[#121829]/60 text-xs font-bold text-slate-300 border border-slate-800 rounded-xl shadow-sm hover:bg-[#121829]/90 transition disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-input-bg text-xs font-bold text-card-text-secondary border border-input-border rounded-xl shadow-sm hover:bg-pill-unselected-bg transition disabled:opacity-30 disabled:cursor-not-allowed"
             >
               ← Previous
             </button>
             <button
               onClick={() => updateQueryParams("page", String(currentPage + 1))}
               disabled={currentPage >= totalPages}
-              className="px-4 py-2 bg-[#121829]/60 text-xs font-bold text-slate-300 border border-slate-800 rounded-xl shadow-sm hover:bg-[#121829]/90 transition disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-input-bg text-xs font-bold text-card-text-secondary border border-input-border rounded-xl shadow-sm hover:bg-pill-unselected-bg transition disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Next →
             </button>

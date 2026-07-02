@@ -1,5 +1,6 @@
 import React from "react";
 import "./globals.css";
+import "./styles/anti-gravity.css";
 import Navbar from "@/app/components/Navbar";
 import { auth } from "@/auth";
 
