@@ -148,7 +148,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                       Details →
                     </Link>
                   </div>
-                  <HomeAddToCartButton product={product} />
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <HomeAddToCartButton product={product} />
+                    </div>
+                    <Link
+                      href={`/checkout?productId=${product.id}&quantity=1`}
+                      className="flex-1 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 px-2 rounded-xl text-xs transition shadow-md tracking-wide active:scale-[0.98] cursor-pointer shadow-emerald-600/15 hover:shadow-emerald-500/25 flex items-center justify-center gap-0.5"
+                    >
+                      ⚡ Buy Now
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

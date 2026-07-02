@@ -2,6 +2,26 @@ import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
 
+// GET handler to retrieve a product
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const product = await db.product.findUnique({
+      where: { id: resolvedParams.id },
+    });
+    if (!product) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, product });
+  } catch (error: any) {
+    console.error("GET_PRODUCT_ERROR:", error);
+    return NextResponse.json({ error: error.message || "Failed to fetch product details." }, { status: 500 });
+  }
+}
+
 // DELETE handler to remove a product
 export async function DELETE(
   req: Request,
