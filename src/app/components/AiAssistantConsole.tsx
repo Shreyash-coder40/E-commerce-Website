@@ -346,7 +346,7 @@ export default function AiAssistantConsole() {
                       <div
                         className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
                           msg.sender === "user"
-                            ? "bg-indigo-600 text-white rounded-br-none"
+                            ? "bg-sky-100 text-slate-950 font-bold border border-sky-200 rounded-br-none"
                             : "bg-white border border-gray-200 text-slate-800 rounded-bl-none"
                         }`}
                       >
