@@ -103,9 +103,9 @@ export default async function AdminDashboardPage() {
             {/* 1. SMART PRICING ENGINE ACTION BUTTON */}
             <Link 
               href="/admin/pricing-engine" 
-              className="text-xs font-bold text-white bg-indigo-600 px-4 py-2.5 rounded-xl shadow-sm hover:bg-indigo-500 transition"
+              className="text-xs font-bold text-gray-700 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition"
             >
-              🔥 Smart Pricing Engine
+              🔥 Pricing Engine
             </Link>
             {/* 2. INVENTORY MANAGEMENT ACTION BUTTON */}
             <Link 
@@ -113,6 +113,13 @@ export default async function AdminDashboardPage() {
               className="text-xs font-bold text-gray-700 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition"
             >
               🛠️ Manage Inventory
+            </Link>
+            {/* 3. AI ASSISTANT CONSOLE ACTION BUTTON */}
+            <Link 
+              href="/admin/ai-assistant" 
+              className="text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 rounded-xl shadow-sm hover:from-indigo-500 hover:to-violet-500 transition"
+            >
+              🤖 AI Assistant Console
             </Link>
           </div>
         </div>
@@ -179,7 +186,6 @@ export default async function AdminDashboardPage() {
         </div>
 
       </div>
-      <AdminAiChatbot />
     </div>
   );
 }
