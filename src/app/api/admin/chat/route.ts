@@ -210,20 +210,29 @@ You have the authority to create and update products.
 If you output these blocks, the system will execute database writes. Respond professionally, using clean markdown tables and list bullets for readability.`;
 
     if (geminiApiKey) {
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: systemPrompt }]
-        },
-        ...history.map((h: any) => ({
-          role: h.sender === "user" ? "user" : "model",
-          parts: [{ text: h.text }]
-        })),
-        {
-          role: "user",
-          parts: [{ text: message }]
+      // 1. Clean history to ensure strict user/model alternation and skip leading welcome messages
+      const cleanedHistory = [];
+      let expectedRole = "user";
+      
+      for (const h of history) {
+        const role = h.sender === "user" ? "user" : "model";
+        if (cleanedHistory.length === 0 && role === "model") {
+          continue;
         }
-      ];
+        if (role === expectedRole) {
+          cleanedHistory.push({
+            role,
+            parts: [{ text: h.text }]
+          });
+          expectedRole = role === "user" ? "model" : "user";
+        }
+      }
+
+      // 2. Append current user message
+      cleanedHistory.push({
+        role: "user",
+        parts: [{ text: message }]
+      });
 
       try {
         const response = await fetch(
@@ -231,7 +240,12 @@ If you output these blocks, the system will execute database writes. Respond pro
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents }),
+            body: JSON.stringify({
+              contents: cleanedHistory,
+              systemInstruction: {
+                parts: [{ text: systemPrompt }]
+              }
+            }),
           }
         );
 

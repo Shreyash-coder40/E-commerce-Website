@@ -69,20 +69,29 @@ If you output this block, the system will automatically place the product in the
 Respond politely, using clean bullet points. Keep it concise, friendly, and helpful.`;
 
     if (geminiApiKey) {
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: systemPrompt }]
-        },
-        ...history.map((h: any) => ({
-          role: h.sender === "user" ? "user" : "model",
-          parts: [{ text: h.text }]
-        })),
-        {
-          role: "user",
-          parts: [{ text: message }]
+      // 1. Clean history to ensure strict user/model alternation and skip leading welcome messages
+      const cleanedHistory = [];
+      let expectedRole = "user";
+      
+      for (const h of history) {
+        const role = h.sender === "user" ? "user" : "model";
+        if (cleanedHistory.length === 0 && role === "model") {
+          continue;
         }
-      ];
+        if (role === expectedRole) {
+          cleanedHistory.push({
+            role,
+            parts: [{ text: h.text }]
+          });
+          expectedRole = role === "user" ? "model" : "user";
+        }
+      }
+
+      // 2. Append current user message
+      cleanedHistory.push({
+        role: "user",
+        parts: [{ text: message }]
+      });
 
       try {
         const response = await fetch(
@@ -90,7 +99,12 @@ Respond politely, using clean bullet points. Keep it concise, friendly, and help
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents }),
+            body: JSON.stringify({
+              contents: cleanedHistory,
+              systemInstruction: {
+                parts: [{ text: systemPrompt }]
+              }
+            }),
           }
         );
 
