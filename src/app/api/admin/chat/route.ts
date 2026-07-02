@@ -153,6 +153,14 @@ export async function POST(req: Request) {
       } else {
         reviewsContext = `There are currently no customer reviews submitted for "${matchedProduct.name}" (ID: ${matchedProduct.id}).`;
       }
+    } else {
+      // Build general context for the entire store
+      if (allReviews.length > 0) {
+        reviewsContext = `Here is a summary of all active customer reviews across the store:\n` +
+          allReviews.map((r, i) => `${i + 1}. Product: "${r.product?.name || "Unknown"}", Rating: ${r.rating}/5, Comment: "${r.comment}" (by ${r.user?.name || "Anonymous"})`).join("\n");
+      } else {
+        reviewsContext = "There are currently no customer reviews submitted in the store.";
+      }
     }
 
     // 3. Invoke LLM (Gemini) or local fallback
@@ -329,8 +337,10 @@ function handleLocalFallback(
   // 1. Summarize Reviews / Sentiment Summary
   if (query.includes("review") || query.includes("feedback") || query.includes("sentiment")) {
     if (reviewsContext) {
-      return `### 💬 Product Review Sentiment Summary
-Here is the sentiment analysis derived from user feedback for the mentioned product:
+      const isProductSpecific = productsList.some((p) => query.includes(p.name.toLowerCase()) || query.includes(p.id.toLowerCase()));
+      
+      return `### 💬 ${isProductSpecific ? "Product" : "Store-Wide"} Review Sentiment Summary
+Here is the sentiment analysis derived from customer feedback:
 
 - **General Customer Sentiment**: Positive / Satisfied (ratings averages indicate high engagement).
 - **Core Strengths (Pros)**: Customers highly appreciate build quality and core performance specifications.
