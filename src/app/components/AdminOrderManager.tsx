@@ -217,7 +217,7 @@ export default function AdminOrderManager({ initialOrders, initialCustomers }: A
                         </div>
                         <button
                           onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                          className="text-xs bg-white border border-gray-200 px-3.5 py-2 rounded-xl font-bold hover:bg-gray-50 shadow-sm transition cursor-pointer"
+                          className="text-xs text-slate-800 bg-white border border-gray-200 px-3.5 py-2 rounded-xl font-bold hover:bg-gray-50 shadow-sm transition cursor-pointer"
                         >
                           {isExpanded ? "Collapse" : "Manage"}
                         </button>
