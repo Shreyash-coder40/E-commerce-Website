@@ -332,7 +332,7 @@ ${reviewsContext}`;
   }
 
   // 2. Add / Update Product Management CRUD
-  if (query.includes("add") || query.includes("create") || query.includes("change") || query.includes("update") || query.includes("price") || query.includes("stock")) {
+  if (query.includes("add") || query.includes("create") || query.includes("change") || query.includes("update") || query.includes("modify")) {
     // Check if update product
     if (query.includes("change") || query.includes("update")) {
       const priceMatch = msg.match(/(?:price\s+to|price\s+of|price)\s+(\d+)/i);
