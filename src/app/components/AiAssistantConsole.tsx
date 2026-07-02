@@ -158,29 +158,29 @@ export default function AiAssistantConsole() {
       }
 
       if (trimmed.startsWith("###")) {
-        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-600 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
+        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-700 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
       } else if (trimmed.startsWith("####")) {
-        elements.push(<h4 key={idx} className="text-xs font-black text-slate-800 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
+        elements.push(<h4 key={idx} className="text-xs font-black text-slate-950 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         elements.push(
-          <li key={idx} className="text-xs text-gray-700 ml-4 list-disc mb-1 leading-relaxed">
+          <li key={idx} className="text-xs text-slate-950 ml-4 list-disc mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.substring(2))}
           </li>
         );
       } else if (/^\d+\.\s/.test(trimmed)) {
         elements.push(
-          <li key={idx} className="text-xs text-gray-700 ml-4 list-decimal mb-1 leading-relaxed">
+          <li key={idx} className="text-xs text-slate-950 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.replace(/^\d+\.\s*/, ""))}
           </li>
         );
       } else if (trimmed.startsWith("`") && trimmed.endsWith("`")) {
         elements.push(
-          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-800 text-[10px] font-mono rounded font-semibold my-1">
+          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-900 text-[10px] font-mono rounded font-semibold my-1">
             {trimmed.replace(/`/g, "")}
           </code>
         );
       } else if (trimmed !== "") {
-        elements.push(<p key={idx} className="text-xs text-gray-755 leading-relaxed mb-2.5 font-medium">{formatInline(line)}</p>);
+        elements.push(<p key={idx} className="text-xs text-slate-950 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
       }
     });
 
@@ -281,23 +281,23 @@ export default function AiAssistantConsole() {
 
             {/* AI Prompt suggest deck */}
             <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm space-y-3">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Suggested Audits</h4>
+              <h4 className="text-xs font-black text-slate-950 uppercase tracking-wider">Suggested Audits</h4>
               <div className="space-y-2">
                 <button
                   onClick={() => handleSendMessage("Show me the profit and loss report")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-bold text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   📊 Profit & Loss analysis
                 </button>
                 <button
                   onClick={() => handleSendMessage("Which products need restocking based on sales velocity?")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-bold text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   🚨 Inventory Restocking warning
                 </button>
                 <button
                   onClick={() => handleSendMessage("Summarize the reviews for Nike Shoes")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-bold text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-slate-955 border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   💬 Review Sentiment Check
                 </button>
@@ -306,7 +306,7 @@ export default function AiAssistantConsole() {
           </div>
 
           {/* Right Panel: Conversation Terminal Dashboard */}
-          <div className="lg:col-span-3 bg-white border border-gray-200 rounded-3xl shadow-sm flex flex-col h-[600px] overflow-hidden">
+          <div className="lg:col-span-3 bg-white border border-gray-200 rounded-3xl shadow-sm flex flex-col h-[520px] max-h-[calc(100vh-14rem)] overflow-hidden">
             {/* Terminal Top bar */}
             <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-2">

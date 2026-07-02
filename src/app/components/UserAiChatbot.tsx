@@ -147,29 +147,29 @@ export default function UserAiChatbot() {
       }
 
       if (trimmed.startsWith("###")) {
-        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-600 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
+        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-700 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
       } else if (trimmed.startsWith("####")) {
-        elements.push(<h4 key={idx} className="text-xs font-black text-slate-800 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
+        elements.push(<h4 key={idx} className="text-xs font-black text-slate-950 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         elements.push(
-          <li key={idx} className="text-xs text-gray-700 ml-4 list-disc mb-1 leading-relaxed">
+          <li key={idx} className="text-xs text-slate-950 ml-4 list-disc mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.substring(2))}
           </li>
         );
       } else if (/^\d+\.\s/.test(trimmed)) {
         elements.push(
-          <li key={idx} className="text-xs text-gray-700 ml-4 list-decimal mb-1 leading-relaxed">
+          <li key={idx} className="text-xs text-slate-950 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.replace(/^\d+\.\s*/, ""))}
           </li>
         );
       } else if (trimmed.startsWith("`") && trimmed.endsWith("`")) {
         elements.push(
-          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-800 text-[10px] font-mono rounded font-semibold my-1">
+          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-900 text-[10px] font-mono rounded font-semibold my-1">
             {trimmed.replace(/`/g, "")}
           </code>
         );
       } else if (trimmed !== "") {
-        elements.push(<p key={idx} className="text-xs text-gray-755 leading-relaxed mb-2.5 font-medium">{formatInline(line)}</p>);
+        elements.push(<p key={idx} className="text-xs text-slate-950 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
       }
     });
 
@@ -239,7 +239,7 @@ export default function UserAiChatbot() {
 
       {/* Chat drawer interface panel */}
       {isOpen && (
-        <div className="fixed bottom-24 left-6 w-96 max-w-[calc(100vw-3rem)] h-[520px] bg-white border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-900 animate-slide-in">
+        <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-white border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-950 animate-slide-in">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-rose-500 to-indigo-600 text-white p-5 flex items-center justify-between shadow-sm">
@@ -264,19 +264,19 @@ export default function UserAiChatbot() {
           <div className="bg-slate-50 border-b border-gray-150 p-3 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <button
               onClick={() => handleSendMessage("Tell me about Nike Shoes")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               👟 Show Nike Shoes
             </button>
             <button
               onClick={() => handleSendMessage("What is the price of the Rolex watch?")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               ⌚ Rolex Details
             </button>
             <button
               onClick={() => handleSendMessage("Summarize the reviews for Samsung logo")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               ⭐ Review summaries
             </button>
