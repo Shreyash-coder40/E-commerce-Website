@@ -40,7 +40,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
         {/* Asymmetrical High-End Designer Hero Section with Fade In Animation */}
         {featuredProduct && !category && !search && (
-          <div className="mb-12 relative overflow-hidden rounded-3xl bg-card-bg border border-card-border shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px] shadow-indigo-500/5 dark:shadow-indigo-950/20 animate-fade-in transition-all duration-300">
+          <div className="mb-12 relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50/40 via-white to-indigo-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/20 border border-card-border shadow-2xl flex flex-col md:flex-row items-center justify-between min-h-[380px] shadow-indigo-500/5 dark:shadow-indigo-950/20 animate-fade-in transition-all duration-300">
             {/* Asymmetrical Matte Black Block Slicing Into Ice-White Canvas */}
             <div className="p-8 md:p-12 md:max-w-[50%] flex flex-col justify-center z-10">
               <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3">★ Featured Drop</span>
@@ -54,7 +54,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <span className="text-2xl font-black text-card-text-primary">₹{featuredProduct.price.toLocaleString("en-IN")}</span>
                 <Link
                   href={`/products/${featuredProduct.id}`}
-                  className="text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 px-6 py-3.5 rounded-xl transition shadow-lg shadow-indigo-500/20 uppercase tracking-wider cursor-pointer active:scale-95"
+                  className="text-xs font-black text-white dark:text-black bg-slate-950 dark:bg-white hover:bg-slate-900 dark:hover:bg-slate-100 px-7 py-4 rounded-full shadow-xl transition-all duration-300 ease-out hover:-translate-y-0.5 tracking-widest uppercase flex items-center gap-2 active:scale-95 cursor-pointer"
                 >
                   Claim Offer →
                 </Link>
@@ -178,47 +178,52 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center justify-items-center">
                 
-                {/* Apple SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                {/* Apple */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2">
                   <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.69-1.12 1.83-.98 2.94 1.07.08 2.15-.52 2.81-1.33z"/>
                   </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Apple</span>
                 </div>
 
-                {/* Sony SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
-                  <svg className="h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
-                    <path d="M12 4h-8v3h7v3h-7v4h8v3h-12v-16h12v3zm18 0c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 9c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm18-9h-7v13h-3v-13h-7v-3h17v3zm18 10.3l-5.2-10.3h3.4l3.5 7.1 3.5-7.1h3.4l-5.2 10.3v5.7h-3.4v-5.7z"/>
-                  </svg>
-                </div>
-
-                {/* Samsung SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                {/* Samsung */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2.5">
                   <svg className="h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
                     <path d="M10 2h-6v4h6c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2h-8v3h8c2.8 0 5-2.2 5-5v-2c0-2.8-2.2-5-5-5zm18 0l-5 13h-3l-5-13h3.5l3 8.5 3-8.5h3.5zm18 0h-8c-2.8 0-5 2.2-5 5v2c0 2.8 2.2 5 5 5h8v-3h-8c-1.1 0-2-.9-2-2v-2c0-1.1.9-2 2-2h8v-3zm18 0h-3v13h8v-3h-5v-10zm18 6.5c0-3.6-2.9-6.5-6.5-6.5s-6.5 2.9-6.5 6.5 2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5zm-3 0c0 1.9-1.6 3.5-3.5 3.5s-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5z"/>
                   </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Samsung</span>
                 </div>
 
-                {/* Nike SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                {/* Nike */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2.5">
                   <svg className="h-5 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
                     <path d="M2.5 14.3c3.8-1.5 7.6-1.7 11.2-.5 4.2 1.3 7.6 4.3 9.8 7.9.3.4.1.9-.3.9-.7 0-1.5-.2-2.2-.5-5.3-2.1-10.7-2.3-15.9-.6-2.1.7-4.1 1.9-5.9 3.4-.3.2-.7 0-.7-.4-.1-3.6 1.3-7.5 4-10.2z"/>
                   </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Nike</span>
                 </div>
 
-                {/* Logitech SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
+                {/* Puma */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2.5">
                   <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2a10 10 0 1010 10h-3a7 7 0 11-7-7v-3zm7 7a7 7 0 00-7-7v3a4 4 0 014 4h3z"/>
+                    <path d="M21 7.2c-1-.5-2.2-.4-3 .3L14.7 10c-.5.4-.8.9-.9 1.4L13 14.7c-.1.3-.3.6-.5.7L10 17c-.7.5-1.7.3-2.2-.3s-.3-1.7.3-2.2l2.3-1.8c.2-.2.3-.4.3-.6l.7-2.7c.1-.5.4-.9.9-1.2l3.3-2.2c.8-.5 1.9-.6 2.8-.2l3 .9c.6.2.9.8.7 1.4s-.8.9-1.4.7z"/>
                   </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Puma</span>
                 </div>
 
-                {/* Dell SVG Logo */}
-                <div className="group flex items-center justify-center p-5 w-full h-16 rounded-2xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default">
-                  <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/>
-                    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="6.5" fontWeight="bold" fontFamily="sans-serif">DELL</text>
+                {/* Sony */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2.5">
+                  <svg className="h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 100 20">
+                    <path d="M12 4h-8v3h7v3h-7v4h8v3h-12v-16h12v3zm18 0c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 9c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm18-9h-7v13h-3v-13h-7v-3h17v3zm18 10.3l-5.2-10.3h3.4l3.5 7.1 3.5-7.1h3.4l-5.2 10.3v5.7h-3.4v-5.7z"/>
                   </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Sony</span>
+                </div>
+
+                {/* Adidas */}
+                <div className="group flex flex-col items-center justify-center p-4 w-full h-24 rounded-3xl bg-pill-unselected-bg border border-pill-unselected-border hover:border-indigo-500/40 hover:bg-card-bg transition-all duration-300 cursor-default gap-2.5">
+                  <svg className="h-6 w-6 text-slate-400 dark:text-slate-500 group-hover:text-slate-800 dark:group-hover:text-white transition duration-300 fill-current" viewBox="0 0 24 24">
+                    <path d="M4 18h3v-4.5H4zm5 0h3V11H9zm5 0h3v-9.5h-3z"/>
+                  </svg>
+                  <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 group-hover:text-slate-850 dark:group-hover:text-slate-100 transition duration-350">Adidas</span>
                 </div>
 
               </div>
