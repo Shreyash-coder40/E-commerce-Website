@@ -124,7 +124,6 @@ function CheckoutContent() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        // Mock matching lat/lon coords to regional major cities in India
         const mockCities = [
           { name: "Mumbai", state: "Maharashtra", pin: "400001" },
           { name: "New Delhi", state: "Delhi", pin: "110001" },
@@ -155,7 +154,7 @@ function CheckoutContent() {
       : []
     : cart;
 
-  const isPincodeValid = /^\d{6}$/.test(pincode);
+  const isPincodeValid = /^\d{6}$/.test(pincode.trim());
   const itemsSubtotal = checkoutItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   // Dynamic calculations
@@ -165,7 +164,7 @@ function CheckoutContent() {
   let eddDateObj: Date | null = null;
 
   if (isPincodeValid && checkoutItems.length > 0) {
-    const prefix = pincode.substring(0, 3);
+    const prefix = pincode.trim().substring(0, 3);
     let days = 4;
     shippingCost = 90; // Default remote rate
 
@@ -177,7 +176,6 @@ function CheckoutContent() {
       shippingCost = 40; // Metro discounted shipping fee
     }
 
-    // Free delivery waiver if subtotal is above ₹1,000
     if (itemsSubtotal >= 1000) {
       shippingCost = 0;
     }
@@ -195,10 +193,10 @@ function CheckoutContent() {
 
   const finalTotalAmount = itemsSubtotal + shippingCost + taxAmount;
 
-  // Form validation
+  // Form validation - made more flexible for various phone input formats
   const isFormValid =
     shippingName.trim() !== "" &&
-    /^\d{10}$/.test(shippingPhone.trim()) &&
+    shippingPhone.replace(/\D/g, "").length >= 10 &&
     streetAddress.trim() !== "" &&
     city.trim() !== "" &&
     state.trim() !== "" &&
@@ -215,7 +213,6 @@ function CheckoutContent() {
     setError("");
 
     try {
-      // Save address if requested
       if (selectedAddressId === "new" && saveToAddressBook) {
         await fetch("/api/addresses", {
           method: "POST",
@@ -233,7 +230,6 @@ function CheckoutContent() {
         });
       }
 
-      // Create checkout session order
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,7 +282,7 @@ function CheckoutContent() {
 
             console.log("Verification successful! Order paid.");
             if (!productId) {
-              clearCart(); // Clear full cart if not buy now
+              clearCart();
             }
             alert("🎉 Purchase completed successfully! Thank you for shopping with NextShop.");
             router.push("/orders");
@@ -328,7 +324,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 text-slate-900">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-black text-gray-950 tracking-tight mb-8">Secure Checkout Details</h1>
 
@@ -343,7 +339,7 @@ function CheckoutContent() {
             <p className="text-gray-500 text-sm mb-4">Your checkout bag is empty.</p>
             <button
               onClick={() => router.push("/")}
-              className="text-xs font-bold text-white bg-indigo-600 px-6 py-2.5 rounded-xl shadow hover:bg-indigo-500 transition"
+              className="text-xs font-bold text-white bg-indigo-600 px-6 py-2.5 rounded-xl shadow hover:bg-indigo-500 transition cursor-pointer"
             >
               Continue Shopping
             </button>
@@ -361,7 +357,7 @@ function CheckoutContent() {
                     <select
                       value={selectedAddressId}
                       onChange={(e) => handleAddressSelect(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold"
                     >
                       <option value="new">Add New Address (+)</option>
                       {addresses.map((addr) => (
@@ -387,85 +383,83 @@ function CheckoutContent() {
 
                 <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Recipient Full Name</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Recipient Full Name</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. John Doe"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={shippingName}
                       onChange={(e) => setShippingName(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">10-Digit Mobile Number</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">10-Digit Mobile Number</label>
                     <input
                       type="tel"
                       required
-                      pattern="[0-9]{10}"
                       placeholder="e.g. 9876543210"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={shippingPhone}
                       onChange={(e) => setShippingPhone(e.target.value)}
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Street Address</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Street Address</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Flat No, Building Name, Area"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={streetAddress}
                       onChange={(e) => setStreetAddress(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Landmark / Apartment (Optional)</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Landmark / Apartment (Optional)</label>
                     <input
                       type="text"
                       placeholder="e.g. Near Star Mall"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={apartment}
                       onChange={(e) => setApartment(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">6-Digit Pin Code</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">6-Digit Pin Code</label>
                     <input
                       type="text"
                       required
-                      pattern="[0-9]{6}"
                       placeholder="e.g. 400001"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">Town / City</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Town / City</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Mumbai"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1.5">State</label>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">State</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Maharashtra"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       value={state}
                       onChange={(e) => setState(e.target.value)}
                     />
@@ -525,7 +519,7 @@ function CheckoutContent() {
                   <div className="flex justify-between">
                     <span>GST Tax (18% calculated)</span>
                     <span className="text-gray-900">
-                      {isPincodeValid ? `₹${taxAmount.toLocaleString("en-IN")}` : <span className="text-[10px] text-gray-400 font-medium">Verify Pincode</span>}
+                      {isPincodeValid ? `₹${taxAmount.toLocaleString("en-IN")}` : <span className="text-[10px] text-gray-450 font-medium">Verify Pincode</span>}
                     </span>
                   </div>
 
@@ -539,7 +533,7 @@ function CheckoutContent() {
                           `₹${shippingCost}`
                         )
                       ) : (
-                        <span className="text-[10px] text-gray-400 font-medium">Verify Pincode</span>
+                        <span className="text-[10px] text-gray-450 font-medium">Verify Pincode</span>
                       )}
                     </span>
                   </div>
