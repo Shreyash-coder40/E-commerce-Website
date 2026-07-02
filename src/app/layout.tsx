@@ -2,6 +2,7 @@ import React from "react";
 import "./globals.css";
 import "./styles/anti-gravity.css";
 import Navbar from "@/app/components/Navbar";
+import UserAiChatbot from "@/app/components/UserAiChatbot";
 import { auth } from "@/auth";
 
 export const metadata = {
@@ -26,6 +27,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <main className="w-full">
           {children}
         </main>
+        <UserAiChatbot />
       </body>
     </html>
   );

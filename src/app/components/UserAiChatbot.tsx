@@ -1,0 +1,340 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useCartStore } from "@/app/store/useCartStore";
+
+interface Message {
+  sender: "user" | "ai";
+  text: string;
+}
+
+export default function UserAiChatbot() {
+  const pathname = usePathname();
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  // Hide the chatbot on admin pages entirely
+  const isAdminPage = pathname.startsWith("/admin");
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      sender: "ai",
+      text: "### Hello! I am your NextShop AI Shopping Assistant. 🤖\nI can help you browse catalog items, summarize customer reviews, answer product specs, and even add items to your cart for you!\n\nWhat are you looking for today? Ask me about shoes, watches, electronics or luxury items!"
+    }
+  ]);
+  const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loading]);
+
+  // Show a temporary visual toast notification
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  const handleSendMessage = async (textToSend: string) => {
+    if (!textToSend.trim() || loading) return;
+
+    const userMsg: Message = { sender: "user", text: textToSend };
+    setMessages((prev) => [...prev, userMsg]);
+    setInputValue("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: textToSend,
+          history: messages.slice(-10)
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setMessages((prev) => [...prev, { sender: "ai", text: data.text }]);
+        
+        // Execute client-side cart action if triggered by AI
+        if (data.product) {
+          addToCart({
+            id: data.product.id,
+            name: data.product.name,
+            price: data.product.price,
+            image: data.product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+            stock: data.product.stock
+          });
+          triggerToast(`🛒 Added "${data.product.name}" to cart!`);
+        }
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: `🚨 **Error**: ${data.error || "Failed to reach shopping assistant."}` }
+        ]);
+      }
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: "🚨 **Error**: Connection failed. Please check network settings." }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendMessage(inputValue);
+  };
+
+  const formatInline = (text: string) => {
+    let formatted: React.ReactNode[] = [];
+    const parts = text.split(/\*\*([\s\S]*?)\*\*/g);
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 1) {
+        formatted.push(<strong key={i} className="font-extrabold text-gray-950">{parts[i]}</strong>);
+      } else {
+        const subparts = parts[i].split(/\*([\s\S]*?)\*/g);
+        for (let j = 0; j < subparts.length; j++) {
+          if (j % 2 === 1) {
+            formatted.push(<em key={`${i}-${j}`} className="italic text-gray-700">{subparts[j]}</em>);
+          } else {
+            formatted.push(subparts[j]);
+          }
+        }
+      }
+    }
+    return formatted;
+  };
+
+  const parseMarkdown = (markdown: string) => {
+    const lines = markdown.split("\n");
+    let inTable = false;
+    let tableRows: string[][] = [];
+    const elements: React.JSX.Element[] = [];
+
+    lines.forEach((line, idx) => {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+        inTable = true;
+        const cells = trimmed
+          .split("|")
+          .map((c) => c.trim())
+          .filter((c, i, arr) => i > 0 && i < arr.length - 1);
+        
+        if (cells.every((c) => /^:?-+:?$/.test(c))) {
+          return;
+        }
+
+        tableRows.push(cells);
+        return;
+      } else if (inTable) {
+        elements.push(renderTable(tableRows, idx));
+        tableRows = [];
+        inTable = false;
+      }
+
+      if (trimmed.startsWith("###")) {
+        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-600 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
+      } else if (trimmed.startsWith("####")) {
+        elements.push(<h4 key={idx} className="text-xs font-black text-slate-800 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
+      } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+        elements.push(
+          <li key={idx} className="text-xs text-gray-700 ml-4 list-disc mb-1 leading-relaxed">
+            {formatInline(trimmed.substring(2))}
+          </li>
+        );
+      } else if (/^\d+\.\s/.test(trimmed)) {
+        elements.push(
+          <li key={idx} className="text-xs text-gray-700 ml-4 list-decimal mb-1 leading-relaxed">
+            {formatInline(trimmed.replace(/^\d+\.\s*/, ""))}
+          </li>
+        );
+      } else if (trimmed.startsWith("`") && trimmed.endsWith("`")) {
+        elements.push(
+          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-800 text-[10px] font-mono rounded font-semibold my-1">
+            {trimmed.replace(/`/g, "")}
+          </code>
+        );
+      } else if (trimmed !== "") {
+        elements.push(<p key={idx} className="text-xs text-gray-755 leading-relaxed mb-2.5 font-medium">{formatInline(line)}</p>);
+      }
+    });
+
+    if (inTable && tableRows.length > 0) {
+      elements.push(renderTable(tableRows, lines.length));
+    }
+
+    return elements;
+  };
+
+  const renderTable = (rows: string[][], keyIdx: number) => {
+    if (rows.length === 0) return <div key={keyIdx} />;
+    const headers = rows[0];
+    const dataRows = rows.slice(1);
+
+    return (
+      <div key={keyIdx} className="overflow-x-auto my-3 border border-gray-250 rounded-xl shadow-sm">
+        <table className="min-w-full divide-y divide-gray-250 text-[11px] text-left">
+          <thead className="bg-gray-50">
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="px-3 py-2 font-bold text-gray-600 uppercase tracking-wider">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-150 bg-white">
+            {dataRows.map((row, rowIdx) => (
+              <tr key={rowIdx} className="hover:bg-slate-50 transition">
+                {row.map((cell, cellIdx) => (
+                  <td key={cellIdx} className="px-3 py-2 text-gray-800 font-medium">{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  if (isAdminPage) return null;
+
+  return (
+    <>
+      {/* Floating Toggle Bubble */}
+      <div className="fixed bottom-6 left-6 z-55">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="h-14 w-14 rounded-full bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-xl hover:shadow-indigo-500/25 hover:scale-105 active:scale-95 transition flex items-center justify-center cursor-pointer relative"
+        >
+          {isOpen ? (
+            <span className="text-lg font-black">✕</span>
+          ) : (
+            <div className="relative">
+              <span className="text-2xl">💬</span>
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
+            </div>
+          )}
+        </button>
+      </div>
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-6 bg-slate-900 border border-slate-850 text-white px-4 py-3 rounded-2xl text-xs font-black shadow-2xl z-55 flex items-center gap-2 animate-slide-in">
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Chat drawer interface panel */}
+      {isOpen && (
+        <div className="fixed bottom-24 left-6 w-96 max-w-[calc(100vw-3rem)] h-[520px] bg-white border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-900 animate-slide-in">
+          
+          {/* Header */}
+          <div className="bg-gradient-to-r from-rose-500 to-indigo-600 text-white p-5 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-lg">🤖</div>
+              <div>
+                <h4 className="text-xs font-black tracking-wider uppercase">Shopping Assistant</h4>
+                <p className="text-[10px] text-rose-100 font-bold flex items-center gap-1 mt-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" /> AI Store Assistant
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-white/70 hover:text-white text-sm font-black cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Quick suggestions chips */}
+          <div className="bg-slate-50 border-b border-gray-150 p-3 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <button
+              onClick={() => handleSendMessage("Tell me about Nike Shoes")}
+              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+            >
+              👟 Show Nike Shoes
+            </button>
+            <button
+              onClick={() => handleSendMessage("What is the price of the Rolex watch?")}
+              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+            >
+              ⌚ Rolex Details
+            </button>
+            <button
+              onClick={() => handleSendMessage("Summarize the reviews for Samsung logo")}
+              className="bg-white hover:bg-slate-100 text-[10px] font-bold text-gray-700 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+            >
+              ⭐ Review summaries
+            </button>
+          </div>
+
+          {/* Message scroll container */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50/50">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
+                    msg.sender === "user"
+                      ? "bg-indigo-650 text-white rounded-bl-none"
+                      : "bg-white border border-gray-200 text-slate-800 rounded-br-none"
+                  }`}
+                >
+                  {parseMarkdown(msg.text)}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 rounded-br-none shadow-sm flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-75" />
+                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-150" />
+                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-300" />
+                  </div>
+                  <span className="text-[10px] text-gray-400 font-bold">Shopping assistant searching...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Footer form box */}
+          <form onSubmit={handleFormSubmit} className="p-4 border-t border-gray-200 bg-white flex gap-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Ask about price, warranty, reviews, or say 'add to cart'..."
+              className="flex-1 bg-slate-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+            <button
+              type="submit"
+              disabled={loading || !inputValue.trim()}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
+            >
+              Send
+            </button>
+          </form>
+
+        </div>
+      )}
+    </>
+  );
+}
