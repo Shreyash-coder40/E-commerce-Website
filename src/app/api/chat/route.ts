@@ -98,10 +98,14 @@ Guidelines for "resolved_filters":
 
       // Copy cleaned history array
       const parserHistory = [...cleanedHistory];
-      parserHistory.push({
-        role: "user",
-        parts: [{ text: message }]
-      });
+      if (parserHistory.length > 0 && parserHistory[parserHistory.length - 1].role === "user") {
+        parserHistory[parserHistory.length - 1].parts[0].text += "\n" + message;
+      } else {
+        parserHistory.push({
+          role: "user",
+          parts: [{ text: message }]
+        });
+      }
 
       try {
         const parserResponse = await fetch(
@@ -223,10 +227,14 @@ Write a friendly, highly interactive, and context-aware conversational response.
 
       // Copy cleaned history and append user query
       const responseHistory = [...cleanedHistory];
-      responseHistory.push({
-        role: "user",
-        parts: [{ text: message }]
-      });
+      if (responseHistory.length > 0 && responseHistory[responseHistory.length - 1].role === "user") {
+        responseHistory[responseHistory.length - 1].parts[0].text += "\n" + message;
+      } else {
+        responseHistory.push({
+          role: "user",
+          parts: [{ text: message }]
+        });
+      }
 
       try {
         const response = await fetch(
