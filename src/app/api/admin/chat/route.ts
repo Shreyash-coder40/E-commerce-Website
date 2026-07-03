@@ -410,7 +410,12 @@ function handleLocalFallback(
   customersList: any[] = [],
   paidOrders: any[] = []
 ): string {
-  const query = msg.toLowerCase();
+  const query = msg.toLowerCase().trim();
+
+  // 0. Greeting Fallback
+  if (query === "hi" || query === "hello" || query === "hey" || query === "whats up" || query === "whats new" || query.startsWith("greeting") || query.startsWith("hii")) {
+    return `Hello! I am your NextShop AI Assistant. 🤖 How can I help you manage the store today? You can ask me about restocking, product reviews, financial reports, or customers' purchases!`;
+  }
 
   // 1. Detect target product from current query or history
   let matchedProduct: any = null;
@@ -595,7 +600,7 @@ Here is the customer questions log:
   }
 
   // 7. Customer Purchases & Favorite Items Report fallback
-  if (query.includes("customer") || query.includes("buy") || query.includes("favorite") || query.includes("purchase")) {
+  if (query.includes("customer") || query.includes("buy") || query.includes("favorite") || query.includes("purchase") || query.includes("demanding") || query.includes("popular") || query.includes("best seller") || query.includes("most sold")) {
     let totalItemsBought = 0;
     const productCounts: Record<string, number> = {};
     const customerPurchases: Record<string, number> = {};
