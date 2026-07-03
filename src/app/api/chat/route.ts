@@ -281,6 +281,26 @@ function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: 
   const materials = ["cotton", "linen", "leather", "polyester", "silk", "wool", "metal", "plastic", "glass"];
   const styles = ["traditional", "casual", "formal", "sporty", "modern", "vintage", "premium", "classic"];
   
+  // Category mapping
+  let categoryKeyword = null;
+  if (query.includes("cloth") || query.includes("wear") || query.includes("kurta") || query.includes("kurtii") || query.includes("kurti") || query.includes("hoodie") || query.includes("shirt") || query.includes("pant") || query.includes("apparel")) {
+    categoryKeyword = "Clothing";
+  } else if (query.includes("foot") || query.includes("shoe") || query.includes("sneaker") || query.includes("slipper")) {
+    categoryKeyword = "Footwear";
+  } else if (query.includes("electr") || query.includes("laptop") || query.includes("phone") || query.includes("iphone") || query.includes("monitor") || query.includes("mouse") || query.includes("earbud") || query.includes("headphone") || query.includes("audio")) {
+    categoryKeyword = "Electronics";
+  }
+
+  // Product type mapping
+  let productTypeKeyword = null;
+  const productTypes = ["laptop", "phone", "iphone", "sneaker", "shoe", "kurta", "kurtii", "kurti", "monitor", "mouse", "earbud", "headphone", "hoodie"];
+  for (const pt of productTypes) {
+    if (query.includes(pt)) {
+      productTypeKeyword = pt;
+      break;
+    }
+  }
+
   // 2. Parse current message attributes
   let currentAttrs: string[] = [];
   colors.forEach(c => { if (query.includes(c)) currentAttrs.push(c); });
@@ -321,6 +341,21 @@ function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: 
 
   // 5. Filter products database matching active criteria
   let matched = products;
+  
+  // Filter by category if matched
+  if (categoryKeyword) {
+    matched = matched.filter(p => p.category.toLowerCase() === categoryKeyword.toLowerCase());
+  }
+
+  // Filter by product type if matched
+  if (productTypeKeyword) {
+    matched = matched.filter(p => {
+      const searchStr = `${p.name} ${p.description}`.toLowerCase();
+      const targetType = productTypeKeyword === "kurtii" || productTypeKeyword === "kurti" ? "kurta" : productTypeKeyword;
+      return searchStr.includes(targetType);
+    });
+  }
+
   if (activeAttrs.length > 0) {
     matched = matched.filter(p => {
       const searchStr = `${p.name} ${p.description} ${p.category} ${JSON.stringify(p.specifications || {})}`.toLowerCase();
@@ -329,6 +364,11 @@ function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: 
   }
   if (activeMaxPrice !== null) {
     matched = matched.filter(p => p.price <= activeMaxPrice!);
+  }
+
+  // Sort by price if they ask for sales/cheapest
+  if (query.includes("sale") || query.includes("cheap") || query.includes("offer") || query.includes("best deal")) {
+    matched = [...matched].sort((a, b) => a.price - b.price);
   }
 
   // 6. Build response
@@ -345,6 +385,8 @@ function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: 
     }
 
     let response = `### 🔍 Resolved Search Filters:
+- **Category**: ${categoryKeyword ? `\`${categoryKeyword}\`` : "*Any*"}
+- **Product Type**: ${productTypeKeyword ? `\`${productTypeKeyword}\`` : "*Any*"}
 - **Attributes**: ${activeAttrs.length > 0 ? activeAttrs.map(a => `\`${a}\``).join(", ") : "*None*"}
 - **Max Price Limit**: ${activeMaxPrice ? `₹${activeMaxPrice}` : "*None*"}
 - **Context Merged (Follow-Up)**: \`${isFollowUp ? "Yes" : "No"}\`
@@ -361,5 +403,5 @@ Here are the items I found matching your criteria:
   }
 
   // No products found fallback
-  return `I couldn't find any products matching your specific query in our catalog. How about browsing our catalog categories (Electronics, Footwear, Apparel)?`;
+  return `I couldn't find any products matching your specific query for "${productTypeKeyword || "items"}" in our catalog. How about browsing our catalog categories (Electronics, Footwear, Apparel)?`;
 }
