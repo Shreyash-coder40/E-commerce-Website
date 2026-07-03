@@ -10,36 +10,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    // 1. Fetch public store database records
     const productsList = await db.product.findMany({
-      select: {
-        id: true,
-        name: true,
-        price: true,
-        description: true,
-        category: true,
-        stock: true,
-        images: true,
-        warranty: true,
-        specifications: true
-      }
+      select: { id: true, name: true, price: true, stock: true, category: true, description: true, specifications: true }
     });
 
     const reviewsList = await db.review.findMany({
-      select: {
-        productId: true,
-        rating: true,
-        comment: true,
-        user: { select: { name: true } }
-      }
+      select: { productId: true, rating: true, comment: true }
     });
 
     const qasList = await db.questionAnswer.findMany({
-      select: {
-        productId: true,
-        question: true,
-        answer: true
-      }
+      select: { productId: true, question: true, answer: true }
     });
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -65,35 +45,38 @@ export async function POST(req: Request) {
     }
 
     if (geminiApiKey) {
-      // STAGE 1: INTENT PARSER LAYER (LLM ENFORCER)
-      const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce catalog search. Your job is to extract structured JSON search parameters from the user's query and conversation history.
+      // STAGE 1: STRICT EXTRACTOR & INTENT PARSER LAYER
+      const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce assistant. Your job is to extract structured JSON search parameters from the user's query and conversation history.
 
-You must output a JSON object matching this schema:
+You must output a JSON object matching this exact schema:
 {
-  "current_intent": {
-    "product_category": string or null (e.g. clothing, electronics, footwear, etc.),
-    "specific_item": string or null (e.g. kurta, shoes, earbuds, etc.),
-    "attributes": string[] (array of colors, materials like cotton/leather/linen, style/vibe like traditional, casual, etc.),
-    "constraints": {
-      "max_price": number or null,
-      "occasion_or_usecase": string or null (e.g. summer wedding, casual wear, running, etc.)
-    }
+  "extracted_filters": {
+    "category": string or null,
+    "product_type": string or null,
+    "color": array of strings or null,
+    "material": array of strings or null,
+    "vibe_or_style": string or null,
+    "max_price": number or null,
+    "occasion": string or null
   },
-  "is_follow_up": boolean,
+  "metadata": {
+    "is_follow_up": boolean,
+    "wants_to_browse": boolean
+  },
   "resolved_filters": {
-    "product_category": string or null,
-    "specific_item": string or null,
-    "attributes": string[],
-    "constraints": {
-      "max_price": number or null,
-      "occasion_or_usecase": string or null
-    }
+    "category": string or null,
+    "product_type": string or null,
+    "color": array of strings or null,
+    "material": array of strings or null,
+    "vibe_or_style": string or null,
+    "max_price": number or null,
+    "occasion": string or null
   }
 }
 
 Guidelines for "resolved_filters":
-1. If "is_follow_up" is true, you must merge the attributes, category, item, and constraints from the previous turns in the conversation history with the new query. For example, if the history was searching for "traditional kurtas" and the user asks "do you have blue?", the resolved_filters attributes should contain ["traditional", "blue"], the product_category should be "clothing", and specific_item should be "kurta".
-2. If "is_follow_up" is false, "resolved_filters" should match "current_intent".
+1. If "is_follow_up" is true, you must merge the category, product_type, color, material, vibe_or_style, max_price, and occasion from the previous turns in the conversation history with the new query. For example, if the previous query was for "traditional kurtas" and the user asks "do you have blue?", the resolved_filters color should contain ["blue"], category should be "clothing", and product_type should be "kurta".
+2. If "is_follow_up" is false, "resolved_filters" should match "extracted_filters".
 3. Return ONLY a single, clean JSON object conforming to the schema. Do not include markdown code wrapping blocks.`;
 
       // Copy cleaned history array
@@ -131,64 +114,53 @@ Guidelines for "resolved_filters":
           if (jsonText) {
             try {
               const parsed = JSON.parse(jsonText);
-              resolvedFilters = parsed.resolved_filters;
+              resolvedFilters = parsed.resolved_filters || parsed.extracted_filters;
             } catch (jsonErr) {
-              console.error("JSON parsing error on intent parser result:", jsonErr, jsonText);
+              console.error("JSON parsing error on customer intent parser:", jsonErr, jsonText);
             }
           }
         }
       } catch (err) {
-        console.error("Stage 1 Intent Parser API call failed:", err);
+        console.error("Stage 1 Customer Intent Parser API call failed:", err);
       }
 
-      // STAGE 2: DATABASE QUERY INTEGRATION & RELEVANCY RANKING
+      // STAGE 2: DATABASE FILTERING & SCORING
       if (resolvedFilters) {
-        // Hard database constraints filter
-        if (resolvedFilters.product_category) {
-          const cat = resolvedFilters.product_category.toLowerCase();
-          matchedProducts = matchedProducts.filter(p =>
-            p.category.toLowerCase().includes(cat) || cat.includes(p.category.toLowerCase())
-          );
-        }
-
-        if (resolvedFilters.constraints?.max_price) {
-          const maxP = parseFloat(resolvedFilters.constraints.max_price);
-          if (!isNaN(maxP)) {
-            matchedProducts = matchedProducts.filter(p => p.price <= maxP);
+        matchedProducts = productsList.filter((p) => {
+          // A. Category matching
+          if (resolvedFilters.category && p.category.toLowerCase() !== resolvedFilters.category.toLowerCase()) {
+            return false;
           }
-        }
+          // B. Max Price constraint
+          if (resolvedFilters.max_price && p.price > resolvedFilters.max_price) {
+            return false;
+          }
+          return true;
+        });
 
-        if (resolvedFilters.specific_item) {
-          const sItem = resolvedFilters.specific_item.toLowerCase();
-          matchedProducts = matchedProducts.filter(p =>
-            p.name.toLowerCase().includes(sItem) || p.description.toLowerCase().includes(sItem)
-          );
-        }
-
-        // Custom keyword matching & situational vibe relevancy scoring
-        const scoredProducts = matchedProducts.map(p => {
+        // Relevancy scoring
+        const scoredProducts = matchedProducts.map((p) => {
           let score = 0;
-          const searchStr = `${p.name} ${p.description} ${p.category} ${JSON.stringify(p.specifications || {})}`.toLowerCase();
+          const searchFields = `${p.name} ${p.description} ${p.category} ${JSON.stringify(p.specifications || {})}`.toLowerCase();
 
-          if (resolvedFilters.attributes && Array.isArray(resolvedFilters.attributes)) {
-            resolvedFilters.attributes.forEach((attr: string) => {
-              if (searchStr.includes(attr.toLowerCase())) {
-                score += 2;
-              }
+          if (resolvedFilters.product_type && searchFields.includes(resolvedFilters.product_type.toLowerCase())) {
+            score += 15;
+          }
+          if (resolvedFilters.color && Array.isArray(resolvedFilters.color)) {
+            resolvedFilters.color.forEach((c: string) => {
+              if (searchFields.includes(c.toLowerCase())) score += 10;
             });
           }
-
-          if (resolvedFilters.constraints?.occasion_or_usecase) {
-            const vibe = resolvedFilters.constraints.occasion_or_usecase.toLowerCase();
-            if (searchStr.includes(vibe)) {
-              score += 3;
-            } else {
-              vibe.split(/\s+/).forEach((word: string) => {
-                if (word.length > 2 && searchStr.includes(word)) {
-                  score += 1;
-                }
-              });
-            }
+          if (resolvedFilters.material && Array.isArray(resolvedFilters.material)) {
+            resolvedFilters.material.forEach((m: string) => {
+              if (searchFields.includes(m.toLowerCase())) score += 10;
+            });
+          }
+          if (resolvedFilters.vibe_or_style && searchFields.includes(resolvedFilters.vibe_or_style.toLowerCase())) {
+            score += 8;
+          }
+          if (resolvedFilters.occasion && searchFields.includes(resolvedFilters.occasion.toLowerCase())) {
+            score += 8;
           }
 
           return { product: p, score };
@@ -198,20 +170,20 @@ Guidelines for "resolved_filters":
         matchedProducts = scoredProducts.map(sp => sp.product);
       }
 
-      // STAGE 3: RESPONSE SYNTHESIS GENERATOR
-      const responseGeneratorPrompt = `You are the NextShop Shopping Assistant. You help customers find items and answer questions about specs, warranties, and reviews.
+      // STAGE 3: RESPONSE SYNTHESIS
+      const responseGeneratorPrompt = `You are a helpful, expert AI Shopping Assistant for our NextShop e-commerce store.
 
 We have resolved the customer's search filter criteria from their message and conversation context history:
 ${JSON.stringify(resolvedFilters || {})}
 
-Based on these filters, we retrieved these matching products from our database (sorted by relevancy):
+Here is the real-time matching database catalog of items:
 ${JSON.stringify(matchedProducts.slice(0, 5))}
 
-And here are reviews for the matched items:
-${JSON.stringify(reviewsList.filter(r => matchedProducts.some(mp => mp.id === r.productId)))}
+And here is the customer reviews index for these matches:
+${JSON.stringify(reviewsList.filter(r => matchedProducts.some(p => p.id === r.productId)).slice(0, 10))}
 
-And here are Q&As for the matched items:
-${JSON.stringify(qasList.filter(q => matchedProducts.some(mp => mp.id === q.productId)))}
+And the Q&As log for context:
+${JSON.stringify(qasList.filter(q => matchedProducts.some(p => p.id === q.productId)).slice(0, 10))}
 
 Write a friendly, highly interactive, and context-aware conversational response.
 1. Present the matching products to the customer. Explain naturally why they match their criteria (e.g. noting material cotton/linen/leather, color, and occasion vibe if they mentioned any).
@@ -297,7 +269,12 @@ Write a friendly, highly interactive, and context-aware conversational response.
 
 // Client-facing rule-based fallback
 function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: any[], history: any[] = []): string {
-  const query = msg.toLowerCase();
+  const query = msg.toLowerCase().trim();
+
+  // 0. General Greetings Fallback
+  if (query === "hi" || query === "hello" || query === "hey" || query === "whats up" || query === "whats new" || query.startsWith("greeting") || query.startsWith("hii")) {
+    return `Hello! I am your NextShop Shopping Assistant. 🤖 How can I help you find products today? You can search for laptops, shoes, apparel, and more!`;
+  }
 
   // 1. Define keyword lists
   const colors = ["blue", "red", "green", "black", "white", "yellow", "orange", "pink", "brown", "gray", "silver", "gold"];
@@ -326,7 +303,6 @@ function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: 
   let activeMaxPrice = maxPrice;
 
   if (isFollowUp && history.length > 0) {
-    // Look at previous user message in history to extract attributes
     const prevUserMessages = history.filter(h => h.sender === "user");
     if (prevUserMessages.length > 0) {
       const prevQuery = prevUserMessages[prevUserMessages.length - 1].text.toLowerCase();
@@ -385,14 +361,5 @@ Here are the items I found matching your criteria:
   }
 
   // No products found fallback
-  return `### 🔍 Resolved Search Filters:
-- **Attributes**: ${activeAttrs.length > 0 ? activeAttrs.map(a => `\`${a}\``).join(", ") : "*None*"}
-- **Max Price Limit**: ${activeMaxPrice ? `₹${activeMaxPrice}` : "*None*"}
-
-I'm sorry, I couldn't find any products in our database matching those criteria.
-
-Here are some recommendation categories you can search for:
-- 👟 **Footwear** (Nike Air Shoes, Boots)
-- ⌚ **Accessories** (Rolex Premium watches)
-- 📱 **Electronics** (Smartphones, earbuds)`;
+  return `I couldn't find any products matching your specific query in our catalog. How about browsing our catalog categories (Electronics, Footwear, Apparel)?`;
 }
