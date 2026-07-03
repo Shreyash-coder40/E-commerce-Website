@@ -93,7 +93,6 @@ export async function POST(req: Request) {
     // Build Sales Velocity dataset for prompt context
     const salesVelocityReport = productsList.map((p) => {
       const totalSold = productSalesMap[p.id] || 0;
-      // If there are no order records at all, assign a mock velocity for low stock items so restock alerts trigger
       const velocity = totalSold > 0 
         ? parseFloat((totalSold / daysSpan).toFixed(2))
         : (p.stock <= 5 ? 0.15 : 0);
@@ -133,41 +132,110 @@ export async function POST(req: Request) {
       }
     });
 
-    // E. Scan message for product references to build reviewsContext fallback
-    let reviewsContext = "";
-    let matchedProduct = null;
-    const lowerMsg = message.toLowerCase();
-
-    for (const p of productsList) {
-      if (lowerMsg.includes(p.id.toLowerCase()) || lowerMsg.includes(p.name.toLowerCase())) {
-        matchedProduct = p;
-        break;
-      }
-    }
-
-    if (matchedProduct) {
-      const prodReviews = allReviews.filter((r) => r.productId === matchedProduct!.id);
-      if (prodReviews.length > 0) {
-        reviewsContext = `Here are the active customer reviews for "${matchedProduct.name}" (ID: ${matchedProduct.id}):\n` +
-          prodReviews.map((r, i) => `${i + 1}. Rating: ${r.rating}/5, Comment: "${r.comment}" (by ${r.user?.name || "Anonymous"})`).join("\n");
-      } else {
-        reviewsContext = `There are currently no customer reviews submitted for "${matchedProduct.name}" (ID: ${matchedProduct.id}).`;
-      }
-    } else {
-      // Build general context for the entire store
-      if (allReviews.length > 0) {
-        reviewsContext = `Here is a summary of all active customer reviews across the store:\n` +
-          allReviews.map((r, i) => `${i + 1}. Product: "${r.product?.name || "Unknown"}", Rating: ${r.rating}/5, Comment: "${r.comment}" (by ${r.user?.name || "Anonymous"})`).join("\n");
-      } else {
-        reviewsContext = "There are currently no customer reviews submitted in the store.";
-      }
-    }
-
-    // 3. Invoke LLM (Gemini) or local fallback
     const geminiApiKey = process.env.GEMINI_API_KEY;
     let aiResponseText = "";
+    let resolvedFilters: any = null;
 
-    const systemPrompt = `You are the NextShop AI Admin Assistant Agent. You help the store owner manage the catalog, audit returns, evaluate product sales velocities, and summarize feedback sentiment.
+    // Strict user/model history formatting
+    const cleanedHistory = [];
+    let expectedRole = "user";
+    for (const h of history) {
+      const role = h.sender === "user" ? "user" : "model";
+      if (cleanedHistory.length === 0 && role === "model") {
+        continue;
+      }
+      if (role === expectedRole) {
+        cleanedHistory.push({
+          role,
+          parts: [{ text: h.text }]
+        });
+        expectedRole = role === "user" ? "model" : "user";
+      }
+    }
+
+    if (geminiApiKey) {
+      // STAGE 1: ADMIN INTENT PARSER LAYER
+      const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce admin dashboard. Your job is to extract structured JSON search and action parameters from the admin's query and conversation history.
+
+You must output a JSON object matching this schema:
+{
+  "current_intent": {
+    "action_type": "VIEW_FINANCIALS" | "VIEW_RESTOCKING" | "VIEW_REVIEWS" | "MANAGE_CATALOG" | "GENERAL_CHAT",
+    "target_product": {
+      "id": string or null,
+      "name": string or null
+    },
+    "attributes": string[],
+    "price_change": number or null,
+    "stock_change": number or null
+  },
+  "is_follow_up": boolean,
+  "resolved_filters": {
+    "action_type": "VIEW_FINANCIALS" | "VIEW_RESTOCKING" | "VIEW_REVIEWS" | "MANAGE_CATALOG" | "GENERAL_CHAT",
+    "target_product": {
+      "id": string or null,
+      "name": string or null
+    },
+    "attributes": string[],
+    "price_change": number or null,
+    "stock_change": number or null
+  }
+}
+
+Guidelines for "resolved_filters":
+1. If "is_follow_up" is true, you must merge the target_product details, attributes, and actions from the previous turns in the history with the new query. For example, if the previous query was about "Rolex Watch" reviews and the user says "Change its price to 12000", the resolved_filters target_product should be mapped to Rolex, action_type should be "MANAGE_CATALOG", and price_change should be 12000.
+2. If "is_follow_up" is false, "resolved_filters" should match "current_intent".
+3. Return ONLY a single, clean JSON object conforming to the schema. Do not include markdown code wrapping blocks.`;
+
+      // Copy cleaned history array
+      const parserHistory = [...cleanedHistory];
+      parserHistory.push({
+        role: "user",
+        parts: [{ text: message }]
+      });
+
+      try {
+        const parserResponse = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: parserHistory,
+              systemInstruction: {
+                parts: [{ text: intentParserPrompt }]
+              },
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            }),
+          }
+        );
+
+        if (parserResponse.ok) {
+          const parserData = await parserResponse.json();
+          const jsonText = parserData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (jsonText) {
+            try {
+              const parsed = JSON.parse(jsonText);
+              resolvedFilters = parsed.resolved_filters;
+            } catch (jsonErr) {
+              console.error("JSON parsing error on admin intent parser:", jsonErr, jsonText);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Stage 1 Admin Intent Parser API call failed:", err);
+      }
+
+      // STAGE 2 & 3: DATABASE RESOLUTION & RESPONSE SYNTHESIS
+      const filteredReviews = allReviews.filter(r => !resolvedFilters?.target_product?.id || r.productId === resolvedFilters.target_product.id);
+      const filteredQAs = allQAs.filter(q => !resolvedFilters?.target_product?.id || q.productId === resolvedFilters.target_product.id);
+
+      const responseGeneratorPrompt = `You are the NextShop AI Admin Assistant Agent. You help the store owner manage the catalog, audit returns, evaluate product sales velocities, and summarize feedback sentiment.
+
+We have resolved the admin's search filter criteria from their message and conversation context history:
+${JSON.stringify(resolvedFilters || {})}
 
 Here is the real-time state of the database catalog:
 - Total Products: ${totalProducts}
@@ -175,7 +243,7 @@ Here is the real-time state of the database catalog:
 - Low Stock Items: ${JSON.stringify(lowStockProducts)}
 - Out of Stock Items: ${JSON.stringify(outOfStockProducts)}
 
-Sales Velocity (Units sold in last 30 days & runout estimates):
+Sales Velocity (Units sold & runout estimates):
 ${JSON.stringify(salesVelocityReport)}
 
 Financial Metrics:
@@ -187,11 +255,11 @@ Financial Metrics:
 * Returned Order Loss (Approved returns count: ${returnedOrders.length}): Total Loss ₹${totalReturnLosses.toLocaleString("en-IN")}
 * Returns Log: ${JSON.stringify(returnedOrders)}
 
-Reviews Database Feed (summarize sentiment, ratings, or feedback details when asked):
-${JSON.stringify(allReviews)}
+Reviews Database Feed (summarize when asked):
+${JSON.stringify(filteredReviews.slice(0, 10))}
 
 Question & Answers Feed (answer questions or check unanswered items when asked):
-${JSON.stringify(allQAs)}
+${JSON.stringify(filteredQAs.slice(0, 10))}
 
 You have the authority to create and update products.
 1. Adding products: If requested to add/create a product, parse the parameters (name, category, price, stock). If you have them, end your message with a JSON action code block:
@@ -215,29 +283,11 @@ You have the authority to create and update products.
 }
 \`\`\`
 
-If you output these blocks, the system will execute database writes. Respond professionally, using clean markdown tables and list bullets for readability.`;
+Write a helpful, descriptive, and context-aware dashboard response. Talk like an expert business assistant (personalized and professional, similar to ChatGPT/Gemini). Do not display the raw action JSON block details in your text conversational text; explain the action naturally.`;
 
-    if (geminiApiKey) {
-      // 1. Clean history to ensure strict user/model alternation and skip leading welcome messages
-      const cleanedHistory = [];
-      let expectedRole = "user";
-      
-      for (const h of history) {
-        const role = h.sender === "user" ? "user" : "model";
-        if (cleanedHistory.length === 0 && role === "model") {
-          continue;
-        }
-        if (role === expectedRole) {
-          cleanedHistory.push({
-            role,
-            parts: [{ text: h.text }]
-          });
-          expectedRole = role === "user" ? "model" : "user";
-        }
-      }
-
-      // 2. Append current user message
-      cleanedHistory.push({
+      // Copy cleaned history and append user query
+      const responseHistory = [...cleanedHistory];
+      responseHistory.push({
         role: "user",
         parts: [{ text: message }]
       });
@@ -249,9 +299,9 @@ If you output these blocks, the system will execute database writes. Respond pro
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              contents: cleanedHistory,
+              contents: responseHistory,
               systemInstruction: {
-                parts: [{ text: systemPrompt }]
+                parts: [{ text: responseGeneratorPrompt }]
               }
             }),
           }
@@ -262,15 +312,15 @@ If you output these blocks, the system will execute database writes. Respond pro
           aiResponseText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "No response text found from Gemini.";
         } else {
           const errText = await response.text();
-          console.error("Gemini API call failed:", response.status, errText);
+          console.error("Gemini Admin API call failed:", response.status, errText);
           throw new Error("Gemini API request failed.");
         }
       } catch (geminiErr) {
         console.error("Gemini fetch error:", geminiErr);
-        aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, reviewsContext);
+        aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history);
       }
     } else {
-      aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, reviewsContext);
+      aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history);
     }
 
     // 4. Parse action block and perform writes directly
@@ -330,16 +380,47 @@ function handleLocalFallback(
   estimatedProfit: number,
   totalTax: number,
   totalShipping: number,
-  reviewsContext: string
+  allReviews: any[],
+  allQAs: any[],
+  history: any[] = []
 ): string {
   const query = msg.toLowerCase();
 
-  // 1. Summarize Reviews / Sentiment Summary
+  // 1. Detect target product from current query or history
+  let matchedProduct: any = null;
+  for (const p of productsList) {
+    if (query.includes(p.id.toLowerCase()) || query.includes(p.name.toLowerCase())) {
+      matchedProduct = p;
+      break;
+    }
+  }
+
+  const isFollowUp = query.includes("them") || query.includes("those") || query.includes("it") || query.includes("its") || 
+                     (history.length > 0 && !matchedProduct && (query.includes("stock") || query.includes("price") || query.includes("review") || query.includes("unanswered") || query.includes("qa") || query.includes("sentiment")));
+
+  if (isFollowUp && history.length > 0) {
+    const prevUserMessages = history.filter(h => h.sender === "user");
+    if (prevUserMessages.length > 0) {
+      const prevQuery = prevUserMessages[prevUserMessages.length - 1].text.toLowerCase();
+      for (const p of productsList) {
+        if (prevQuery.includes(p.id.toLowerCase()) || prevQuery.includes(p.name.toLowerCase())) {
+          matchedProduct = p;
+          break;
+        }
+      }
+    }
+  }
+
+  // 2. Summarize Reviews / Sentiment Summary
   if (query.includes("review") || query.includes("feedback") || query.includes("sentiment")) {
-    if (reviewsContext) {
-      const isProductSpecific = productsList.some((p) => query.includes(p.name.toLowerCase()) || query.includes(p.id.toLowerCase()));
-      
-      return `### 💬 ${isProductSpecific ? "Product" : "Store-Wide"} Review Sentiment Summary
+    let targetReviews = allReviews;
+    if (matchedProduct) {
+      targetReviews = allReviews.filter((r) => r.productId === matchedProduct.id);
+    }
+    const isStoreWide = !matchedProduct;
+
+    if (targetReviews.length > 0) {
+      return `### 💬 ${isStoreWide ? "Store-Wide" : `"${matchedProduct.name}"`} Review Sentiment Summary
 Here is the sentiment analysis derived from customer feedback:
 
 - **General Customer Sentiment**: Positive / Satisfied (ratings averages indicate high engagement).
@@ -348,35 +429,25 @@ Here is the sentiment analysis derived from customer feedback:
 - **Overall Score**: High recommendation index.
 
 **Full Reviews Feed Analyzed:**
-${reviewsContext}`;
+${targetReviews.slice(0, 5).map((r, i) => `${i + 1}. Product: "${r.product?.name || "Unknown"}", Rating: ${r.rating}/5, Comment: "${r.comment}"`).join("\n")}`;
     } else {
-      return `To summarize reviews and analyze sentiment, please mention a product name or ID. For example:
-> *"Summarize the reviews for Wireless Earbuds"*`;
+      return `There are currently no reviews in context for this search.`;
     }
   }
 
-  // 2. Add / Update Product Management CRUD
+  // 3. Add / Update Product Management CRUD
   if (query.includes("add") || query.includes("create") || query.includes("change") || query.includes("update") || query.includes("modify")) {
-    // Check if update product
-    if (query.includes("change") || query.includes("update")) {
+    if (query.includes("change") || query.includes("update") || query.includes("modify")) {
       const priceMatch = msg.match(/(?:price\s+to|price\s+of|price)\s+(\d+)/i);
       const stockMatch = msg.match(/(?:stock\s+to|stock\s+of|stock)\s+(\d+)/i);
-      
-      let matchedProd = null;
-      for (const p of productsList) {
-        if (query.includes(p.id.toLowerCase()) || query.includes(p.name.toLowerCase())) {
-          matchedProd = p;
-          break;
-        }
-      }
 
-      if (matchedProd && (priceMatch || stockMatch)) {
-        const newPrice = priceMatch ? parseInt(priceMatch[1]) : matchedProd.price;
-        const newStock = stockMatch ? parseInt(stockMatch[1]) : matchedProd.stock;
+      if (matchedProduct && (priceMatch || stockMatch)) {
+        const newPrice = priceMatch ? parseInt(priceMatch[1]) : matchedProduct.price;
+        const newStock = stockMatch ? parseInt(stockMatch[1]) : matchedProduct.stock;
 
         return `I understand you want to update product details. Here is the transaction parsed:
-- **Product Name**: ${matchedProd.name}
-- **Product ID**: ${matchedProd.id}
+- **Product Name**: ${matchedProduct.name}
+- **Product ID**: ${matchedProduct.id}
 - **Target Price**: ₹${newPrice}
 - **Target Stock**: ${newStock} units
 
@@ -384,7 +455,7 @@ Updating catalog record now...
 \`\`\`action
 {
   "type": "UPDATE_PRODUCT",
-  "productId": "${matchedProd.id}",
+  "productId": "${matchedProduct.id}",
   "price": ${newPrice},
   "stock": ${newStock}
 }
@@ -428,7 +499,7 @@ Adding this product to the store inventory database now...
 - *"Change the price of Wireless Earbuds to 1499"*`;
   }
 
-  // 3. Profit & Loss / Return Losses Analysis
+  // 4. Profit & Loss / Return Losses Analysis
   if (query.includes("profit") || query.includes("loss") || query.includes("revenue") || query.includes("sales") || query.includes("return")) {
     return `### 📊 NextShop Profit & Loss Analysis
 Here is a financial summary of all completed transactions:
@@ -445,10 +516,10 @@ Here is a financial summary of all completed transactions:
 *Note: All calculations are derived in real-time from active orders in the database.*`;
   }
 
-  // 4. Sales Velocity & Restocking Suggestions
+  // 5. Sales Velocity & Restocking Suggestions
   if (query.includes("stock") || query.includes("velocity") || query.includes("restock") || query.includes("inventory")) {
     let response = `### 📦 Sales Velocity & Restocking Report
-Here is the sales velocity analysis over the last ${salesVelocityReport[0]?.daysSpanChecked || 30} days to check restocking urgency:
+Here is the sales velocity analysis to check restocking urgency:
 
 | Product Name | Current Stock | Sales (Period) | Velocity (Units/Day) | Runout Estimate (Days) | Urgency |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -469,6 +540,32 @@ Here is the sales velocity analysis over the last ${salesVelocityReport[0]?.days
     }
 
     return response;
+  }
+
+  // 6. Q&A / Help Center Query
+  if (query.includes("qa") || query.includes("question") || query.includes("answer") || query.includes("ask")) {
+    let targetQAs = allQAs;
+    if (matchedProduct) {
+      targetQAs = allQAs.filter(q => q.productId === matchedProduct.id);
+    }
+    const unanswered = targetQAs.filter(q => !q.answer);
+
+    let qaResponse = `### 💬 Customer Q&A Report
+Here is the customer questions log:
+
+- **Total Questions**: ${targetQAs.length}
+- **Unanswered Questions**: ${unanswered.length}
+
+`;
+    if (targetQAs.length > 0) {
+      targetQAs.slice(0, 5).forEach((q, i) => {
+        qaResponse += `${i + 1}. **Product**: ${q.product?.name || "Unknown"}\n   - **Q**: "${q.question}"\n   - **A**: "${q.answer || "Unanswered"}"\n`;
+      });
+    } else {
+      qaResponse += `*No customer questions found in context.*`;
+    }
+
+    return qaResponse;
   }
 
   return `### Hello Admin! I am your NextShop AI Assistant. 🤖
