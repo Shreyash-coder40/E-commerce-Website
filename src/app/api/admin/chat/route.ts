@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     // 1. Verify admin session permissions
