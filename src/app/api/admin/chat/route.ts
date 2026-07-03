@@ -30,7 +30,25 @@ export async function POST(req: Request) {
 
     const paidOrders = await db.order.findMany({
       where: { isPaid: true },
-      select: { totalAmount: true, shippingCost: true, taxAmount: true, createdAt: true }
+      select: {
+        id: true,
+        totalAmount: true,
+        shippingCost: true,
+        taxAmount: true,
+        createdAt: true,
+        user: { select: { name: true, email: true } },
+        items: {
+          select: {
+            quantity: true,
+            product: { select: { name: true } }
+          }
+        }
+      }
+    });
+
+    const customersList = await db.user.findMany({
+      where: { role: "CUSTOMER" },
+      select: { name: true, email: true, createdAt: true }
     });
 
     const totalOrdersCount = paidOrders.length;
@@ -255,6 +273,12 @@ Financial Metrics:
 * Returned Order Loss (Approved returns count: ${returnedOrders.length}): Total Loss ₹${totalReturnLosses.toLocaleString("en-IN")}
 * Returns Log: ${JSON.stringify(returnedOrders)}
 
+Registered Customers Directory:
+${JSON.stringify(customersList)}
+
+Detailed Paid Orders Logs (with customer names, emails, and products/quantities purchased):
+${JSON.stringify(paidOrders)}
+
 Reviews Database Feed (summarize when asked):
 ${JSON.stringify(filteredReviews.slice(0, 10))}
 
@@ -317,10 +341,10 @@ Write a helpful, descriptive, and context-aware dashboard response. Talk like an
         }
       } catch (geminiErr) {
         console.error("Gemini fetch error:", geminiErr);
-        aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history);
+        aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history, customersList, paidOrders);
       }
     } else {
-      aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history);
+      aiResponseText = handleLocalFallback(message, productsList, salesVelocityReport, totalOrdersCount, totalRevenue, totalReturnLosses, estimatedProfit, totalTax, totalShipping, allReviews, allQAs, history, customersList, paidOrders);
     }
 
     // 4. Parse action block and perform writes directly
@@ -382,7 +406,9 @@ function handleLocalFallback(
   totalShipping: number,
   allReviews: any[],
   allQAs: any[],
-  history: any[] = []
+  history: any[] = [],
+  customersList: any[] = [],
+  paidOrders: any[] = []
 ): string {
   const query = msg.toLowerCase();
 
@@ -568,6 +594,47 @@ Here is the customer questions log:
     return qaResponse;
   }
 
+  // 7. Customer Purchases & Favorite Items Report fallback
+  if (query.includes("customer") || query.includes("buy") || query.includes("favorite") || query.includes("purchase")) {
+    let totalItemsBought = 0;
+    const productCounts: Record<string, number> = {};
+    const customerPurchases: Record<string, number> = {};
+
+    paidOrders.forEach(order => {
+      const customerName = order.user?.name || order.user?.email || "Anonymous";
+      order.items?.forEach((item: any) => {
+        totalItemsBought += item.quantity;
+        const prodName = item.product?.name || "Unknown Product";
+        productCounts[prodName] = (productCounts[prodName] || 0) + item.quantity;
+        customerPurchases[customerName] = (customerPurchases[customerName] || 0) + item.quantity;
+      });
+    });
+
+    let favoriteItem = "None";
+    let maxQty = 0;
+    Object.entries(productCounts).forEach(([name, qty]) => {
+      if (qty > maxQty) {
+        maxQty = qty;
+        favoriteItem = name;
+      }
+    });
+
+    let response = `### 👥 Customer Purchases & Favorites Audit
+Here is the shopping metrics breakdown:
+
+- **Total Registered Customers**: ${customersList.length}
+- **Total Products Purchased**: ${totalItemsBought} units
+- **Top Favorite Product**: **${favoriteItem}** (ordered ${maxQty} times)
+
+#### 🛒 Purchase Log by Customer:
+`;
+    Object.entries(customerPurchases).forEach(([customer, qty]) => {
+      response += `- **${customer}**: Bought ${qty} units total\n`;
+    });
+
+    return response;
+  }
+
   return `### Hello Admin! I am your NextShop AI Assistant. 🤖
 I can help you monitor inventory, manage products, and audit financials. Here are some things you can ask me:
 
@@ -576,6 +643,7 @@ I can help you monitor inventory, manage products, and audit financials. Here ar
 - 💬 *"Summarize the reviews for Wireless Earbuds"* (analyzes user feedback sentiment)
 - ➕ *"Add product Nike Hoodie, category Clothing, price 1999, stock 15"* (creates a product)
 - 🛠️ *"Change the price of Nike Hoodie to 1499"* (updates a product)
+- 👥 *"How many products did the customer buy?"* (audits customer purchase metrics)
 
 How can I assist you in managing the store today?`;
 }
