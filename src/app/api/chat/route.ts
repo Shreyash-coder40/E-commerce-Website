@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     let aiResponseText = "";
     let resolvedFilters: any = null;
     let matchedProducts = productsList;
+    let finalProductsToReturn: any[] = [];
 
     // Strict user/model history formatting
     const cleanedHistory = [];
@@ -228,6 +229,7 @@ Write a friendly, highly interactive, and context-aware conversational response.
         if (response.ok) {
           const resData = await response.json();
           aiResponseText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "No response text found from Gemini.";
+          finalProductsToReturn = matchedProducts.slice(0, 5);
         } else {
           const errText = await response.text();
           console.error("Gemini Public API call failed:", response.status, errText);
@@ -235,10 +237,14 @@ Write a friendly, highly interactive, and context-aware conversational response.
         }
       } catch (geminiErr) {
         console.error("Gemini fetch error:", geminiErr);
-        aiResponseText = handleLocalFallback(message, productsList, reviewsList, qasList, history);
+        const fallbackResult = handleLocalFallback(message, productsList, reviewsList, qasList, history);
+        aiResponseText = fallbackResult.text;
+        finalProductsToReturn = fallbackResult.products;
       }
     } else {
-      aiResponseText = handleLocalFallback(message, productsList, reviewsList, qasList, history);
+      const fallbackResult = handleLocalFallback(message, productsList, reviewsList, qasList, history);
+      aiResponseText = fallbackResult.text;
+      finalProductsToReturn = fallbackResult.products;
     }
 
     // 3. Parse action block and perform cart additions
@@ -262,7 +268,12 @@ Write a friendly, highly interactive, and context-aware conversational response.
       }
     }
 
-    return NextResponse.json({ success: true, text: aiResponseText, product: matchedProduct });
+    return NextResponse.json({ 
+      success: true, 
+      text: aiResponseText, 
+      product: matchedProduct,
+      products: finalProductsToReturn
+    });
   } catch (error: any) {
     console.error("PUBLIC_CHAT_API_ERROR:", error);
     return NextResponse.json({ error: error.message || "Failed to contact shopping assistant." }, { status: 500 });
@@ -270,25 +281,31 @@ Write a friendly, highly interactive, and context-aware conversational response.
 }
 
 // Client-facing rule-based fallback
-function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: any[], history: any[] = []): string {
+function handleLocalFallback(msg: string, products: any[], reviews: any[], qas: any[], history: any[] = []): { text: string; products: any[] } {
   const query = msg.toLowerCase().trim();
 
   // 0. General Greetings Fallback
   if (query === "hi" || query === "hello" || query === "hey" || query === "whats up" || query === "whats new" || query.startsWith("greeting") || query.startsWith("hii")) {
-    return `Hello! I am your NextShop Shopping Assistant. 🤖 
+    return {
+      text: `Hello! I am your NextShop Shopping Assistant. 🤖 
 
 I can help you browse catalog items, summarize customer reviews, answer product specs, and even add items to your cart for you!
 
-What are you looking for today? Ask me about shoes, watches, electronics or luxury items!`;
+What are you looking for today? Ask me about shoes, watches, electronics or luxury items!`,
+      products: []
+    };
   }
 
   // 1. Specific Clothing / Kurti Inquiry Fallback
   if (query.includes("cloth") || query.includes("wear") || query.includes("kurta") || query.includes("kurtii") || query.includes("kurti") || query.includes("hoodie") || query.includes("shirt") || query.includes("pant") || query.includes("apparel")) {
-    return `I checked our database catalog, but it looks like we don't have any clothing items or kurtis in stock right now. 🛍️ 
+    return {
+      text: `I checked our database catalog, but it looks like we don't have any clothing items or kurtis in stock right now. 🛍️ 
 
 Currently, our catalog features premium electronics (like the Dell XPS laptop or Samsung monitor), footwear (like Nike Air Max sneakers), and audio accessories (Sony WH-1000XM5 headphones). 
 
-Would you like to check out one of those instead?`;
+Would you like to check out one of those instead?`,
+      products: []
+    };
   }
 
   // 2. Sales / Offers / Cheapest Fallback
@@ -299,7 +316,10 @@ Would you like to check out one of those instead?`;
       response += `* **${p.name}** (₹${p.price.toLocaleString("en-IN")}) - *${p.description.substring(0, 120)}...*\n`;
     });
     response += `\nWould you like me to add one of these deals to your shopping cart? Just ask!`;
-    return response;
+    return {
+      text: response,
+      products: sorted.slice(0, 4)
+    };
   }
 
   // 3. Define keyword lists for standard filters
@@ -366,13 +386,16 @@ Would you like to check out one of those instead?`;
   if (matched.length > 0) {
     if (query.includes("add") || query.includes("buy") || query.includes("cart") || query.includes("get")) {
       const targetProd = matched[0];
-      return `I've found the **${targetProd.name}** matching your request. I am adding it to your cart now!
+      return {
+        text: `I've found the **${targetProd.name}** matching your request. I am adding it to your cart now!
 \`\`\`action
 {
   "type": "ADD_TO_CART",
   "productId": "${targetProd.id}"
 }
-\`\`\``;
+\`\`\``,
+        products: [targetProd]
+      };
     }
 
     let response = `I found these products in our catalog matching your search criteria: 🛍️\n\n`;
@@ -380,8 +403,14 @@ Would you like to check out one of those instead?`;
       response += `* **${p.name}** (₹${p.price.toLocaleString("en-IN")}) - *${p.description.substring(0, 120)}...*\n`;
     });
     response += `\nWould you like me to add one of these to your shopping cart? Just let me know!`;
-    return response;
+    return {
+      text: response,
+      products: matched.slice(0, 3)
+    };
   }
 
-  return `I couldn't find any matching items for "${productTypeKeyword || "that search"}" in our store catalog. Currently, we carry premium laptops (Dell XPS, Macbook Pro), mobiles (iPhone 15 Pro), audio gear (Sony WH-1000XM5), and shoes (Nike Air Max Pulse). Would you like to check out one of those instead?`;
+  return {
+    text: `I couldn't find any matching items for "${productTypeKeyword || "that search"}" in our store catalog. Currently, we carry premium laptops (Dell XPS, Macbook Pro), mobiles (iPhone 15 Pro), audio gear (Sony WH-1000XM5), and shoes (Nike Air Max Pulse). Would you like to check out one of those instead?`,
+    products: []
+  };
 }

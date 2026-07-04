@@ -4,9 +4,20 @@ import React, { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/app/store/useCartStore";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  images?: string[];
+  stock: number;
+  category: string;
+}
+
 interface Message {
   sender: "user" | "ai";
   text: string;
+  products?: Product[];
 }
 
 export default function UserAiChatbot() {
@@ -64,7 +75,7 @@ export default function UserAiChatbot() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setMessages((prev) => [...prev, { sender: "ai", text: data.text }]);
+        setMessages((prev) => [...prev, { sender: "ai", text: data.text, products: data.products }]);
         
         // Execute client-side cart action if triggered by AI
         if (data.product) {
@@ -287,7 +298,7 @@ export default function UserAiChatbot() {
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} space-y-2`}
               >
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
@@ -298,6 +309,70 @@ export default function UserAiChatbot() {
                 >
                   {parseMarkdown(msg.text)}
                 </div>
+
+                {/* Visual Product Carousel */}
+                {msg.sender === "ai" && msg.products && msg.products.length > 0 && (
+                  <div className="w-full max-w-full overflow-x-auto flex gap-3 py-1.5 no-scrollbar snap-x snap-mandatory">
+                    {msg.products.map((prod) => {
+                      const rating = 4 + (prod.name.length % 10) * 0.1;
+                      const image = prod.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500";
+                      
+                      return (
+                        <div 
+                          key={prod.id}
+                          className="min-w-[150px] max-w-[150px] snap-start bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden hover:shadow-md transition flex flex-col group"
+                        >
+                          {/* Image container */}
+                          <div className="h-20 w-full bg-slate-50 relative overflow-hidden flex items-center justify-center">
+                            <img 
+                              src={image} 
+                              alt={prod.name}
+                              className="h-full w-full object-cover group-hover:scale-105 transition duration-300"
+                            />
+                            <span className="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[8px] font-black px-1 py-0.5 rounded-md backdrop-blur-xs uppercase tracking-wider">
+                              {prod.category}
+                            </span>
+                          </div>
+
+                          {/* Details */}
+                          <div className="p-2.5 flex-1 flex flex-col justify-between space-y-1">
+                            <div>
+                              <h5 className="text-[9px] font-black text-slate-950 line-clamp-2 leading-tight">
+                                {prod.name}
+                              </h5>
+                              <div className="flex items-center gap-0.5 mt-0.5">
+                                <span className="text-amber-500 text-[8px]">★</span>
+                                <span className="text-slate-500 text-[8px] font-bold">{rating.toFixed(1)}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-[10px] font-black text-slate-950">
+                                ₹{prod.price.toLocaleString("en-IN")}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  addToCart({
+                                    id: prod.id,
+                                    name: prod.name,
+                                    price: prod.price,
+                                    image: image,
+                                    stock: prod.stock
+                                  });
+                                  triggerToast(`🛒 Added "${prod.name}" to cart!`);
+                                }}
+                                className="h-5 w-5 rounded-md bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white flex items-center justify-center shadow-xs transition cursor-pointer text-xs"
+                              >
+                                ＋
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
             {loading && (
