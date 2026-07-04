@@ -130,9 +130,17 @@ Guidelines for "resolved_filters":
       // STAGE 2: DATABASE FILTERING & SCORING
       if (resolvedFilters) {
         matchedProducts = productsList.filter((p) => {
-          // A. Category matching
-          if (resolvedFilters.category && p.category.toLowerCase() !== resolvedFilters.category.toLowerCase()) {
-            return false;
+          // A. Category matching (lenient to protect updated/custom category updates)
+          if (resolvedFilters.category) {
+            const pCat = p.category.toLowerCase();
+            const filterCat = resolvedFilters.category.toLowerCase();
+            const prodName = p.name.toLowerCase();
+            const pType = (resolvedFilters.product_type || "").toLowerCase();
+            const nameMatchesType = pType && prodName.includes(pType);
+
+            if (!nameMatchesType && pCat !== filterCat && !pCat.includes(filterCat) && !filterCat.includes(pCat) && pCat !== "updated") {
+              return false;
+            }
           }
           // B. Max Price constraint
           if (resolvedFilters.max_price && p.price > resolvedFilters.max_price) {
@@ -362,7 +370,13 @@ Would you like to check out one of those instead?`,
   let matched = products;
   
   if (categoryKeyword) {
-    matched = matched.filter(p => p.category.toLowerCase() === categoryKeyword.toLowerCase() || p.category.toLowerCase().includes(categoryKeyword.toLowerCase()) || categoryKeyword.toLowerCase().includes(p.category.toLowerCase()));
+    matched = matched.filter(p => {
+      const pCat = p.category.toLowerCase();
+      const catKey = categoryKeyword.toLowerCase();
+      const nameContainsType = productTypeKeyword && p.name.toLowerCase().includes(productTypeKeyword.toLowerCase());
+      
+      return pCat === catKey || pCat.includes(catKey) || catKey.includes(pCat) || pCat === "updated" || nameContainsType;
+    });
   }
 
   if (productTypeKeyword) {
