@@ -250,7 +250,7 @@ export default function UserAiChatbot() {
 
       {/* Chat drawer interface panel */}
       {isOpen && (
-        <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-white border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-950 animate-slide-in">
+        <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-gradient-to-b from-white via-slate-50 to-indigo-50/25 border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-950 animate-slide-in font-['Plus_Jakarta_Sans',sans-serif] tracking-tight">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-5 flex items-center justify-between shadow-sm">
@@ -294,7 +294,7 @@ export default function UserAiChatbot() {
           </div>
 
           {/* Message scroll container */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50/50">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-transparent">
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -391,7 +391,7 @@ export default function UserAiChatbot() {
           </div>
 
           {/* Footer form box */}
-          <form onSubmit={handleFormSubmit} className="p-4 border-t border-gray-200 bg-white flex gap-2">
+          <form onSubmit={handleFormSubmit} className="p-4 border-t border-gray-200 bg-slate-50/60 flex gap-2 backdrop-blur-xs">
             <input
               type="text"
               value={inputValue}
