@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const productsList = await db.product.findMany({
-      select: { id: true, name: true, price: true, stock: true, category: true, description: true, specifications: true }
+      select: { id: true, name: true, price: true, stock: true, category: true, description: true, specifications: true, images: true }
     });
 
     const reviewsList = await db.review.findMany({
