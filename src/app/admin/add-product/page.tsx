@@ -8,6 +8,13 @@ export const dynamic = "force-dynamic";
 export default function AdminAddProductPage() {
   return (
     <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Huge Semi-Transparent Logo Watermark in Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+        <div className="text-[12vw] font-black tracking-tighter text-indigo-500/[0.04] rotate-12 flex items-center gap-4 whitespace-nowrap">
+          <span>🛒</span> NEXT<span>SHOP</span>
+        </div>
+      </div>
+
       {/* Glowing Ambient Background Orbs */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl animate-pulse" />
