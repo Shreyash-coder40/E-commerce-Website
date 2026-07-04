@@ -57,14 +57,14 @@ export default function PricingEngineClient() {
     }
   };
 
-  if (loading) return <div className="text-center py-20 text-sm font-medium text-gray-500">Analyzing inventory algorithms...</div>;
-  if (error) return <div className="text-center py-20 text-sm font-medium text-red-500">Error: {error}</div>;
-  if (items.length === 0) return <div className="text-center py-20 text-sm font-medium text-gray-500">No products found in the database.</div>;
+  if (loading) return <div className="text-center py-20 text-sm font-medium text-slate-400">Analyzing inventory algorithms...</div>;
+  if (error) return <div className="text-center py-20 text-sm font-medium text-red-400">Error: {error}</div>;
+  if (items.length === 0) return <div className="text-center py-20 text-sm font-medium text-slate-400">No products found in the database.</div>;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-      <table className="min-w-full divide-y text-left text-sm text-gray-700">
-        <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-bold">
+    <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
+      <table className="min-w-full divide-y divide-slate-800/60 text-left text-sm text-slate-300">
+        <thead className="bg-slate-900/60 text-xs text-slate-400 uppercase font-bold">
           <tr>
             <th className="px-6 py-4">Product Details</th>
             <th className="px-6 py-4">30D Sales Volume</th>
@@ -73,39 +73,39 @@ export default function PricingEngineClient() {
             <th className="px-6 py-4 text-right">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y bg-white">
+        <tbody className="divide-y divide-slate-800/60 bg-transparent">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50/40 transition">
+            <tr key={item.id} className="hover:bg-slate-900/25 transition">
               <td className="px-6 py-4">
-                <div className="font-bold text-gray-950">{item.name}</div>
-                <div className="text-xs text-gray-400 mt-1 max-w-sm leading-relaxed">{item.reasoning}</div>
+                <div className="font-bold text-white">{item.name}</div>
+                <div className="text-xs text-slate-500 mt-1 max-w-sm leading-relaxed">{item.reasoning}</div>
               </td>
-              <td className="px-6 py-4 font-semibold text-gray-600">{item.recentSales} units</td>
+              <td className="px-6 py-4 font-semibold text-slate-300">{item.recentSales} units</td>
               <td className="px-6 py-4">
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wide uppercase ${
-                  item.strategy === "SURGE" ? "bg-red-50 text-red-700 border border-red-200" :
-                  item.strategy === "LIQUIDATE" ? "bg-amber-50 text-amber-700 border border-amber-200" :
-                  "bg-green-50 text-green-700 border border-green-200"
+                  item.strategy === "SURGE" ? "bg-red-950/40 text-red-400 border border-red-900/30" :
+                  item.strategy === "LIQUIDATE" ? "bg-amber-950/40 text-amber-400 border border-amber-900/30" :
+                  "bg-emerald-950/40 text-emerald-400 border border-emerald-900/30"
                 }`}>
                   {item.strategy}
                 </span>
               </td>
               <td className="px-6 py-4">
-                <div className="text-xs text-gray-400">Current: <strong className="text-gray-700">${item.currentPrice}</strong></div>
+                <div className="text-xs text-slate-500">Current: <strong className="text-white">${item.currentPrice}</strong></div>
                 {item.strategy !== "STABLE" && item.strategy !== "RESTOCK" && (
-                  <div className="text-xs text-indigo-600 font-bold mt-0.5">Target: ${item.recommendedPrice}</div>
+                  <div className="text-xs text-indigo-400 font-bold mt-0.5">Target: ${item.recommendedPrice}</div>
                 )}
               </td>
               <td className="px-6 py-4 text-right">
                 {item.strategy !== "STABLE" && item.strategy !== "RESTOCK" ? (
                   <button
                     onClick={() => applyPriceChange(item.id, item.recommendedPrice)}
-                    className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl shadow-sm transition"
+                    className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl shadow-sm transition cursor-pointer"
                   >
                     Apply Optimization
                   </button>
                 ) : (
-                  <span className="text-xs text-gray-400 font-medium italic">Optimized</span>
+                  <span className="text-xs text-slate-500 font-medium italic">Optimized</span>
                 )}
               </td>
             </tr>

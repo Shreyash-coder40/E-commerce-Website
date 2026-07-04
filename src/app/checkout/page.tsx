@@ -314,29 +314,43 @@ function CheckoutContent() {
 
   if (loadingProduct) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm font-bold text-gray-500">Loading purchase product specs...</p>
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-bold text-slate-400">Loading purchase product specs...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 text-slate-900">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-black text-gray-950 tracking-tight mb-8">Secure Checkout Details</h1>
+    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Huge Semi-Transparent Logo Watermark in Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+        <div className="text-[12vw] font-black tracking-tighter text-indigo-500/[0.04] rotate-12 flex items-center gap-4 whitespace-nowrap">
+          <span>🛒</span> NEXT<span>SHOP</span>
+        </div>
+      </div>
+
+      {/* Glowing Ambient Background Orbs */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl animate-pulse" />
+      
+      {/* Decorative Grid Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+
+      <div className="w-full max-w-5xl mx-auto relative z-10">
+        <h1 className="text-2xl font-black text-white tracking-tight mb-8">Secure Checkout Details</h1>
 
         {error && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-2xl font-bold">
+          <div className="mb-6 p-4 bg-rose-950/20 border border-rose-900/30 text-rose-400 text-xs rounded-2xl font-bold">
             🚨 {error}
           </div>
         )}
 
         {checkoutItems.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
-            <p className="text-gray-500 text-sm mb-4">Your checkout bag is empty.</p>
+          <div className="text-center py-16 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 shadow-sm">
+            <p className="text-slate-400 text-sm mb-4">Your checkout bag is empty.</p>
             <button
               onClick={() => router.push("/")}
               className="text-xs font-bold text-white bg-indigo-600 px-6 py-2.5 rounded-xl shadow hover:bg-indigo-500 transition cursor-pointer"
@@ -349,19 +363,19 @@ function CheckoutContent() {
             {/* Left side address information */}
             <div className="lg:col-span-2 space-y-6">
               {/* Address selector / Address book */}
-              <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">1. Select Delivery Destination</h3>
+              <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">1. Select Delivery Destination</h3>
                 {addresses.length > 0 && (
                   <div className="mb-4">
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase">Saved Addresses</label>
+                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Saved Addresses</label>
                     <select
                       value={selectedAddressId}
                       onChange={(e) => handleAddressSelect(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 font-bold"
                     >
-                      <option value="new">Add New Address (+)</option>
+                      <option value="new" className="bg-slate-900 text-white">Add New Address (+)</option>
                       {addresses.map((addr) => (
-                        <option key={addr.id} value={addr.id}>
+                        <option key={addr.id} value={addr.id} className="bg-slate-900 text-white">
                           {addr.recipientName} ({addr.phone}) - {addr.streetAddress}, {addr.city}
                         </option>
                       ))}
@@ -370,12 +384,12 @@ function CheckoutContent() {
                 )}
 
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-wider">Address Parameters</h4>
+                  <h4 className="text-xs font-black text-indigo-400 uppercase tracking-wider">Address Parameters</h4>
                   <button
                     type="button"
                     onClick={handleAutoDetectLocation}
                     disabled={detectingLoc}
-                    className="text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                    className="text-[10px] font-bold bg-slate-800/40 hover:bg-slate-800 text-indigo-400 border border-slate-700/60 px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
                   >
                     📍 {detectingLoc ? "Detecting..." : "Auto-Detect"}
                   </button>
@@ -383,83 +397,83 @@ function CheckoutContent() {
 
                 <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Recipient Full Name</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Recipient Full Name</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. John Doe"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={shippingName}
                       onChange={(e) => setShippingName(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">10-Digit Mobile Number</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">10-Digit Mobile Number</label>
                     <input
                       type="tel"
                       required
                       placeholder="e.g. 9876543210"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={shippingPhone}
                       onChange={(e) => setShippingPhone(e.target.value)}
                     />
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Street Address</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Street Address</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Flat No, Building Name, Area"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={streetAddress}
                       onChange={(e) => setStreetAddress(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Landmark / Apartment (Optional)</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Landmark / Apartment (Optional)</label>
                     <input
                       type="text"
                       placeholder="e.g. Near Star Mall"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={apartment}
                       onChange={(e) => setApartment(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">6-Digit Pin Code</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">6-Digit Pin Code</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. 400001"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">Town / City</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Town / City</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Mumbai"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1.5">State</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">State</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Maharashtra"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-slate-950/45 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500"
                       value={state}
                       onChange={(e) => setState(e.target.value)}
                     />
@@ -470,11 +484,11 @@ function CheckoutContent() {
                       <input
                         type="checkbox"
                         id="save-address"
-                        className="rounded text-indigo-600 border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                        className="rounded text-indigo-500 border-slate-800 focus:ring-indigo-500/25 cursor-pointer bg-slate-950"
                         checked={saveToAddressBook}
                         onChange={(e) => setSaveToAddressBook(e.target.checked)}
                       />
-                      <label htmlFor="save-address" className="text-xs text-gray-500 font-semibold cursor-pointer">
+                      <label htmlFor="save-address" className="text-xs text-slate-400 font-semibold cursor-pointer">
                         Save this address to your address book for future purchases
                       </label>
                     </div>
@@ -483,23 +497,23 @@ function CheckoutContent() {
               </div>
 
               {/* Items Summary list */}
-              <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">2. Review Items</h3>
-                <div className="divide-y divide-gray-100">
+              <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">2. Review Items</h3>
+                <div className="divide-y divide-slate-800/60">
                   {checkoutItems.map((item) => (
                     <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <img
                           src={item.images?.[0] || item.image || "https://placehold.co/100"}
                           alt=""
-                          className="w-12 h-12 object-cover rounded-xl border border-gray-100"
+                          className="w-12 h-12 object-cover rounded-xl border border-slate-800/80"
                         />
                         <div>
-                          <h4 className="text-xs font-black text-gray-950 line-clamp-1">{item.name}</h4>
-                          <p className="text-[10px] text-gray-500 mt-0.5">Quantity: {item.quantity} units</p>
+                          <h4 className="text-xs font-black text-white line-clamp-1">{item.name}</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Quantity: {item.quantity} units</p>
                         </div>
                       </div>
-                      <p className="text-xs font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString("en-IN")}</p>
+                      <p className="text-xs font-bold text-white">₹{(item.price * item.quantity).toLocaleString("en-IN")}</p>
                     </div>
                   ))}
                 </div>
@@ -508,44 +522,44 @@ function CheckoutContent() {
 
             {/* Right side checkout computations (Flipkart style) */}
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider mb-4">Price Details</h3>
-                <div className="text-xs space-y-3 font-semibold text-gray-600">
+              <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 shadow-sm">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Price Details</h3>
+                <div className="text-xs space-y-3 font-semibold text-slate-400">
                   <div className="flex justify-between">
                     <span>Price ({checkoutItems.reduce((acc, i) => acc + i.quantity, 0)} items)</span>
-                    <span className="text-gray-900">₹{itemsSubtotal.toLocaleString("en-IN")}</span>
+                    <span className="text-white">₹{itemsSubtotal.toLocaleString("en-IN")}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>GST Tax (18% calculated)</span>
-                    <span className="text-gray-900">
-                      {isPincodeValid ? `₹${taxAmount.toLocaleString("en-IN")}` : <span className="text-[10px] text-gray-450 font-medium">Verify Pincode</span>}
+                    <span className="text-white">
+                      {isPincodeValid ? `₹${taxAmount.toLocaleString("en-IN")}` : <span className="text-[10px] text-slate-500 font-medium">Verify Pincode</span>}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Delivery Charges</span>
-                    <span className="text-gray-900">
+                    <span className="text-white">
                       {isPincodeValid ? (
                         shippingCost === 0 ? (
-                          <span className="text-green-600 font-bold uppercase text-[10px]">Free Delivery</span>
+                          <span className="text-emerald-400 font-bold uppercase text-[10px]">Free Delivery</span>
                         ) : (
                           `₹${shippingCost}`
                         )
                       ) : (
-                        <span className="text-[10px] text-gray-450 font-medium">Verify Pincode</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Verify Pincode</span>
                       )}
                     </span>
                   </div>
 
                   {isPincodeValid && estimatedDelivery && (
-                    <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl text-[10px] text-indigo-700 space-y-0.5">
+                    <div className="p-3 bg-indigo-950/20 border border-indigo-900/30 rounded-xl text-[10px] text-indigo-400 space-y-0.5">
                       <p className="font-black">📅 Delivery Arrival Guarantee:</p>
                       <p className="font-semibold">{estimatedDelivery}</p>
                     </div>
                   )}
 
-                  <div className="flex justify-between text-sm font-black text-indigo-600 border-t border-gray-200 pt-4 mt-2">
+                  <div className="flex justify-between text-sm font-black text-indigo-400 border-t border-slate-800/60 pt-4 mt-2">
                     <span>Amount Payable</span>
                     <span>₹{finalTotalAmount.toLocaleString("en-IN")}</span>
                   </div>
@@ -560,7 +574,7 @@ function CheckoutContent() {
                     {loadingSubmit ? "Processing..." : "PAY & SECURE CHECKOUT"}
                   </button>
                   {!isFormValid && (
-                    <p className="text-[9px] text-center text-gray-400 font-bold mt-2.5">
+                    <p className="text-[9px] text-center text-slate-500 font-bold mt-2.5">
                       Fill out delivery address & pincode to activate checkout.
                     </p>
                   )}
@@ -577,10 +591,10 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm font-bold text-gray-500">Loading secure checkout parameters...</p>
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-bold text-slate-400">Loading secure checkout parameters...</p>
         </div>
       </div>
     }>
