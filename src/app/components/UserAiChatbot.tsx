@@ -228,7 +228,7 @@ export default function UserAiChatbot() {
       <div className="fixed bottom-6 left-6 z-55">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="h-14 w-14 rounded-full bg-gradient-to-tr from-rose-500 to-indigo-600 text-white shadow-xl hover:shadow-indigo-500/25 hover:scale-105 active:scale-95 transition flex items-center justify-center cursor-pointer relative"
+          className="h-14 w-14 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-xl hover:shadow-indigo-500/25 hover:scale-105 active:scale-95 transition flex items-center justify-center cursor-pointer relative"
         >
           {isOpen ? (
             <span className="text-lg font-black">✕</span>
@@ -253,12 +253,12 @@ export default function UserAiChatbot() {
         <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-white border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-950 animate-slide-in">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-rose-500 to-indigo-600 text-white p-5 flex items-center justify-between shadow-sm">
+          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-5 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-lg">🤖</div>
               <div>
                 <h4 className="text-xs font-black tracking-wider uppercase">Shopping Assistant</h4>
-                <p className="text-[10px] text-rose-100 font-bold flex items-center gap-1 mt-0.5">
+                <p className="text-[10px] text-indigo-100 font-bold flex items-center gap-1 mt-0.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" /> AI Store Assistant
                 </p>
               </div>
@@ -303,7 +303,7 @@ export default function UserAiChatbot() {
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
                     msg.sender === "user"
-                      ? "bg-sky-100 text-slate-950 font-bold border border-sky-200 rounded-bl-none"
+                      ? "bg-indigo-50 text-slate-950 font-bold border border-indigo-100 rounded-bl-none"
                       : "bg-white border border-gray-200 text-slate-800 rounded-br-none"
                   }`}
                 >
