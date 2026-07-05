@@ -195,8 +195,8 @@ export default function UserAiChatbot() {
     if (rows.length === 0) return <div key={keyIdx} />;
     const headers = rows[0];
     const dataRows = rows.slice(1);
-
-       <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-800 rounded-xl shadow-sm">
+    return (
+      <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-800 rounded-xl shadow-sm">
         <table className="min-w-full divide-y divide-slate-800 text-[11px] text-left">
           <thead className="bg-slate-950/60">
             <tr>
