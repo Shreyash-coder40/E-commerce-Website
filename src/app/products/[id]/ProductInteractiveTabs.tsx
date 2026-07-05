@@ -150,45 +150,45 @@ export default function ProductInteractiveTabs({
   };
 
   return (
-    <div className="mt-12 bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+    <div className="mt-12 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl overflow-hidden shadow-sm font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Tab Navigation header */}
-      <div className="flex border-b border-gray-200 overflow-x-auto bg-gray-50/50">
+      <div className="flex border-b border-slate-800 overflow-x-auto bg-slate-900/60">
         <button
           onClick={() => setActiveTab("specs")}
-          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition ${
+          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition cursor-pointer ${
             activeTab === "specs"
-              ? "border-indigo-600 text-indigo-600 bg-white"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              ? "border-indigo-500 text-indigo-400 bg-slate-900/40"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-950/40"
           }`}
         >
           📋 Specifications
         </button>
         <button
           onClick={() => setActiveTab("reviews")}
-          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition ${
+          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition cursor-pointer ${
             activeTab === "reviews"
-              ? "border-indigo-600 text-indigo-600 bg-white"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              ? "border-indigo-500 text-indigo-400 bg-slate-900/40"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-950/40"
           }`}
         >
           ⭐ Reviews ({reviews.length})
         </button>
         <button
           onClick={() => setActiveTab("qas")}
-          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition ${
+          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition cursor-pointer ${
             activeTab === "qas"
-              ? "border-indigo-600 text-indigo-600 bg-white"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              ? "border-indigo-500 text-indigo-400 bg-slate-900/40"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-950/40"
           }`}
         >
           ❓ Q&A ({qas.length})
         </button>
         <button
           onClick={() => setActiveTab("policies")}
-          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition ${
+          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition cursor-pointer ${
             activeTab === "policies"
-              ? "border-indigo-600 text-indigo-600 bg-white"
-              : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              ? "border-indigo-500 text-indigo-400 bg-slate-900/40"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-950/40"
           }`}
         >
           🛡️ Return & Policies
@@ -201,11 +201,11 @@ export default function ProductInteractiveTabs({
         {activeTab === "specs" && (
           <div className="space-y-6">
             {isElectronics && (
-              <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3">
+              <div className="p-4 bg-indigo-950/20 border border-indigo-900/30 rounded-2xl flex items-center gap-3">
                 <span className="text-xl">🛡️</span>
                 <div>
-                  <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Manufacturer Warranty Cover</h4>
-                  <p className="text-sm font-bold text-indigo-950 mt-0.5">
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Manufacturer Warranty Cover</h4>
+                  <p className="text-sm font-bold text-slate-200 mt-0.5">
                     {warranty || "1 Year Brand Warranty protection coverage included."}
                   </p>
                 </div>
@@ -213,27 +213,27 @@ export default function ProductInteractiveTabs({
             )}
 
             <div>
-              <h3 className="text-base font-black text-gray-950 mb-4">Technical Specifications</h3>
+              <h3 className="text-base font-black text-white mb-4">Technical Specifications</h3>
               {hasSpecs ? (
-                <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="border border-slate-800/60 rounded-2xl overflow-hidden shadow-sm">
                   <table className="w-full text-left border-collapse text-sm">
                     <tbody>
                       {Object.entries(specsObj).map(([key, val], idx) => (
                         <tr
                           key={key}
                           className={`${
-                            idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                          } border-b border-gray-100 last:border-b-0`}
+                            idx % 2 === 0 ? "bg-slate-950/20" : "bg-transparent"
+                          } border-b border-slate-800/60 last:border-b-0`}
                         >
-                          <td className="py-3 px-4 font-bold text-gray-500 w-1/3">{key}</td>
-                          <td className="py-3 px-4 font-semibold text-gray-950">{String(val)}</td>
+                          <td className="py-3 px-4 font-bold text-slate-400 w-1/3">{key}</td>
+                          <td className="py-3 px-4 font-semibold text-slate-200">{String(val)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-2xl text-sm text-gray-500">
+                <div className="text-center py-8 bg-slate-950/20 rounded-2xl text-sm text-slate-500">
                   No technical parameters detailed for this catalog listing.
                 </div>
               )}
@@ -246,28 +246,28 @@ export default function ProductInteractiveTabs({
           <div className="space-y-8">
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {/* Summary Stats */}
-              <div className="w-full md:w-1/3 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <h3 className="text-base font-black text-gray-950 mb-3">Overall Rating</h3>
+              <div className="w-full md:w-1/3 bg-slate-950/30 border border-slate-800/80 p-6 rounded-2xl">
+                <h3 className="text-base font-black text-white mb-3">Overall Rating</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-indigo-600">{averageRating}</span>
-                  <span className="text-sm text-gray-400 font-bold">out of 5</span>
+                  <span className="text-4xl font-black text-indigo-400">{averageRating}</span>
+                  <span className="text-sm text-slate-400 font-bold">out of 5</span>
                 </div>
                 <div className="mt-2">{renderStars(Math.round(parseFloat(averageRating) || 0))}</div>
-                <p className="text-xs text-gray-500 mt-2">Based on {reviews.length} customer ratings</p>
+                <p className="text-xs text-slate-500 mt-2">Based on {reviews.length} customer ratings</p>
               </div>
 
               {/* Review Submit Form */}
-              <div className="flex-1 w-full bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                <h3 className="text-base font-black text-gray-950 mb-4">Write a Product Review</h3>
+              <div className="flex-1 w-full bg-slate-950/30 border border-slate-800/80 p-6 rounded-2xl shadow-sm">
+                <h3 className="text-base font-black text-white mb-4">Write a Product Review</h3>
                 {session ? (
                   <form onSubmit={handleReviewSubmit} className="space-y-4">
                     {reviewError && (
-                      <p className="text-xs text-red-500 font-semibold bg-red-50 p-2 rounded-lg border border-red-100">
+                      <p className="text-xs text-red-400 font-semibold bg-red-950/20 p-2 rounded-lg border border-red-900/30">
                         {reviewError}
                       </p>
                     )}
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                         Select Rating Star
                       </label>
                       <div className="flex gap-2">
@@ -276,9 +276,9 @@ export default function ProductInteractiveTabs({
                             key={star}
                             type="button"
                             onClick={() => setReviewRating(star)}
-                            className="text-2xl transition hover:scale-110"
+                            className="text-2xl transition hover:scale-110 cursor-pointer"
                           >
-                            <span className={star <= reviewRating ? "text-amber-500" : "text-gray-200"}>
+                            <span className={star <= reviewRating ? "text-amber-500" : "text-slate-800"}>
                               ★
                             </span>
                           </button>
@@ -286,7 +286,7 @@ export default function ProductInteractiveTabs({
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                         Your Feedback comment
                       </label>
                       <textarea
@@ -294,21 +294,21 @@ export default function ProductInteractiveTabs({
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
                         placeholder="Share your experience using this product..."
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-250 rounded-xl text-sm text-black font-semibold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                        className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={submittingReview}
-                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition disabled:opacity-50"
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition disabled:opacity-50 cursor-pointer"
                     >
                       {submittingReview ? "Submitting..." : "Submit Review"}
                     </button>
                   </form>
                 ) : (
-                  <p className="text-sm text-gray-500 font-medium">
+                  <p className="text-sm text-slate-400 font-medium">
                     Please{" "}
-                    <a href="/login" className="text-indigo-600 font-bold hover:underline">
+                    <a href="/login" className="text-indigo-400 font-bold hover:underline">
                       Sign In
                     </a>{" "}
                     to leave feedback comments.
@@ -319,23 +319,23 @@ export default function ProductInteractiveTabs({
 
             {/* Reviews Feed */}
             <div className="space-y-4">
-              <h3 className="text-base font-black text-gray-950 border-b pb-2">Customer Feedback</h3>
+              <h3 className="text-base font-black text-white border-b border-slate-800/60 pb-2">Customer Feedback</h3>
               {reviews.length === 0 ? (
-                <p className="text-sm text-gray-500 py-4">No customer feedback has been posted yet.</p>
+                <p className="text-sm text-slate-500 py-4">No customer feedback has been posted yet.</p>
               ) : (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-slate-800/60">
                   {reviews.map((review) => (
                     <div key={review.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-sm text-gray-900">
+                        <span className="font-bold text-sm text-white">
                           {review.user?.name || "Verified Shopper"}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-medium" suppressHydrationWarning>
+                        <span className="text-[10px] text-slate-500 font-medium" suppressHydrationWarning>
                           {new Date(review.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                       {renderStars(review.rating)}
-                      <p className="text-sm text-gray-600 whitespace-pre-wrap">{review.comment}</p>
+                      <p className="text-sm text-slate-350 whitespace-pre-wrap">{review.comment}</p>
                     </div>
                   ))}
                 </div>
@@ -348,8 +348,8 @@ export default function ProductInteractiveTabs({
         {activeTab === "qas" && (
           <div className="space-y-8">
             {/* Ask Question Form */}
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-150">
-              <h3 className="text-base font-black text-gray-950 mb-3">Have a Question?</h3>
+            <div className="bg-slate-950/30 border border-slate-800/80 p-6 rounded-2xl">
+              <h3 className="text-base font-black text-white mb-3">Have a Question?</h3>
               {session ? (
                 <form onSubmit={handleQuestionSubmit} className="flex gap-2">
                   <input
@@ -357,53 +357,53 @@ export default function ProductInteractiveTabs({
                     value={newQuestion}
                     onChange={(e) => setNewQuestion(e.target.value)}
                     placeholder="Ask about dimensions, performance, features..."
-                    className="flex-1 px-4 py-3 bg-white border border-gray-250 rounded-xl text-sm text-black font-semibold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="flex-1 px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
                   />
                   <button
                     type="submit"
                     disabled={submittingQuestion}
-                    className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition disabled:opacity-50"
+                    className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition disabled:opacity-50 cursor-pointer"
                   >
                     {submittingQuestion ? "Asking..." : "Ask Admin"}
                   </button>
                 </form>
               ) : (
-                <p className="text-sm text-gray-500 font-medium">
+                <p className="text-sm text-slate-400 font-medium">
                   Please{" "}
-                  <a href="/login" className="text-indigo-600 font-bold hover:underline">
+                  <a href="/login" className="text-indigo-400 font-bold hover:underline">
                     Sign In
                   </a>{" "}
                   to write a question.
                 </p>
               )}
-              {questionError && <p className="text-xs text-red-500 font-bold mt-2">{questionError}</p>}
+              {questionError && <p className="text-xs text-red-400 font-bold mt-2">{questionError}</p>}
             </div>
 
             {/* Q&A Feed */}
             <div className="space-y-4">
-              <h3 className="text-base font-black text-gray-950 border-b pb-2">Questions & Answers</h3>
+              <h3 className="text-base font-black text-white border-b border-slate-800/60 pb-2">Questions & Answers</h3>
               {qas.length === 0 ? (
-                <p className="text-sm text-gray-500 py-4">No questions have been asked yet.</p>
+                <p className="text-sm text-slate-500 py-4">No questions have been asked yet.</p>
               ) : (
                 <div className="space-y-6">
                   {qas.map((qa) => (
-                    <div key={qa.id} className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-3">
+                    <div key={qa.id} className="p-5 bg-slate-950/30 border border-slate-800/80 rounded-2xl shadow-sm space-y-3">
                       <div>
-                        <p className="text-xs text-gray-400 font-bold flex items-center gap-1.5">
+                        <p className="text-xs text-slate-500 font-bold flex items-center gap-1.5">
                           <span>👤 {qa.user?.name || "Shopper"}</span>
                           <span>•</span>
                           <span suppressHydrationWarning>{new Date(qa.createdAt).toLocaleDateString()}</span>
                         </p>
-                        <p className="text-sm font-bold text-gray-900 mt-1">Q: {qa.question}</p>
+                        <p className="text-sm font-bold text-white mt-1">Q: {qa.question}</p>
                       </div>
-                      <div className="pl-4 border-l-2 border-indigo-600 bg-gray-50/50 p-3 rounded-r-xl">
+                      <div className="pl-4 border-l-2 border-indigo-500 bg-slate-950/40 p-3 rounded-r-xl border border-y-slate-800/80 border-r-slate-800/80">
                         {qa.answer ? (
                           <>
-                            <p className="text-xs text-indigo-600 font-bold">📢 Seller Support Answer:</p>
-                            <p className="text-sm text-gray-700 mt-0.5">{qa.answer}</p>
+                            <p className="text-xs text-indigo-400 font-bold">📢 Seller Support Answer:</p>
+                            <p className="text-sm text-slate-350 mt-0.5">{qa.answer}</p>
                           </>
                         ) : (
-                          <p className="text-xs text-gray-400 italic">
+                          <p className="text-xs text-slate-500 italic">
                             Awaiting response from Seller/Admin Support team.
                           </p>
                         )}
@@ -419,28 +419,28 @@ export default function ProductInteractiveTabs({
         {/* PANEL 4: POLICIES */}
         {activeTab === "policies" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-3">
+            <div className="p-6 bg-slate-950/30 border border-slate-800/80 rounded-2xl shadow-sm space-y-3">
               <span className="text-3xl">🔄</span>
-              <h4 className="text-base font-black text-gray-950">Return & Replacement Policy</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h4 className="text-base font-black text-white">Return & Replacement Policy</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
                 {isElectronics
                   ? "7 Days Replacement Policy. Eligible for replacement within 7 days of delivery only in case of manufacturer defect, hardware malfunction, or shipping damages."
                   : "10 Days Return & Exchange. Size or style fit replacement. Full refund available if returned in original condition with tags intact."}
               </p>
             </div>
 
-            <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-3">
+            <div className="p-6 bg-slate-950/30 border border-slate-800/80 rounded-2xl shadow-sm space-y-3">
               <span className="text-3xl">🚚</span>
-              <h4 className="text-base font-black text-gray-950">Shipping & Delivery Policies</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h4 className="text-base font-black text-white">Shipping & Delivery Policies</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
                 Free standard shipping across India. Orders are processed within 24 hours. Transit takes 3-5 business days. Real-time courier SMS updates will be shared once shipped.
               </p>
             </div>
 
-            <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-3">
+            <div className="p-6 bg-slate-950/30 border border-slate-800/80 rounded-2xl shadow-sm space-y-3">
               <span className="text-3xl">🔒</span>
-              <h4 className="text-base font-black text-gray-950">100% Encrypted Transactions</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h4 className="text-base font-black text-white">100% Encrypted Transactions</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
                 We safeguard your payment data via Razorpay tokenized routing. Supports standard credit/debit cards, Net Banking, and instant UPI. No credentials are saved on store databases.
               </p>
             </div>

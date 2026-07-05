@@ -194,7 +194,7 @@ export default function ProductFormClient() {
           name="description"
           rows={4}
           placeholder="Provide features, box inclusions, and specification sheets..."
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-950 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition resize-none"
+          className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition resize-none"
         />
       </div>
 

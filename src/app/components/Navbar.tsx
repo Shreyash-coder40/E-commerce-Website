@@ -140,10 +140,10 @@ export default function Navbar({ session }: NavbarProps) {
         />
 
         {/* Sidebar Panel container */}
-        <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white border-r border-gray-200 shadow-2xl z-50 transform translate-x-0 transition-transform duration-300 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] tracking-tight">
+        <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-slate-900/90 backdrop-blur-xl border-r border-slate-800/80 shadow-2xl z-50 transform translate-x-0 transition-transform duration-300 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] tracking-tight text-white">
           
           {/* Sidebar Header */}
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-indigo-650 to-violet-650 text-white">
             <div className="flex items-center gap-2">
               <span className="text-lg">🛒</span>
               <span className="text-xs font-black tracking-wider uppercase">NextShop Navigation</span>
@@ -159,12 +159,12 @@ export default function Navbar({ session }: NavbarProps) {
 
           {/* Navigation Links */}
           <div className="flex-1 overflow-y-auto p-5 space-y-2">
-            <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Storefront Portals</h5>
+            <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Storefront Portals</h5>
             
             <Link 
               href="/" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">🏠</span> Home Storefront
             </Link>
@@ -172,7 +172,7 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/orders" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">📦</span> My Orders & Tracking
             </Link>
@@ -180,20 +180,20 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/checkout" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">🛍️</span> Proceed to Checkout
             </Link>
 
             {/* Admin Block Divider */}
-            <div className="border-t border-gray-100 my-4" />
+            <div className="border-t border-slate-800 my-4" />
 
-            <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Admin Core Features</h5>
+            <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-555 mb-2">Admin Core Features</h5>
 
             <Link 
               href="/admin/dashboard" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">📊</span> Admin P&L Dashboard
             </Link>
@@ -201,7 +201,7 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/admin/manage-products" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">📦</span> Inventory Restock Manager
             </Link>
@@ -209,7 +209,7 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/admin/add-product" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">➕</span> Publish New Asset
             </Link>
@@ -217,7 +217,7 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/admin/ai-assistant" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">🤖</span> Admin Assistant Console
             </Link>
@@ -225,7 +225,7 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/admin/pricing-engine" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">⚙️</span> Dynamic Pricing Console
             </Link>
@@ -233,15 +233,15 @@ export default function Navbar({ session }: NavbarProps) {
             <Link 
               href="/admin/feedback" 
               onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-xs transition"
+              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
             >
               <span className="text-base">💬</span> Customer Feedbacks & Q&A
             </Link>
           </div>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-gray-100 bg-slate-50 text-center">
-            <span className="text-[10px] text-gray-400 font-bold">NEXTSHOP v1.2.5 • Navigation Sidebar</span>
+          <div className="p-4 border-t border-slate-800 bg-slate-950/60 text-center">
+            <span className="text-[10px] text-slate-500 font-bold">NEXTSHOP v1.2.5 • Navigation Sidebar</span>
           </div>
 
         </div>

@@ -96,24 +96,38 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
     const discountPercentage = hasDiscount ? Math.round(((originalMrp - currentPrice) / originalMrp) * 100) : 0;
 
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
+        {/* Huge Semi-Transparent Logo Watermark in Background */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+          <div className="text-[12vw] font-black tracking-tighter text-indigo-500/[0.04] rotate-12 flex items-center gap-4 whitespace-nowrap">
+            <span>🛒</span> NEXT<span>SHOP</span>
+          </div>
+        </div>
+
+        {/* Glowing Ambient Background Orbs */}
+        <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl animate-pulse" />
+        
+        {/* Decorative Grid Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+
+        <div className="w-full max-w-6xl mx-auto relative z-10">
           
           {/* Navigation Breadcrumb back to store home grid */}
           <div className="mb-8">
             <Link
               href="/"
-              className="text-xs font-bold text-gray-700 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition w-fit inline-flex items-center gap-1.5"
+              className="text-xs font-bold text-slate-300 bg-slate-800/40 border border-slate-700/60 px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-800 hover:text-white transition w-fit inline-flex items-center gap-1.5 backdrop-blur-md"
             >
               🏠 Back to Home
             </Link>
           </div>
 
           {/* Primary Two-Column Product Matrix Card */}
-          <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 p-6 sm:p-10">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 p-6 sm:p-10">
             
             {/* Left Column: Product Image Presenter */}
-            <div className="relative aspect-square w-full bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 group">
+            <div className="relative aspect-square w-full bg-slate-950/45 rounded-2xl overflow-hidden border border-slate-800/60 group flex items-center justify-center p-4">
               <Image
                 src={product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"}
                 alt={product.name}
@@ -128,34 +142,34 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
             <div className="flex flex-col justify-between">
               <div>
                 {/* Category tag metadata */}
-                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-wider rounded-lg mb-4">
+                <span className="inline-block px-3 py-1 bg-slate-800 text-slate-300 font-bold text-[10px] uppercase tracking-wider rounded-lg mb-4 border border-slate-750">
                   {product.category}
                 </span>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-gray-950 tracking-tight leading-tight mb-2">
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight mb-2">
                   {product.name}
                 </h1>
 
                 {/* MATCHED PREVIEW COMPONENT: Replicating the exact Admin Add-Product pricing layer */}
                 <div className="my-6">
                   {hasDiscount ? (
-                    <div className="p-5 bg-green-50 border border-green-200 rounded-2xl flex items-baseline gap-3 flex-wrap">
-                      <span className="text-4xl font-black text-gray-950 tracking-tight">
+                    <div className="p-5 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl flex items-baseline gap-3 flex-wrap">
+                      <span className="text-4xl font-black text-white tracking-tight">
                         ₹{currentPrice.toLocaleString("en-IN")}
                       </span>
-                      <span className="text-sm text-gray-400 line-through font-medium">
+                      <span className="text-sm text-slate-500 line-through font-medium">
                         ₹{originalMrp.toLocaleString("en-IN")}
                       </span>
-                      <span className="text-sm font-black text-green-600 bg-green-100 border border-green-200 px-2.5 py-1 rounded-xl shadow-sm">
+                      <span className="text-sm font-black text-emerald-400 bg-emerald-950/40 border border-emerald-900/30 px-2.5 py-1 rounded-xl shadow-sm">
                         {discountPercentage}% off
                       </span>
                     </div>
                   ) : (
-                    <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl flex items-baseline gap-3 flex-wrap">
-                      <span className="text-4xl font-black text-gray-950 tracking-tight">
+                    <div className="p-5 bg-slate-950/40 border border-slate-800 rounded-2xl flex items-baseline gap-3 flex-wrap">
+                      <span className="text-4xl font-black text-white tracking-tight">
                         ₹{currentPrice.toLocaleString("en-IN")}
                       </span>
-                      <span className="text-xs font-bold text-gray-500 bg-gray-200 border border-gray-300 px-2 py-1 rounded-xl">
+                      <span className="text-xs font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-xl">
                         Everyday Value Price
                       </span>
                     </div>
@@ -163,7 +177,7 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
 
                   {/* Stock tracker message flag */}
                   <p className={`mt-3.5 text-xs font-bold flex items-center gap-1.5 ${
-                    product.stock > 0 ? "text-green-600" : "text-red-500"
+                    product.stock > 0 ? "text-emerald-450" : "text-rose-450"
                   }`}>
                     <span className="h-2 w-2 rounded-full bg-current"></span>
                     {product.stock > 0 
@@ -175,8 +189,8 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
 
                 {/* Description Body Text */}
                 <div className="space-y-2 mb-8">
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Product Overview</h3>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Product Overview</h3>
+                  <p className="text-sm text-slate-350 leading-relaxed whitespace-pre-wrap">
                     {product.description}
                   </p>
                 </div>
@@ -186,7 +200,7 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
               <PincodeChecker />
 
               {/* Checkout Action Button Section */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-slate-800/60">
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <AddToCartButton product={product} />
@@ -194,13 +208,13 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
                   {product.stock > 0 && (
                     <Link
                       href={`/checkout?productId=${product.id}&quantity=1`}
-                      className="flex-1 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-4 px-4 rounded-xl text-sm transition shadow-md tracking-wide active:scale-[0.98] cursor-pointer shadow-emerald-600/15 hover:shadow-emerald-500/25 flex items-center justify-center gap-1"
+                      className="flex-1 text-center bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold py-4 px-4 rounded-xl text-sm transition shadow-md tracking-wide active:scale-[0.98] cursor-pointer shadow-indigo-600/15 hover:shadow-indigo-500/25 flex items-center justify-center gap-1"
                     >
                       ⚡ Buy Now
                     </Link>
                   )}
                 </div>
-                <p className="text-[11px] text-gray-400 text-center mt-3 font-medium">
+                <p className="text-[11px] text-slate-500 text-center mt-3 font-medium">
                   🔒 Secured transaction verification managed via encrypted platform databases.
                 </p>
               </div>
