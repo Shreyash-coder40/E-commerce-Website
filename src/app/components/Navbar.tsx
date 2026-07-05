@@ -24,16 +24,18 @@ export default function Navbar({ session }: NavbarProps) {
         {/* Left column Logo & Menu Trigger */}
         <div className="flex items-center gap-1 sm:gap-3">
           {/* Sidebar Trigger Button */}
-          <button 
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer text-navbar-text"
-            aria-label="Open navigation menu"
-          >
-            <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {session?.user && (
+            <button 
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer text-navbar-text"
+              aria-label="Open navigation menu"
+            >
+              <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
 
           {/* Logo / Brand Link (Responsive fonts to prevent overlap) */}
           <Link href="/" className="text-base sm:text-xl font-black text-navbar-text tracking-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-1 sm:gap-2">
@@ -131,7 +133,7 @@ export default function Navbar({ session }: NavbarProps) {
     </header>
 
     {/* Collapsible Navigation Sidebar Drawer (Left-aligned) */}
-    {isSidebarOpen && (
+    {isSidebarOpen && session?.user && (
       <>
         {/* Overlay background */}
         <div 
@@ -185,58 +187,62 @@ export default function Navbar({ session }: NavbarProps) {
               <span className="text-base">🛍️</span> Proceed to Checkout
             </Link>
 
-            {/* Admin Block Divider */}
-            <div className="border-t border-slate-800 my-4" />
+            {/* Admin Block Divider & Core Features */}
+            {session?.user?.role === "ADMIN" && (
+              <>
+                <div className="border-t border-slate-800 my-4" />
 
-            <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-555 mb-2">Admin Core Features</h5>
+                <h5 className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Admin Core Features</h5>
 
-            <Link 
-              href="/admin/dashboard" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">📊</span> Admin P&L Dashboard
-            </Link>
+                <Link 
+                  href="/admin/dashboard" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">📊</span> Admin P&L Dashboard
+                </Link>
 
-            <Link 
-              href="/admin/manage-products" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">📦</span> Inventory Restock Manager
-            </Link>
+                <Link 
+                  href="/admin/manage-products" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">📦</span> Inventory Restock Manager
+                </Link>
 
-            <Link 
-              href="/admin/add-product" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">➕</span> Publish New Asset
-            </Link>
+                <Link 
+                  href="/admin/add-product" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">➕</span> Publish New Asset
+                </Link>
 
-            <Link 
-              href="/admin/ai-assistant" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">🤖</span> Admin Assistant Console
-            </Link>
+                <Link 
+                  href="/admin/ai-assistant" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">🤖</span> Admin Assistant Console
+                </Link>
 
-            <Link 
-              href="/admin/pricing-engine" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">⚙️</span> Dynamic Pricing Console
-            </Link>
+                <Link 
+                  href="/admin/pricing-engine" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">⚙️</span> Dynamic Pricing Console
+                </Link>
 
-            <Link 
-              href="/admin/feedback" 
-              onClick={() => setIsSidebarOpen(false)}
-              className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
-            >
-              <span className="text-base">💬</span> Customer Feedbacks & Q&A
-            </Link>
+                <Link 
+                  href="/admin/feedback" 
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl hover:bg-slate-950/40 text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  <span className="text-base">💬</span> Customer Feedbacks & Q&A
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Sidebar Footer */}
