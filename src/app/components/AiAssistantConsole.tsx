@@ -197,20 +197,20 @@ export default function AiAssistantConsole() {
     const dataRows = rows.slice(1);
 
     return (
-      <div key={keyIdx} className="overflow-x-auto my-3 border border-gray-250 rounded-xl shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-[11px] text-left">
-          <thead className="bg-gray-50">
+      <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-800 rounded-xl shadow-sm">
+        <table className="min-w-full divide-y divide-slate-800 text-[11px] text-left">
+          <thead className="bg-slate-950/60">
             <tr>
               {headers.map((h, i) => (
-                <th key={i} className="px-3 py-2 font-bold text-gray-600 uppercase tracking-wider">{h}</th>
+                <th key={i} className="px-3 py-2 font-bold text-slate-400 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-150 bg-white">
+          <tbody className="divide-y divide-slate-800 bg-transparent">
             {dataRows.map((row, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-slate-50 transition">
+              <tr key={rowIdx} className="hover:bg-slate-950/40 transition">
                 {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="px-3 py-2 text-gray-800 font-medium">{cell}</td>
+                  <td key={cellIdx} className="px-3 py-2 text-slate-300 font-medium">{cell}</td>
                 ))}
               </tr>
             ))}
@@ -221,22 +221,37 @@ export default function AiAssistantConsole() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Huge Semi-Transparent Logo Watermark in Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+        <div className="text-[12vw] font-black tracking-tighter text-indigo-500/[0.09] rotate-12 flex items-center gap-4 whitespace-nowrap">
+          <span>🛒</span> NEXT<span>SHOP</span>
+        </div>
+      </div>
+
+      {/* Glowing Ambient Background Orbs */}
+      <div className="absolute top-10 left-10 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-fuchsia-500/15 rounded-full blur-3xl animate-pulse" />
+      
+      {/* Decorative Grid Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
+
+      <div className="w-full max-w-6xl mx-auto relative z-10">
         {/* Header navigation bar */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-gray-950 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
               🤖 NextShop AI Agent Command Center
             </h1>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Audit financials, execute database CRUD writes, and forecast inventory via LLM processing.
             </p>
           </div>
           <div>
             <Link
               href="/admin/dashboard"
-              className="text-xs font-bold text-gray-700 bg-white border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition inline-flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-bold text-slate-300 bg-slate-800/40 border border-slate-700/60 px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-800 hover:text-white transition inline-flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
             >
               ← Back to Dashboard
             </Link>
@@ -248,56 +263,56 @@ export default function AiAssistantConsole() {
           
           {/* Left Panel: Statistics & Operations Command Center */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm space-y-4">
-              <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest">Console Parameters</h3>
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-4">
+              <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest">Console Parameters</h3>
               
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-slate-800/60">
                 <div className="py-2.5 first:pt-0">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Total Catalog Items</p>
-                  <p className="text-lg font-black text-slate-850 mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Total Catalog Items</p>
+                  <p className="text-lg font-black text-white mt-0.5">
                     {loadingStats ? "..." : stats.totalProducts} products
                   </p>
                 </div>
                 <div className="py-2.5">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Out of Stock</p>
-                  <p className="text-lg font-black text-rose-600 mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Out of Stock</p>
+                  <p className="text-lg font-black text-rose-550 mt-0.5">
                     {loadingStats ? "..." : stats.outOfStockCount} items
                   </p>
                 </div>
                 <div className="py-2.5">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase">Low Stock Alerts</p>
-                  <p className="text-lg font-black text-amber-600 mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Low Stock Alerts</p>
+                  <p className="text-lg font-black text-amber-500 mt-0.5">
                     {loadingStats ? "..." : stats.lowStockCount} items
                   </p>
                 </div>
               </div>
 
               <div className="pt-2">
-                <span className="text-[9px] font-bold bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-lg inline-flex items-center gap-1">
+                <span className="text-[9px] font-bold bg-indigo-950/40 border border-indigo-900/50 text-indigo-400 px-2 py-1 rounded-lg inline-flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" /> Database Sync Active
                 </span>
               </div>
             </div>
 
             {/* AI Prompt suggest deck */}
-            <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm space-y-3">
-              <h4 className="text-xs font-black text-slate-950 uppercase tracking-wider">Suggested Audits</h4>
+            <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-3">
+              <h4 className="text-xs font-black text-white uppercase tracking-wider">Suggested Audits</h4>
               <div className="space-y-2">
                 <button
                   onClick={() => handleSendMessage("Show me the profit and loss report")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   📊 Profit & Loss analysis
                 </button>
                 <button
                   onClick={() => handleSendMessage("Which products need restocking based on sales velocity?")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   🚨 Inventory Restocking warning
                 </button>
                 <button
                   onClick={() => handleSendMessage("Summarize the reviews for Nike Shoes")}
-                  className="w-full text-left bg-slate-50 hover:bg-slate-100 text-xs font-black text-black border border-gray-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   💬 Review Sentiment Check
                 </button>
@@ -306,23 +321,23 @@ export default function AiAssistantConsole() {
           </div>
 
           {/* Right Panel: Conversation Terminal Dashboard */}
-          <div className="lg:col-span-3 bg-white border border-gray-200 rounded-3xl shadow-sm flex flex-col h-[520px] max-h-[calc(100vh-14rem)] overflow-hidden">
+          <div className="lg:col-span-3 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-sm flex flex-col h-[520px] max-h-[calc(100vh-14rem)] overflow-hidden">
             {/* Terminal Top bar */}
-            <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest font-mono">NextShop_Agent_CLI_v1.0.0</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">NextShop_Agent_CLI_v1.0.0</span>
               </div>
               <button
                 onClick={() => setMessages([messages[0]])}
-                className="text-[10px] font-bold text-indigo-600 hover:text-indigo-500 cursor-pointer"
+                className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer"
               >
                 Clear Terminal log
               </button>
             </div>
 
             {/* Conversation list logs */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-transparent">
               {messages.map((msg, i) => {
                 const isWriteSuccess = msg.text.includes("Database Write Success");
                 const isUpdateSuccess = msg.text.includes("Database Update Success");
@@ -333,10 +348,10 @@ export default function AiAssistantConsole() {
                     className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {isWriteSuccess || isUpdateSuccess ? (
-                      <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl text-xs space-y-2 text-emerald-950 shadow-sm max-w-[85%] rounded-bl-none animate-pulse-once">
+                      <div className="bg-emerald-950/40 border-l-4 border-emerald-500 p-4 rounded-xl text-xs space-y-2 text-emerald-300 border border-y-slate-800/80 border-r-slate-800/80 shadow-sm max-w-[85%] rounded-bl-none animate-pulse-once">
                         <div className="flex items-center gap-2">
                           <span className="text-base">✅</span>
-                          <span className="font-extrabold uppercase tracking-wider text-[10px] text-emerald-800">Database Action Confirmed</span>
+                          <span className="font-extrabold uppercase tracking-wider text-[10px] text-emerald-450">Database Action Confirmed</span>
                         </div>
                         <div className="space-y-1 font-medium">
                           {parseMarkdown(msg.text)}
@@ -347,7 +362,7 @@ export default function AiAssistantConsole() {
                         className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
                           msg.sender === "user"
                             ? "bg-sky-100 text-slate-950 font-bold border border-sky-200 rounded-br-none"
-                            : "bg-white border border-gray-200 text-slate-800 rounded-bl-none"
+                            : "bg-slate-950/60 border border-slate-800 text-slate-350 rounded-bl-none"
                         }`}
                       >
                         {parseMarkdown(msg.text)}
@@ -358,13 +373,13 @@ export default function AiAssistantConsole() {
               })}
               {loadingChat && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 rounded-2xl p-4 rounded-bl-none shadow-sm flex items-center gap-2">
+                  <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 rounded-bl-none shadow-sm flex items-center gap-2">
                     <div className="flex gap-1">
-                      <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-75" />
-                      <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-150" />
-                      <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-300" />
+                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-75" />
+                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-150" />
+                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-300" />
                     </div>
-                    <span className="text-[10px] text-gray-400 font-bold font-mono">Agent reasoning catalog metrics...</span>
+                    <span className="text-[10px] text-slate-400 font-bold font-mono">Agent reasoning catalog metrics...</span>
                   </div>
                 </div>
               )}
@@ -372,18 +387,18 @@ export default function AiAssistantConsole() {
             </div>
 
             {/* Chat Input Console Box */}
-            <form onSubmit={handleFormSubmit} className="p-4 border-t border-gray-200 bg-white flex gap-2">
+            <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-800 bg-slate-950/60 flex gap-2">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type command (e.g. Price audits, inventory warning alerts, product creation)..."
-                className="flex-1 bg-slate-50 border border-gray-250 rounded-xl px-4 py-3 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="flex-1 bg-slate-950/45 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
               />
               <button
                 type="submit"
                 disabled={loadingChat || !inputValue.trim()}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
+                className="bg-indigo-650 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
               >
                 Execute
               </button>

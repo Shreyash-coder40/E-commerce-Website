@@ -196,21 +196,20 @@ export default function UserAiChatbot() {
     const headers = rows[0];
     const dataRows = rows.slice(1);
 
-    return (
-      <div key={keyIdx} className="overflow-x-auto my-3 border border-gray-250 rounded-xl shadow-sm">
-        <table className="min-w-full divide-y divide-gray-250 text-[11px] text-left">
-          <thead className="bg-gray-50">
+       <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-800 rounded-xl shadow-sm">
+        <table className="min-w-full divide-y divide-slate-800 text-[11px] text-left">
+          <thead className="bg-slate-950/60">
             <tr>
               {headers.map((h, i) => (
-                <th key={i} className="px-3 py-2 font-bold text-gray-600 uppercase tracking-wider">{h}</th>
+                <th key={i} className="px-3 py-2 font-bold text-slate-400 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-150 bg-white">
+          <tbody className="divide-y divide-slate-800 bg-transparent">
             {dataRows.map((row, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-slate-50 transition">
+              <tr key={rowIdx} className="hover:bg-slate-950/40 transition">
                 {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="px-3 py-2 text-gray-800 font-medium">{cell}</td>
+                  <td key={cellIdx} className="px-3 py-2 text-slate-350 font-medium">{cell}</td>
                 ))}
               </tr>
             ))}
@@ -235,7 +234,7 @@ export default function UserAiChatbot() {
           ) : (
             <div className="relative">
               <span className="text-2xl">💬</span>
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-emerald-500 border-2 border-slate-900 rounded-full animate-pulse" />
             </div>
           )}
         </button>
@@ -250,10 +249,10 @@ export default function UserAiChatbot() {
 
       {/* Chat drawer interface panel */}
       {isOpen && (
-        <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-gradient-to-b from-white via-slate-50 to-indigo-50/25 border border-gray-250 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-slate-950 animate-slide-in font-['Plus_Jakarta_Sans',sans-serif] tracking-tight">
+        <div className="fixed bottom-20 left-6 w-96 max-w-[calc(100vw-3rem)] h-[460px] max-h-[calc(100vh-6rem)] bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-2xl z-55 flex flex-col overflow-hidden text-white animate-slide-in font-['Plus_Jakarta_Sans',sans-serif] tracking-tight">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-5 flex items-center justify-between shadow-sm">
+          <div className="bg-gradient-to-r from-indigo-650 to-violet-650 text-white p-5 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-lg">🤖</div>
               <div>
@@ -272,22 +271,22 @@ export default function UserAiChatbot() {
           </div>
 
           {/* Quick suggestions chips */}
-          <div className="bg-slate-50 border-b border-gray-150 p-3 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+          <div className="bg-slate-950/60 border-b border-slate-800/60 p-3 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
             <button
               onClick={() => handleSendMessage("Tell me about Nike Shoes")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              className="bg-slate-950/40 hover:bg-slate-950/80 text-[10px] font-bold text-slate-200 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               👟 Show Nike Shoes
             </button>
             <button
               onClick={() => handleSendMessage("What is the price of the Rolex watch?")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              className="bg-slate-950/40 hover:bg-slate-950/80 text-[10px] font-bold text-slate-200 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               ⌚ Rolex Details
             </button>
             <button
-              onClick={() => handleSendMessage("Summarize the reviews for Samsung logo")}
-              className="bg-white hover:bg-slate-100 text-[10px] font-black text-slate-900 border border-gray-250 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
+              onClick={() => handleSendMessage("Summarize the reviews for Samsung")}
+              className="bg-slate-950/40 hover:bg-slate-950/80 text-[10px] font-bold text-slate-200 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-sm transition cursor-pointer inline-block"
             >
               ⭐ Review summaries
             </button>
@@ -303,8 +302,8 @@ export default function UserAiChatbot() {
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
                     msg.sender === "user"
-                      ? "bg-indigo-50 text-slate-950 font-bold border border-indigo-100 rounded-bl-none"
-                      : "bg-white border border-gray-200 text-slate-800 rounded-br-none"
+                      ? "bg-sky-100 text-slate-950 font-bold border border-sky-200 rounded-bl-none"
+                      : "bg-slate-950/60 border border-slate-800 text-slate-350 rounded-br-none"
                   }`}
                 >
                   {parseMarkdown(msg.text)}
@@ -320,10 +319,10 @@ export default function UserAiChatbot() {
                       return (
                         <div 
                           key={prod.id}
-                          className="min-w-[150px] max-w-[150px] snap-start bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden hover:shadow-md transition flex flex-col group"
+                          className="min-w-[150px] max-w-[150px] snap-start bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-xs overflow-hidden hover:shadow-md transition flex flex-col group"
                         >
                           {/* Image container */}
-                          <div className="h-20 w-full bg-slate-50 relative overflow-hidden flex items-center justify-center">
+                          <div className="h-20 w-full bg-slate-900/60 relative overflow-hidden flex items-center justify-center">
                             <img 
                               src={image} 
                               alt={prod.name}
@@ -337,17 +336,17 @@ export default function UserAiChatbot() {
                           {/* Details */}
                           <div className="p-2.5 flex-1 flex flex-col justify-between space-y-1">
                             <div>
-                              <h5 className="text-[9px] font-black text-slate-950 line-clamp-2 leading-tight">
+                              <h5 className="text-[9px] font-black text-white line-clamp-2 leading-tight">
                                 {prod.name}
                               </h5>
                               <div className="flex items-center gap-0.5 mt-0.5">
                                 <span className="text-amber-500 text-[8px]">★</span>
-                                <span className="text-slate-500 text-[8px] font-bold">{rating.toFixed(1)}</span>
+                                <span className="text-slate-400 text-[8px] font-bold">{rating.toFixed(1)}</span>
                               </div>
                             </div>
 
                             <div className="flex items-center justify-between mt-1">
-                              <span className="text-[10px] font-black text-slate-950">
+                              <span className="text-[10px] font-black text-indigo-400">
                                 ₹{prod.price.toLocaleString("en-IN")}
                               </span>
                               <button
@@ -362,7 +361,7 @@ export default function UserAiChatbot() {
                                   });
                                   triggerToast(`🛒 Added "${prod.name}" to cart!`);
                                 }}
-                                className="h-5 w-5 rounded-md bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white flex items-center justify-center shadow-xs transition cursor-pointer text-xs"
+                                className="h-5 w-5 rounded-md bg-indigo-650 hover:bg-indigo-500 active:scale-95 text-white flex items-center justify-center shadow-xs transition cursor-pointer text-xs"
                               >
                                 ＋
                               </button>
@@ -377,13 +376,13 @@ export default function UserAiChatbot() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 rounded-br-none shadow-sm flex items-center gap-2">
+                <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 rounded-bl-none shadow-sm flex items-center gap-2">
                   <div className="flex gap-1">
-                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-75" />
-                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-150" />
-                    <span className="h-1.5 w-1.5 bg-indigo-600 rounded-full animate-bounce delay-300" />
+                    <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-75" />
+                    <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-150" />
+                    <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-300" />
                   </div>
-                  <span className="text-[10px] text-gray-400 font-bold">Shopping assistant searching...</span>
+                  <span className="text-[10px] text-slate-400 font-bold">Shopping assistant searching...</span>
                 </div>
               </div>
             )}
@@ -391,18 +390,18 @@ export default function UserAiChatbot() {
           </div>
 
           {/* Footer form box */}
-          <form onSubmit={handleFormSubmit} className="p-4 border-t border-gray-200 bg-slate-50/60 flex gap-2 backdrop-blur-xs">
+          <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-800 bg-slate-950/60 flex gap-2 backdrop-blur-xs">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask about price, warranty, reviews, or say 'add to cart'..."
-              className="flex-1 bg-slate-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-black font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="flex-1 bg-slate-950/45 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
             />
             <button
               type="submit"
               disabled={loading || !inputValue.trim()}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
+              className="bg-indigo-650 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
             >
               Send
             </button>
