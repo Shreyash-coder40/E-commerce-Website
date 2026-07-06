@@ -16,15 +16,41 @@ Experience the live application hosted on Vercel:
 
 ---
 
-## 📸 Screenshots & Previews
+## 📸 User Experience & Previews
 
+### 🌌 Elegant Obsidian Space Landing Page
+Featuring a dark glassmorphic hero area with glowing ambient background orbs highlighting the latest product launches.
 <p align="center">
-  <img src="public/home_preview.png" alt="NextShop Home Page Preview" width="48%" />
-  <img src="public/chatbot_preview.png" alt="AI Chatbot Assistant Preview" width="48%" />
+  <img src="public/home_hero.png" alt="NextShop Home Page Featured" width="90%" />
 </p>
 
-> [!NOTE]
-> *To display your own screenshots above, simply capture your landing page and chatbot, name them `home_preview.png` and `chatbot_preview.png`, and place them inside the `public/` folder.*
+### 🛒 Rich Grid-Based Product Catalog
+Clean, high-fidelity catalog cards showcasing prices, low-stock warnings, discounts, details, and dynamic cart operations.
+<p align="center">
+  <img src="public/product_catalog.png" alt="NextShop Product Grid" width="90%" />
+</p>
+
+---
+
+## 🛠️ Admin Features & Command Center Previews
+
+### 📦 Real-Time Inventory Control Panel
+Interactive table interface built to track stock units, modify pricing ranges, read client reviews, and manage live products.
+<p align="center">
+  <img src="public/admin_inventory.png" alt="NextShop Admin Inventory Management" width="90%" />
+</p>
+
+### ➕ Dynamic Product Creator
+Clean registration form to easily publish marketplace items with MRPs, classification tags, stock levels, and specs.
+<p align="center">
+  <img src="public/admin_add_product.png" alt="NextShop Admin Add Product" width="90%" />
+</p>
+
+### 🤖 NextShop AI Agent Command Center
+Intelligent terminal interface powered by `gemini-2.0-flash`. Directly connected to active databases with dynamic indicators, preset suggestion audits, and database write authorization.
+<p align="center">
+  <img src="public/admin_command_center.png" alt="NextShop AI Agent Command Center" width="90%" />
+</p>
 
 ---
 
