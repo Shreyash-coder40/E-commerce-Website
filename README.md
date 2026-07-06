@@ -16,6 +16,18 @@ Experience the live application hosted on Vercel:
 
 ---
 
+## 📸 Screenshots & Previews
+
+<p align="center">
+  <img src="public/home_preview.png" alt="NextShop Home Page Preview" width="48%" />
+  <img src="public/chatbot_preview.png" alt="AI Chatbot Assistant Preview" width="48%" />
+</p>
+
+> [!NOTE]
+> *To display your own screenshots above, simply capture your landing page and chatbot, name them `home_preview.png` and `chatbot_preview.png`, and place them inside the `public/` folder.*
+
+---
+
 ## ✨ Overview
 **NextShop** is a premium, high-performance e-commerce platform built on Next.js 15. It features a unique, futuristic **Obsidian Space Glassmorphism** design theme, detailed admin business metrics, evolution charting, and is powered directly by advanced Google Gemini AI Agents to help both customers browse and admins manage products in real-time.
 
