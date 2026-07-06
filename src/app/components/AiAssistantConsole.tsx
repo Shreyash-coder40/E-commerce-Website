@@ -114,12 +114,12 @@ export default function AiAssistantConsole() {
     const parts = text.split(/\*\*([\s\S]*?)\*\*/g);
     for (let i = 0; i < parts.length; i++) {
       if (i % 2 === 1) {
-        formatted.push(<strong key={i} className="font-extrabold text-gray-950">{parts[i]}</strong>);
+        formatted.push(<strong key={i} className="font-extrabold text-white">{parts[i]}</strong>);
       } else {
         const subparts = parts[i].split(/\*([\s\S]*?)\*/g);
         for (let j = 0; j < subparts.length; j++) {
           if (j % 2 === 1) {
-            formatted.push(<em key={`${i}-${j}`} className="italic text-gray-700">{subparts[j]}</em>);
+            formatted.push(<em key={`${i}-${j}`} className="italic text-slate-300">{subparts[j]}</em>);
           } else {
             formatted.push(subparts[j]);
           }
@@ -158,29 +158,29 @@ export default function AiAssistantConsole() {
       }
 
       if (trimmed.startsWith("###")) {
-        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-700 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
+        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-300 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
       } else if (trimmed.startsWith("####")) {
-        elements.push(<h4 key={idx} className="text-xs font-black text-slate-950 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
+        elements.push(<h4 key={idx} className="text-xs font-black text-slate-200 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         elements.push(
-          <li key={idx} className="text-xs text-slate-950 ml-4 list-disc mb-1 leading-relaxed font-semibold">
+          <li key={idx} className="text-xs text-slate-200 ml-4 list-disc mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.substring(2))}
           </li>
         );
       } else if (/^\d+\.\s/.test(trimmed)) {
         elements.push(
-          <li key={idx} className="text-xs text-slate-950 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
+          <li key={idx} className="text-xs text-slate-200 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.replace(/^\d+\.\s*/, ""))}
           </li>
         );
       } else if (trimmed.startsWith("`") && trimmed.endsWith("`")) {
         elements.push(
-          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-900 text-[10px] font-mono rounded font-semibold my-1">
+          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-200 text-[10px] font-mono rounded font-semibold my-1">
             {trimmed.replace(/`/g, "")}
           </code>
         );
       } else if (trimmed !== "") {
-        elements.push(<p key={idx} className="text-xs text-slate-950 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
+        elements.push(<p key={idx} className="text-xs text-slate-200 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
       }
     });
 
@@ -361,8 +361,8 @@ export default function AiAssistantConsole() {
                       <div
                         className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
                           msg.sender === "user"
-                            ? "bg-sky-100 text-slate-950 font-bold border border-sky-200 rounded-br-none"
-                            : "bg-slate-950/60 border border-slate-800 text-slate-350 rounded-bl-none"
+                            ? "bg-sky-600 text-white font-bold border border-sky-500 rounded-br-none"
+                            : "bg-slate-950/60 border border-slate-800 text-slate-200 rounded-bl-none"
                         }`}
                       >
                         {parseMarkdown(msg.text)}

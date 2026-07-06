@@ -154,7 +154,6 @@ export async function POST(req: Request) {
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
     let aiResponseText = "";
-    let resolvedFilters: any = null;
 
     // Strict user/model history formatting
     const cleanedHistory = [];
@@ -174,148 +173,76 @@ export async function POST(req: Request) {
     }
 
     if (geminiApiKey) {
-      // STAGE 1: ADMIN INTENT PARSER LAYER
-      const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce admin dashboard. Your job is to extract structured JSON search and action parameters from the admin's query and conversation history.
+      // SINGLE UNIFIED PROMPT: Handles intent resolution + response in one API call
+      const unifiedSystemPrompt = `You are the NextShop AI Admin Assistant Agent — a powerful, context-aware business intelligence assistant with FULL READ and WRITE access to the store's database.
 
-You must output a JSON object matching this schema:
-{
-  "current_intent": {
-    "action_type": "VIEW_FINANCIALS" | "VIEW_RESTOCKING" | "VIEW_REVIEWS" | "MANAGE_CATALOG" | "GENERAL_CHAT",
-    "target_product": {
-      "id": string or null,
-      "name": string or null
-    },
-    "attributes": string[],
-    "price_change": number or null,
-    "stock_change": number or null
-  },
-  "is_follow_up": boolean,
-  "resolved_filters": {
-    "action_type": "VIEW_FINANCIALS" | "VIEW_RESTOCKING" | "VIEW_REVIEWS" | "MANAGE_CATALOG" | "GENERAL_CHAT",
-    "target_product": {
-      "id": string or null,
-      "name": string or null
-    },
-    "attributes": string[],
-    "price_change": number or null,
-    "stock_change": number or null
-  }
-}
+You are connected to the live production database. Here is the real-time snapshot:
 
-Guidelines for "resolved_filters":
-1. If "is_follow_up" is true, you must merge the target_product details, attributes, and actions from the previous turns in the history with the new query. For example, if the previous query was about "Rolex Watch" reviews and the user says "Change its price to 12000", the resolved_filters target_product should be mapped to Rolex, action_type should be "MANAGE_CATALOG", and price_change should be 12000.
-2. If "is_follow_up" is false, "resolved_filters" should match "current_intent".
-3. Return ONLY a single, clean JSON object conforming to the schema. Do not include markdown code wrapping blocks.`;
+=== PRODUCT CATALOG (${totalProducts} total) ===
+${JSON.stringify(productsList)}
 
-      // Copy cleaned history array
-      const parserHistory = [...cleanedHistory];
-      if (parserHistory.length > 0 && parserHistory[parserHistory.length - 1].role === "user") {
-        parserHistory[parserHistory.length - 1].parts[0].text += "\n" + message;
-      } else {
-        parserHistory.push({
-          role: "user",
-          parts: [{ text: message }]
-        });
-      }
+=== INVENTORY STATUS ===
+- Low Stock (1-5 units): ${JSON.stringify(lowStockProducts)}
+- Out of Stock: ${JSON.stringify(outOfStockProducts)}
 
-      try {
-        const parserResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: parserHistory,
-              systemInstruction: {
-                parts: [{ text: intentParserPrompt }]
-              },
-              generationConfig: {
-                responseMimeType: "application/json"
-              }
-            }),
-          }
-        );
-
-        if (parserResponse.ok) {
-          const parserData = await parserResponse.json();
-          const jsonText = parserData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (jsonText) {
-            try {
-              const parsed = JSON.parse(jsonText);
-              resolvedFilters = parsed.resolved_filters;
-            } catch (jsonErr) {
-              console.error("JSON parsing error on admin intent parser:", jsonErr, jsonText);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Stage 1 Admin Intent Parser API call failed:", err);
-      }
-
-      // STAGE 2 & 3: DATABASE RESOLUTION & RESPONSE SYNTHESIS
-      const filteredReviews = allReviews.filter(r => !resolvedFilters?.target_product?.id || r.productId === resolvedFilters.target_product.id);
-      const filteredQAs = allQAs.filter(q => !resolvedFilters?.target_product?.id || q.productId === resolvedFilters.target_product.id);
-
-      const responseGeneratorPrompt = `You are the NextShop AI Admin Assistant Agent. You help the store owner manage the catalog, audit returns, evaluate product sales velocities, and summarize feedback sentiment.
-
-We have resolved the admin's search filter criteria from their message and conversation context history:
-${JSON.stringify(resolvedFilters || {})}
-
-Here is the real-time state of the database catalog:
-- Total Products: ${totalProducts}
-- Product Catalog Lookup Directory: ${JSON.stringify(productsList)}
-- Low Stock Items: ${JSON.stringify(lowStockProducts)}
-- Out of Stock Items: ${JSON.stringify(outOfStockProducts)}
-
-Sales Velocity (Units sold & runout estimates):
+=== SALES VELOCITY REPORT ===
 ${JSON.stringify(salesVelocityReport)}
 
-Financial Metrics:
-* Total Paid Orders: ${totalOrdersCount}
-* Total Sales Revenue: ₹${totalRevenue.toLocaleString("en-IN")}
-* Total GST collected (18%): ₹${totalTax.toLocaleString("en-IN")}
-* Shipping fees collected: ₹${totalShipping.toLocaleString("en-IN")}
-* Net Profit estimate (approx 40% margin): ₹${estimatedProfit.toLocaleString("en-IN")}
-* Returned Order Loss (Approved returns count: ${returnedOrders.length}): Total Loss ₹${totalReturnLosses.toLocaleString("en-IN")}
-* Returns Log: ${JSON.stringify(returnedOrders)}
+=== FINANCIAL METRICS ===
+- Total Paid Orders: ${totalOrdersCount}
+- Gross Sales Revenue: ₹${totalRevenue.toLocaleString("en-IN")}
+- GST Collected (18%): ₹${totalTax.toLocaleString("en-IN")}
+- Shipping Fees Collected: ₹${totalShipping.toLocaleString("en-IN")}
+- Estimated Net Profit (~40% margin): ₹${estimatedProfit.toLocaleString("en-IN")}
+- Return Losses (${returnedOrders.length} approved returns): ₹${totalReturnLosses.toLocaleString("en-IN")}
+- Net Profit After Returns: ₹${(estimatedProfit - totalReturnLosses).toLocaleString("en-IN")}
 
-Registered Customers Directory:
-${JSON.stringify(customersList)}
-
-Detailed Paid Orders Logs (with customer names, emails, and products/quantities purchased):
+=== PAID ORDERS LOG ===
 ${JSON.stringify(paidOrders)}
 
-Reviews Database Feed (summarize when asked):
-${JSON.stringify(filteredReviews.slice(0, 10))}
+=== CUSTOMER DIRECTORY (${customersList.length} registered) ===
+${JSON.stringify(customersList)}
 
-Question & Answers Feed (answer questions or check unanswered items when asked):
-${JSON.stringify(filteredQAs.slice(0, 10))}
+=== CUSTOMER REVIEWS (${allReviews.length} total) ===
+${JSON.stringify(allReviews.slice(0, 20))}
 
-You have the authority to create and update products.
-1. Adding products: If requested to add/create a product, parse the parameters (name, category, price, stock). If you have them, end your message with a JSON action code block:
+=== CUSTOMER Q&A (${allQAs.length} total) ===
+${JSON.stringify(allQAs.slice(0, 20))}
+
+=== YOUR CAPABILITIES ===
+You can CREATE and UPDATE products in the database. When the admin requests to add or modify a product:
+
+1. Adding a product — append this block at the END of your reply:
 \`\`\`action
 {
   "type": "ADD_PRODUCT",
-  "name": "Wireless Headphones",
-  "category": "Electronics",
+  "name": "Product Name",
+  "category": "Category",
   "price": 1999,
   "stock": 50,
-  "description": "High fidelity audio earbuds created via AI Chatbot."
+  "description": "Created via NextShop AI Admin Assistant."
 }
 \`\`\`
-2. Modifying products: If requested to modify price/stock for a product, find its ID in the catalog directory above and output:
+
+2. Updating a product — find its ID from the catalog above, then append:
 \`\`\`action
 {
   "type": "UPDATE_PRODUCT",
-  "productId": "prod_id_here",
+  "productId": "actual_product_id_here",
   "price": 1200,
   "stock": 20
 }
 \`\`\`
 
-Write a helpful, descriptive, and context-aware dashboard response. Talk like an expert business assistant (personalized and professional, similar to ChatGPT/Gemini). Do not display the raw action JSON block details in your text conversational text; explain the action naturally.`;
+=== RESPONSE RULES ===
+- Be professional, concise, and insightful — like a senior business analyst.
+- Use Markdown formatting: ### headings, **bold**, tables, and bullet lists.
+- Use conversation history to resolve follow-up references (e.g. "it", "that product", "change its price").
+- Always use real numbers from the database above — never fabricate data.
+- Do NOT explain the action JSON block in text — describe the action naturally.
+- For financial, inventory, or review queries: always present data in a well-formatted Markdown table.`;
 
-      // Copy cleaned history and append user query
+      // Build conversation history and append current message
       const responseHistory = [...cleanedHistory];
       if (responseHistory.length > 0 && responseHistory[responseHistory.length - 1].role === "user") {
         responseHistory[responseHistory.length - 1].parts[0].text += "\n" + message;
@@ -328,14 +255,18 @@ Write a helpful, descriptive, and context-aware dashboard response. Talk like an
 
       try {
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contents: responseHistory,
               systemInstruction: {
-                parts: [{ text: responseGeneratorPrompt }]
+                parts: [{ text: unifiedSystemPrompt }]
+              },
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 2048,
               }
             }),
           }

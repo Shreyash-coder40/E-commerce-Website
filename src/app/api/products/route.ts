@@ -1,6 +1,34 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
+// GET: Fetch all products (used by admin console stats panel & other pages)
+export async function GET() {
+  try {
+    const products = await db.product.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        mrp: true,
+        category: true,
+        stock: true,
+        images: true,
+        description: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json({ success: true, products });
+  } catch (error: any) {
+    console.error("GET /api/products Error:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
+}
+
+// POST: Create a new product
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -11,13 +39,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // FIXED: Added mrp to the database creation payload block
     const newProduct = await db.product.create({
       data: {
         name,
         description,
         price: parseFloat(price),
-        mrp: mrp ? parseFloat(mrp) : null, 
+        mrp: mrp ? parseFloat(mrp) : null,
         category,
         stock: parseInt(stock, 10) || 0,
         images: images || [],
@@ -28,7 +55,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error: any) {
-    console.error("API Error:", error);
+    console.error("POST /api/products Error:", error);
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
