@@ -28,31 +28,19 @@ Modern Obsidian Space storefront featuring a dark glassmorphic landing area with
 * **How it works:** Implements responsive flex/grid layouts styling using dark glassmorphism (`bg-slate-900/40 backdrop-blur-xl`) and glowing animations.
 * **Advantages:** High visual appeal increases customer session length and highlights low-stock alerts and pricing claims in a clean, state-of-the-art interface.
 
----
-
-### 2. Gemini AI Shopping Assistant
-Interactive shopping assistant widget accessible store-wide to search items, review sentiment, and take operations.
+### 2. Gemini AI Shopping Assistant & Interactive Cart
+Conversational shopping assistant widget linked directly with a slide-over cart drawer to audit, modify, and add items instantly.
 <p align="center">
-  <img src="public/user_chatbot.png" alt="NextShop User AI Chatbot" width="90%" />
+  <img src="public/user_chatbot.png" alt="NextShop User AI Chatbot" width="48%" />
+  <img src="public/user_cart.png" alt="NextShop Shopping Cart" width="48%" />
 </p>
 
-* **How it works:** Uses client-side state actions integrated with backend Gemini API models. Suggests quick queries and renders responses in fully formatted markdown bubbles.
-* **Advantages:** Enables zero-click product search and adds products directly to the shopping cart via voice-like commands (e.g. *“add the iPhone to cart”*).
+* **How it works:** Renders a floating chat drawer communicating with Gemini models on the backend. Integrates a global Zustand store context to dynamically add items, modify counts, and persist shopping lists.
+* **Advantages:** Simplifies client shopping journeys by allowing voice-style chat prompts to add products directly to the cart, while providing immediate subtotal estimates with zero page reloads.
 
 ---
 
-### 3. Slide-Over Shopping Cart
-Interactive drawer to monitor selected products, modify item counts, and review subtotal estimations.
-<p align="center">
-  <img src="public/user_cart.png" alt="NextShop Shopping Cart" width="90%" />
-</p>
-
-* **How it works:** Implements a global state-management system (`Zustand` Cart Store) to persist added products dynamically.
-* **Advantages:** Offers smooth slide-in animations and live cost computations without requiring page reloads, ensuring a friction-free checkout entry.
-
----
-
-### 4. Secure Checkout & Order History Tracking
+### 3. Secure Checkout & Order History Tracking
 Secure address parameters form with automatic location detection, combined with an order history tracker and progress indicator.
 <p align="center">
   <img src="public/user_checkout.png" alt="NextShop Secure Checkout details" width="48%" />
@@ -64,7 +52,7 @@ Secure address parameters form with automatic location detection, combined with 
 
 ---
 
-### 5. Real Payment Simulation (Razorpay Test Mode)
+### 4. Real Payment Simulation (Razorpay Test Mode)
 Secure payment gateway integration simulating card transactions, netbanking options, or pay-later checkouts.
 <p align="center">
   <img src="public/user_payment_razorpay.png" alt="NextShop Razorpay Payment Options" width="48%" />
@@ -76,7 +64,7 @@ Secure payment gateway integration simulating card transactions, netbanking opti
 
 ---
 
-### 6. Order Cancellations & Return Requests
+### 5. Order Cancellations & Return Requests
 Streamlined request modals for customers to easily request cancellations or log item returns.
 <p align="center">
   <img src="public/user_cancel_order.png" alt="NextShop Cancel Order Request Form" width="90%" />
