@@ -16,6 +16,18 @@ Experience the live application hosted on Vercel:
 
 ---
 
+## 🎥 Project Demo Video
+
+Click below to watch our complete NextShop AI-Ops Walkthrough:
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=l54bVtoXcy4">
+    <img src="https://img.youtube.com/vi/l54bVtoXcy4/maxresdefault.jpg" alt="NextShop Project Video Walkthrough" width="90%" style="border-radius: 12px; box-shadow: 0 4px 30px rgba(0,0,0,0.4);" />
+  </a>
+</p>
+
+---
+
 ## 📸 User Experience & Previews
 
 ### 1. Landing Page & Catalog
