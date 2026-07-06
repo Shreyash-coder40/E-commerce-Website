@@ -64,6 +64,29 @@ Secure address parameters form with automatic location detection, combined with 
 
 ---
 
+### 5. Real Payment Simulation (Razorpay Test Mode)
+Secure payment gateway integration simulating card transactions, netbanking options, or pay-later checkouts.
+<p align="center">
+  <img src="public/user_payment_razorpay.png" alt="NextShop Razorpay Payment Options" width="48%" />
+  <img src="public/user_payment_confirming.png" alt="NextShop Confirming Payment Screen" width="48%" />
+</p>
+
+* **How it works:** Integrates Razorpay SDK on the frontend for secure checkouts, communicating via API endpoints and webhooks to verify transactions in test mode.
+* **Advantages:** Simplifies integration testing by simulating successful/failed payments, and ensures smooth client checkout flows before going live.
+
+---
+
+### 6. Order Cancellations & Return Requests
+Streamlined request modals for customers to easily request cancellations or log item returns.
+<p align="center">
+  <img src="public/user_cancel_order.png" alt="NextShop Cancel Order Request Form" width="90%" />
+</p>
+
+* **How it works:** Displays dedicated popup modals on the order history page. Collects cancellation/return reasons and logs them instantly for admin review.
+* **Advantages:** Improves user experience by giving customers control over their orders, reducing support ticket loads and automating the returns lifecycle.
+
+---
+
 ## 📊 Admin Portals & Dashboards
 
 ### 1. Business Analytics & Order Operations Dashboard
