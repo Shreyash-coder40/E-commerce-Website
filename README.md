@@ -18,17 +18,49 @@ Experience the live application hosted on Vercel:
 
 ## 📸 User Experience & Previews
 
-### 🌌 Elegant Obsidian Space Landing Page
-Featuring a dark glassmorphic hero area with glowing ambient background orbs highlighting the latest product launches.
+### 1. Landing Page & Catalog
+Modern Obsidian Space storefront featuring a dark glassmorphic landing area with glowing ambient background orbs and a rich grid-based product catalog layout.
 <p align="center">
-  <img src="public/home_hero.png" alt="NextShop Home Page Featured" width="90%" />
+  <img src="public/home_hero.png" alt="NextShop Home Page Featured" width="48%" />
+  <img src="public/product_catalog.png" alt="NextShop Product Grid" width="48%" />
 </p>
 
-### 🛒 Rich Grid-Based Product Catalog
-Clean, high-fidelity catalog cards showcasing prices, low-stock warnings, discounts, details, and dynamic cart operations.
+* **How it works:** Implements responsive flex/grid layouts styling using dark glassmorphism (`bg-slate-900/40 backdrop-blur-xl`) and glowing animations.
+* **Advantages:** High visual appeal increases customer session length and highlights low-stock alerts and pricing claims in a clean, state-of-the-art interface.
+
+---
+
+### 2. Gemini AI Shopping Assistant
+Interactive shopping assistant widget accessible store-wide to search items, review sentiment, and take operations.
 <p align="center">
-  <img src="public/product_catalog.png" alt="NextShop Product Grid" width="90%" />
+  <img src="public/user_chatbot.png" alt="NextShop User AI Chatbot" width="90%" />
 </p>
+
+* **How it works:** Uses client-side state actions integrated with backend Gemini API models. Suggests quick queries and renders responses in fully formatted markdown bubbles.
+* **Advantages:** Enables zero-click product search and adds products directly to the shopping cart via voice-like commands (e.g. *“add the iPhone to cart”*).
+
+---
+
+### 3. Slide-Over Shopping Cart
+Interactive drawer to monitor selected products, modify item counts, and review subtotal estimations.
+<p align="center">
+  <img src="public/user_cart.png" alt="NextShop Shopping Cart" width="90%" />
+</p>
+
+* **How it works:** Implements a global state-management system (`Zustand` Cart Store) to persist added products dynamically.
+* **Advantages:** Offers smooth slide-in animations and live cost computations without requiring page reloads, ensuring a friction-free checkout entry.
+
+---
+
+### 4. Secure Checkout & Order History Tracking
+Secure address parameters form with automatic location detection, combined with an order history tracker and progress indicator.
+<p align="center">
+  <img src="public/user_checkout.png" alt="NextShop Secure Checkout details" width="48%" />
+  <img src="public/user_order_history.png" alt="NextShop Order History Tracking" width="48%" />
+</p>
+
+* **How it works:** Collects delivery variables, computes GST tax/shipping dynamically based on PIN codes, and integrates a timeline tracker to check package status.
+* **Advantages:** Increases successful deliveries with autodetected addresses and builds customer trust by providing transparency over fulfillment progress with a 1-click reorder button.
 
 ---
 
