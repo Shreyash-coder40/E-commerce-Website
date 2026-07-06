@@ -32,22 +32,46 @@ Clean, high-fidelity catalog cards showcasing prices, low-stock warnings, discou
 
 ---
 
-## 🛠️ Admin Features & Command Center Previews
+## 📊 Admin Portals & Dashboards
 
-### 📦 Real-Time Inventory Control Panel
-Interactive table interface built to track stock units, modify pricing ranges, read client reviews, and manage live products.
+### 1. Business Analytics & Order Operations Dashboard
+Complete store status monitoring showing rolling revenues, conversion velocities, low-stock counts, and interactive tracking.
 <p align="center">
-  <img src="public/admin_inventory.png" alt="NextShop Admin Inventory Management" width="90%" />
+  <img src="public/admin_dashboard.png" alt="NextShop Business Analytics Dashboard" width="90%" />
 </p>
 
-### ➕ Dynamic Product Creator
-Clean registration form to easily publish marketplace items with MRPs, classification tags, stock levels, and specs.
+Full order ledger with delivery address details, invoice itemization, and an inline status selector (Pending, Processing, Shipped, Delivered, Cancelled, Returned) to manage full lifecycle operations.
 <p align="center">
-  <img src="public/admin_add_product.png" alt="NextShop Admin Add Product" width="90%" />
+  <img src="public/admin_order_invoice.png" alt="NextShop Order Ledger & Invoice Status Editor" width="90%" />
 </p>
 
-### 🤖 NextShop AI Agent Command Center
-Intelligent terminal interface powered by `gemini-2.0-flash`. Directly connected to active databases with dynamic indicators, preset suggestion audits, and database write authorization.
+* **How it works:** Aggregates real-time database checkouts, order logs, and stock statistics, displaying them in glassmorphic layouts.
+* **Advantages:** Gives administrators instant visibility over cash flow, automatic warnings on low-stock items, and a central portal to fulfill or cancel client orders.
+
+---
+
+### 2. Autonomous Demand Pricing Engine
+Dynamic price optimizer that evaluates sales velocity and automatically recommends strategy adjustments to maximize margins.
+<p align="center">
+  <img src="public/admin_pricing_engine.png" alt="NextShop Autonomous Demand Pricing Engine" width="90%" />
+</p>
+
+* **How it works:** Analyzes 30-day sales volume per product to compute sales speed. If stock is slow, it suggests a `LIQUIDATE` discount strategy; if demand is steady, it preserves a `STABLE` premium price point.
+* **Advantages:** Maximizes profits on high-demand inventory while accelerating warehouse clearance for slow-moving products with one-click optimization triggers.
+
+---
+
+### 🤖 AI Agent Command Center & Creation tools
+
+#### Inventory Control & Product Creator
+Table layout to directly edit details or delete listings, paired with a registration sheet for adding fresh assets.
+<p align="center">
+  <img src="public/admin_inventory.png" alt="NextShop Admin Inventory Management" width="48%" />
+  <img src="public/admin_add_product.png" alt="NextShop Admin Add Product" width="48%" />
+</p>
+
+#### AI Agent Command Console
+Terminal command interface powered by `gemini-2.0-flash`. Directly connected to database clusters with write permission.
 <p align="center">
   <img src="public/admin_command_center.png" alt="NextShop AI Agent Command Center" width="90%" />
 </p>
