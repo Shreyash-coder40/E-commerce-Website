@@ -3,8 +3,15 @@ import { db } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
+// Helper function to validate if the parsed competitor price is a realistic match (not an accessory or delivery fee)
+function validateCompetitorPrice(parsedPrice: number, ourPrice: number): boolean {
+  const minValidPrice = ourPrice * 0.5;  // At least 50% of our price
+  const maxValidPrice = ourPrice * 1.8;  // Maximum 180% of our price
+  return parsedPrice >= minValidPrice && parsedPrice <= maxValidPrice;
+}
+
 // Helper function to scrape search results for specific competitor links and prices
-async function searchCompetitorDetails(productName: string, siteDomain: string, baseFallbackPrice: number) {
+async function searchCompetitorDetails(productName: string, siteDomain: string, baseFallbackPrice: number, ourPrice: number) {
   const query = `${productName} site:${siteDomain}`;
   const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
   
@@ -35,7 +42,7 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
             rawLink = decodeURIComponent(decoded);
           }
         } catch (urlErr) {
-          // fallback to raw link
+          // fallback
         }
       }
       if (rawLink.includes(siteDomain)) {
@@ -56,13 +63,18 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
       selectedLink = exactProductLink || links[0] || `https://www.meesho.com/search?q=${encodeURIComponent(productName)}`;
     }
     
-    // Try to extract price from html snippets
-    // Looks for values like ₹12,999 or Rs. 15,000
-    const priceReg = /(?:₹|Rs\.?)\s?([0-9,]{3,})/i;
-    const priceMatch = html.match(priceReg);
+    // Try to extract price from HTML snippets
+    const priceReg = /(?:₹|Rs\.?)\s?([0-9,]{3,})/gi;
     let foundPrice: number | null = null;
-    if (priceMatch) {
-      foundPrice = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+    let priceMatch;
+    
+    // Iterate through all matched prices in the text search page and validate them
+    while ((priceMatch = priceReg.exec(html)) !== null) {
+      const candidatePrice = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+      if (validateCompetitorPrice(candidatePrice, ourPrice)) {
+        foundPrice = candidatePrice;
+        break; // Stop at the first realistic price match
+      }
     }
     
     return {
@@ -129,11 +141,11 @@ export async function GET(
     const baseFlipkart = Math.round(product.price * 1.02);
     const baseMeesho = Math.round(product.price * 0.97);
 
-    // Call searches concurrently
+    // Call searches concurrently with outlier validation parameters passed
     const [amazonRes, flipkartRes, meeshoRes] = await Promise.all([
-      searchCompetitorDetails(product.name, "amazon.in", baseAmazon),
-      searchCompetitorDetails(product.name, "flipkart.com", baseFlipkart),
-      searchCompetitorDetails(product.name, "meesho.com", baseMeesho)
+      searchCompetitorDetails(product.name, "amazon.in", baseAmazon, product.price),
+      searchCompetitorDetails(product.name, "flipkart.com", baseFlipkart, product.price),
+      searchCompetitorDetails(product.name, "meesho.com", baseMeesho, product.price)
     ]);
 
     const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
