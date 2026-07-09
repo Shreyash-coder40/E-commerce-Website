@@ -99,6 +99,45 @@ function parsePriceFromText(text: string, ourPrice: number): number | null {
   return null;
 }
 
+function getAlternativeImages(productName: string, category: string, baseImage: string): { amazon: string; flipkart: string; meesho: string } {
+  const nameLower = productName.toLowerCase();
+  const categoryLower = (category || "").toLowerCase();
+
+  // 1. iPhones and general phones
+  if (nameLower.includes("iphone") || nameLower.includes("phone") || nameLower.includes("pixel")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&auto=format&fit=crop&q=60", // Natural titanium iPhone
+      flipkart: "https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=500&auto=format&fit=crop&q=60", // Camera detail view
+      meesho: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=60" // Desert titanium display
+    };
+  }
+
+  // 2. Smartwatches and watches
+  if (nameLower.includes("watch") || nameLower.includes("smartwatch") || nameLower.includes("fossil")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500&auto=format&fit=crop&q=60", // Sleek analog watch
+      flipkart: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=500&auto=format&fit=crop&q=60", // Smartwatch angle
+      meesho: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&auto=format&fit=crop&q=60" // Leather strap smartwatch
+    };
+  }
+
+  // 3. Indian Traditional Wear (Sarees, Kurtas, Dresses)
+  if (nameLower.includes("saree") || nameLower.includes("sari") || nameLower.includes("kurta") || nameLower.includes("kurti") || categoryLower.includes("fashion") || categoryLower.includes("clothing")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&auto=format&fit=crop&q=60", // Silk saree matching
+      flipkart: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=500&auto=format&fit=crop&q=60", // Designer saree match
+      meesho: "https://images.unsplash.com/photo-1608748010899-18f300247112?w=500&auto=format&fit=crop&q=60" // Premium saree print
+    };
+  }
+
+  // Default fallback: return base image
+  return {
+    amazon: baseImage,
+    flipkart: baseImage,
+    meesho: baseImage
+  };
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -262,27 +301,31 @@ export async function GET(
     }
 
     // Set high-quality images from the database product entry
-    const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
+    const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500";
+    
+    // Generate distinct product images of the same type for each competitor
+    const altImages = getAlternativeImages(product.name, product.category || "", productImg);
+    
     const competitors = [
       {
         site: "Amazon",
         name: `Amazon Choice - ${product.name}`,
         price: amazonRes.price,
-        image: productImg,
+        image: altImages.amazon,
         link: amazonRes.link
       },
       {
         site: "Flipkart",
         name: `Flipkart Assured - ${product.name}`,
         price: flipkartRes.price,
-        image: productImg,
+        image: altImages.flipkart,
         link: flipkartRes.link
       },
       {
         site: "Meesho",
         name: `Meesho Trend - ${product.name}`,
         price: meeshoRes.price,
-        image: productImg,
+        image: altImages.meesho,
         link: meeshoRes.link
       }
     ];
