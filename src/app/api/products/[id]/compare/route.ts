@@ -130,6 +130,69 @@ function getAlternativeImages(productName: string, category: string, baseImage: 
     };
   }
 
+  // 4. Laptops (MacBook, Dell XPS, etc.)
+  if (nameLower.includes("laptop") || nameLower.includes("macbook") || nameLower.includes("xps") || categoryLower.includes("laptop")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1496181130204-7552cc1524e2?w=500&auto=format&fit=crop&q=60", // Silver laptop display
+      flipkart: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=60", // Laptop keyboard angle
+      meesho: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&auto=format&fit=crop&q=60" // Notebook style view
+    };
+  }
+
+  // 5. Sneakers and Footwear
+  if (nameLower.includes("nike") || nameLower.includes("sneaker") || nameLower.includes("shoe") || categoryLower.includes("footwear") || categoryLower.includes("shoes")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&auto=format&fit=crop&q=60", // Colorful sneaker
+      flipkart: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=500&auto=format&fit=crop&q=60", // Classic green Nike Air
+      meesho: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=60" // Casual sneakers side view
+    };
+  }
+
+  // 6. Headphones and Audio
+  if (nameLower.includes("headphone") || nameLower.includes("earbuds") || nameLower.includes("audio") || nameLower.includes("sony wh")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&auto=format&fit=crop&q=60", // Premium studio headphones
+      flipkart: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500&auto=format&fit=crop&q=60", // Over-ear gaming detail
+      meesho: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500&auto=format&fit=crop&q=60" // Vintage audio headset
+    };
+  }
+
+  // 7. Monitors / TV screens
+  if (nameLower.includes("monitor") || nameLower.includes("tv") || nameLower.includes("screen") || nameLower.includes("display")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=500&auto=format&fit=crop&q=60", // Monitor screen on desk
+      flipkart: "https://images.unsplash.com/photo-1586210579191-33b45e38fa2c?w=500&auto=format&fit=crop&q=60", // Curved display monitor
+      meesho: "https://images.unsplash.com/photo-1551645121-d1034da75057?w=500&auto=format&fit=crop&q=60" // Wall-mount flat screen
+    };
+  }
+
+  // 8. Gaming Consoles (PlayStation 5)
+  if (nameLower.includes("playstation") || nameLower.includes("ps5") || nameLower.includes("console") || categoryLower.includes("gaming")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=60", // Controller detail
+      flipkart: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&auto=format&fit=crop&q=60", // Living room console layout
+      meesho: "https://images.unsplash.com/photo-1553481187-be93c21490a9?w=500&auto=format&fit=crop&q=60" // Handheld/retro layout
+    };
+  }
+
+  // 9. E-Readers / Kindles
+  if (nameLower.includes("kindle") || nameLower.includes("reader") || nameLower.includes("paperwhite")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500&auto=format&fit=crop&q=60", // E-Reader book display
+      flipkart: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500&auto=format&fit=crop&q=60", // Reading e-book in hand
+      meesho: "https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?w=500&auto=format&fit=crop&q=60" // Digital paper cover design
+    };
+  }
+
+  // 10. Accessories / Mice / Keyboards
+  if (nameLower.includes("mouse") || nameLower.includes("keyboard") || nameLower.includes("logitech") || nameLower.includes("mx master")) {
+    return {
+      amazon: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500&auto=format&fit=crop&q=60", // Wireless mouse profile
+      flipkart: "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=500&auto=format&fit=crop&q=60", // Gaming mouse color angle
+      meesho: "https://images.unsplash.com/photo-1629429408209-1f912961dbd8?w=500&auto=format&fit=crop&q=60" // Keyboard accessory desk setup
+    };
+  }
+
   // Default fallback: return base image
   return {
     amazon: baseImage,
