@@ -158,7 +158,7 @@ export async function GET(
     if (serpapiApiKey) {
       console.log(`--> [Compare API]: Querying SerpApi Google Organic Search for "${product.name}"`);
       try {
-        const query = `"${product.name}" (site:amazon.in OR site:flipkart.com OR site:meesho.com)`;
+        const query = `${product.name} (site:amazon.in OR site:flipkart.com OR site:meesho.com)`;
         const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpapiApiKey}&gl=in&hl=en&google_domain=google.co.in`;
         
         const response = await fetch(url);
@@ -167,42 +167,74 @@ export async function GET(
           const organicResults = data.organic_results || [];
           console.log(`--> [Compare API]: SerpApi returned ${organicResults.length} organic matches`);
 
-          // Match Amazon
-          const amazonMatch = organicResults.find((r: any) => r.link.includes('amazon.in'));
-          if (amazonMatch) {
-            let price = amazonMatch.rich_snippet?.bottom?.detected_extensions?.price;
-            if (!price || !validateCompetitorPrice(price, product.price)) {
-              const textSnippet = `${amazonMatch.snippet || ''} ${amazonMatch.title || ''}`;
-              price = parsePriceFromText(textSnippet, product.price) || baseAmazon;
+          // Match Amazon: loop over all organic results to find the best match
+          let amazonMatch = null;
+          let amazonPriceValue = null;
+          for (const res of organicResults) {
+            if (res.link.includes('amazon.in')) {
+              if (!amazonMatch) amazonMatch = res;
+              let price = res.rich_snippet?.bottom?.detected_extensions?.price;
+              if (!price || !validateCompetitorPrice(price, product.price)) {
+                const textSnippet = `${res.snippet || ''} ${res.title || ''}`;
+                price = parsePriceFromText(textSnippet, product.price);
+              }
+              if (price && validateCompetitorPrice(price, product.price)) {
+                amazonPriceValue = price;
+                amazonMatch = res;
+                break;
+              }
             }
-            amazonRes = { link: amazonMatch.link, price };
+          }
+          if (amazonMatch) {
+            amazonRes = { link: amazonMatch.link, price: amazonPriceValue || baseAmazon };
           } else {
-            // If missing from search page 1, run targeted DDG scraper fallback
             amazonRes = await searchDuckDuckGoFallback(product.name, "amazon.in", baseAmazon, product.price);
           }
 
-          // Match Flipkart
-          const flipkartMatch = organicResults.find((r: any) => r.link.includes('flipkart.com'));
-          if (flipkartMatch) {
-            let price = flipkartMatch.rich_snippet?.bottom?.detected_extensions?.price;
-            if (!price || !validateCompetitorPrice(price, product.price)) {
-              const textSnippet = `${flipkartMatch.snippet || ''} ${flipkartMatch.title || ''}`;
-              price = parsePriceFromText(textSnippet, product.price) || baseFlipkart;
+          // Match Flipkart: loop over all organic results to find the best match
+          let flipkartMatch = null;
+          let flipkartPriceValue = null;
+          for (const res of organicResults) {
+            if (res.link.includes('flipkart.com')) {
+              if (!flipkartMatch) flipkartMatch = res;
+              let price = res.rich_snippet?.bottom?.detected_extensions?.price;
+              if (!price || !validateCompetitorPrice(price, product.price)) {
+                const textSnippet = `${res.snippet || ''} ${res.title || ''}`;
+                price = parsePriceFromText(textSnippet, product.price);
+              }
+              if (price && validateCompetitorPrice(price, product.price)) {
+                flipkartPriceValue = price;
+                flipkartMatch = res;
+                break;
+              }
             }
-            flipkartRes = { link: flipkartMatch.link, price };
+          }
+          if (flipkartMatch) {
+            flipkartRes = { link: flipkartMatch.link, price: flipkartPriceValue || baseFlipkart };
           } else {
             flipkartRes = await searchDuckDuckGoFallback(product.name, "flipkart.com", baseFlipkart, product.price);
           }
 
-          // Match Meesho
-          const meeshoMatch = organicResults.find((r: any) => r.link.includes('meesho.com'));
-          if (meeshoMatch) {
-            let price = meeshoMatch.rich_snippet?.bottom?.detected_extensions?.price;
-            if (!price || !validateCompetitorPrice(price, product.price)) {
-              const textSnippet = `${meeshoMatch.snippet || ''} ${meeshoMatch.title || ''}`;
-              price = parsePriceFromText(textSnippet, product.price) || baseMeesho;
+          // Match Meesho: loop over all organic results to find the best match
+          let meeshoMatch = null;
+          let meeshoPriceValue = null;
+          for (const res of organicResults) {
+            if (res.link.includes('meesho.com')) {
+              if (!meeshoMatch) meeshoMatch = res;
+              let price = res.rich_snippet?.bottom?.detected_extensions?.price;
+              if (!price || !validateCompetitorPrice(price, product.price)) {
+                const textSnippet = `${res.snippet || ''} ${res.title || ''}`;
+                price = parsePriceFromText(textSnippet, product.price);
+              }
+              if (price && validateCompetitorPrice(price, product.price)) {
+                meeshoPriceValue = price;
+                meeshoMatch = res;
+                break;
+              }
             }
-            meeshoRes = { link: meeshoMatch.link, price };
+          }
+          if (meeshoMatch) {
+            meeshoRes = { link: meeshoMatch.link, price: meeshoPriceValue || baseMeesho };
           } else {
             meeshoRes = await searchDuckDuckGoFallback(product.name, "meesho.com", baseMeesho, product.price);
           }
