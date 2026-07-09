@@ -10,8 +10,8 @@ function validateCompetitorPrice(parsedPrice: number, ourPrice: number): boolean
   return parsedPrice >= minValidPrice && parsedPrice <= maxValidPrice;
 }
 
-// Helper function to scrape search results for specific competitor links and prices
-async function searchCompetitorDetails(productName: string, siteDomain: string, baseFallbackPrice: number, ourPrice: number) {
+// Scrape search results from DuckDuckGo as a targeted fallback
+async function searchDuckDuckGoFallback(productName: string, siteDomain: string, baseFallbackPrice: number, ourPrice: number) {
   const query = `${productName} site:${siteDomain}`;
   const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
   
@@ -23,13 +23,12 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
     });
     
     if (!response.ok) {
-      throw new Error(`Scraper request failed with status: ${response.status}`);
+      throw new Error(`DDG fallback request failed with status: ${response.status}`);
     }
     
     const html = await response.text();
     const links: string[] = [];
     
-    // Parse links from duckduckgo redirect format
     const linkReg = /<a class="result__url"[^>]*href="([^"]+)"/gi;
     let match;
     while ((match = linkReg.exec(html)) !== null) {
@@ -50,7 +49,6 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
       }
     }
     
-    // Filter to find exact product links first
     let selectedLink = `https://www.${siteDomain}`;
     if (siteDomain === "amazon.in") {
       const exactProductLink = links.find(l => l.includes('/dp/') || l.includes('/gp/'));
@@ -63,17 +61,15 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
       selectedLink = exactProductLink || links[0] || `https://www.meesho.com/search?q=${encodeURIComponent(productName)}`;
     }
     
-    // Try to extract price from HTML snippets
     const priceReg = /(?:₹|Rs\.?)\s?([0-9,]{3,})/gi;
     let foundPrice: number | null = null;
     let priceMatch;
     
-    // Iterate through all matched prices in the text search page and validate them
     while ((priceMatch = priceReg.exec(html)) !== null) {
       const candidatePrice = parseInt(priceMatch[1].replace(/,/g, ''), 10);
       if (validateCompetitorPrice(candidatePrice, ourPrice)) {
         foundPrice = candidatePrice;
-        break; // Stop at the first realistic price match
+        break;
       }
     }
     
@@ -82,12 +78,25 @@ async function searchCompetitorDetails(productName: string, siteDomain: string, 
       price: foundPrice || baseFallbackPrice
     };
   } catch (err) {
-    console.error(`--> [Scraper]: Failed to search ${siteDomain}:`, err);
+    console.error(`--> [Compare API Fallback]: Failed to search ${siteDomain}:`, err);
     return {
       link: `https://www.${siteDomain}`,
       price: baseFallbackPrice
     };
   }
+}
+
+// Parse price from SerpApi organic results snippets
+function parsePriceFromText(text: string, ourPrice: number): number | null {
+  const priceReg = /(?:₹|Rs\.?)\s?([0-9,]{3,})/gi;
+  let match;
+  while ((match = priceReg.exec(text)) !== null) {
+    const candidatePrice = parseInt(match[1].replace(/,/g, ''), 10);
+    if (validateCompetitorPrice(candidatePrice, ourPrice)) {
+      return candidatePrice;
+    }
+  }
+  return null;
 }
 
 export async function GET(
@@ -133,51 +142,120 @@ export async function GET(
       });
     }
 
-    // 3. Perform Live Scraped Search Query for Competitor details
-    console.log(`--> [Compare API]: Triggering live web search queries for "${product.name}"`);
-    
-    // Generate base estimates for fallback
+    // Generate fallback base prices
     const baseAmazon = Math.round(product.price * 1.05);
     const baseFlipkart = Math.round(product.price * 1.02);
     const baseMeesho = Math.round(product.price * 0.97);
 
-    // Call searches concurrently with outlier validation parameters passed
-    const [amazonRes, flipkartRes, meeshoRes] = await Promise.all([
-      searchCompetitorDetails(product.name, "amazon.in", baseAmazon, product.price),
-      searchCompetitorDetails(product.name, "flipkart.com", baseFlipkart, product.price),
-      searchCompetitorDetails(product.name, "meesho.com", baseMeesho, product.price)
-    ]);
+    let amazonRes = { link: "https://www.amazon.in", price: baseAmazon };
+    let flipkartRes = { link: "https://www.flipkart.com", price: baseFlipkart };
+    let meeshoRes = { link: "https://www.meesho.com", price: baseMeesho };
 
+    // 3. Trigger SerpApi Google Organic Search (India localized) if key is present
+    const serpapiApiKey = process.env.SERPAPI_API_KEY;
+    let serpapiSuccess = false;
+
+    if (serpapiApiKey) {
+      console.log(`--> [Compare API]: Querying SerpApi Google Organic Search for "${product.name}"`);
+      try {
+        const query = `"${product.name}" (site:amazon.in OR site:flipkart.com OR site:meesho.com)`;
+        const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpapiApiKey}&gl=in&hl=en&google_domain=google.co.in`;
+        
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const organicResults = data.organic_results || [];
+          console.log(`--> [Compare API]: SerpApi returned ${organicResults.length} organic matches`);
+
+          // Match Amazon
+          const amazonMatch = organicResults.find((r: any) => r.link.includes('amazon.in'));
+          if (amazonMatch) {
+            let price = amazonMatch.rich_snippet?.bottom?.detected_extensions?.price;
+            if (!price || !validateCompetitorPrice(price, product.price)) {
+              const textSnippet = `${amazonMatch.snippet || ''} ${amazonMatch.title || ''}`;
+              price = parsePriceFromText(textSnippet, product.price) || baseAmazon;
+            }
+            amazonRes = { link: amazonMatch.link, price };
+          } else {
+            // If missing from search page 1, run targeted DDG scraper fallback
+            amazonRes = await searchDuckDuckGoFallback(product.name, "amazon.in", baseAmazon, product.price);
+          }
+
+          // Match Flipkart
+          const flipkartMatch = organicResults.find((r: any) => r.link.includes('flipkart.com'));
+          if (flipkartMatch) {
+            let price = flipkartMatch.rich_snippet?.bottom?.detected_extensions?.price;
+            if (!price || !validateCompetitorPrice(price, product.price)) {
+              const textSnippet = `${flipkartMatch.snippet || ''} ${flipkartMatch.title || ''}`;
+              price = parsePriceFromText(textSnippet, product.price) || baseFlipkart;
+            }
+            flipkartRes = { link: flipkartMatch.link, price };
+          } else {
+            flipkartRes = await searchDuckDuckGoFallback(product.name, "flipkart.com", baseFlipkart, product.price);
+          }
+
+          // Match Meesho
+          const meeshoMatch = organicResults.find((r: any) => r.link.includes('meesho.com'));
+          if (meeshoMatch) {
+            let price = meeshoMatch.rich_snippet?.bottom?.detected_extensions?.price;
+            if (!price || !validateCompetitorPrice(price, product.price)) {
+              const textSnippet = `${meeshoMatch.snippet || ''} ${meeshoMatch.title || ''}`;
+              price = parsePriceFromText(textSnippet, product.price) || baseMeesho;
+            }
+            meeshoRes = { link: meeshoMatch.link, price };
+          } else {
+            meeshoRes = await searchDuckDuckGoFallback(product.name, "meesho.com", baseMeesho, product.price);
+          }
+
+          serpapiSuccess = true;
+        } else {
+          console.error(`--> [Compare API]: SerpApi request failed with status: ${response.status}`);
+        }
+      } catch (serpErr) {
+        console.error("--> [Compare API]: SerpApi request thrown exception, using DDG fallbacks:", serpErr);
+      }
+    }
+
+    // 4. Default Fallback completely to DuckDuckGo scraper if SerpApi is not set or failed
+    if (!serpapiSuccess) {
+      console.log(`--> [Compare API]: SerpApi not active. Running standard DDG scraping fallback.`);
+      const [ddgAmazon, ddgFlipkart, ddgMeesho] = await Promise.all([
+        searchDuckDuckGoFallback(product.name, "amazon.in", baseAmazon, product.price),
+        searchDuckDuckGoFallback(product.name, "flipkart.com", baseFlipkart, product.price),
+        searchDuckDuckGoFallback(product.name, "meesho.com", baseMeesho, product.price)
+      ]);
+      amazonRes = ddgAmazon;
+      flipkartRes = ddgFlipkart;
+      meeshoRes = ddgMeesho;
+    }
+
+    // Set high-quality images from the database product entry
     const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-    let amazonImg = productImg;
-    let flipkartImg = productImg;
-    let meeshoImg = productImg;
-
     const competitors = [
       {
         site: "Amazon",
         name: `Amazon Choice - ${product.name}`,
         price: amazonRes.price,
-        image: amazonImg,
+        image: productImg,
         link: amazonRes.link
       },
       {
         site: "Flipkart",
         name: `Flipkart Assured - ${product.name}`,
         price: flipkartRes.price,
-        image: flipkartImg,
+        image: productImg,
         link: flipkartRes.link
       },
       {
         site: "Meesho",
         name: `Meesho Trend - ${product.name}`,
         price: meeshoRes.price,
-        image: meeshoImg,
+        image: productImg,
         link: meeshoRes.link
       }
     ];
 
-    // 4. Ask Gemini to compile the final recommendation text
+    // 5. Ask Gemini to compile the final recommendation text
     const geminiApiKey = process.env.GEMINI_API_KEY;
     let recommendation = "";
 
@@ -223,7 +301,7 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
       recommendation = getLocalRecommendationFallback(product.name, product.price, competitors);
     }
 
-    // 5. Update cache table
+    // 6. Update cache table
     await db.competitorCache.upsert({
       where: { productId: id },
       update: {
@@ -246,7 +324,7 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
       ourProduct: {
         name: product.name,
         price: product.price,
-        image: product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+        image: productImg
       },
       competitors,
       recommendation
