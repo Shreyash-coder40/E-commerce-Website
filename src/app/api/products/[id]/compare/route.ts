@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 // Helper function to validate if the parsed competitor price is a realistic match (not an accessory or delivery fee)
 function validateCompetitorPrice(parsedPrice: number, ourPrice: number): boolean {
   const minValidPrice = ourPrice * 0.5;  // At least 50% of our price
-  const maxValidPrice = ourPrice * 1.8;  // Maximum 180% of our price
+  const maxValidPrice = ourPrice * 3.0;  // Maximum 300% of our price
   return parsedPrice >= minValidPrice && parsedPrice <= maxValidPrice;
 }
 

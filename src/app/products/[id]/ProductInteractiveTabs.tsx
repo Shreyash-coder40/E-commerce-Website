@@ -53,7 +53,9 @@ export default function ProductInteractiveTabs({
     setLoadingCompare(true);
     setCompareError("");
     try {
-      const res = await fetch(`/api/products/${productId}/compare`);
+      const res = await fetch(`/api/products/${productId}/compare`, {
+        cache: 'no-store'
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load comparison data.");
       setCompareData(data);
