@@ -3,6 +3,81 @@ import { db } from "@/app/lib/db";
 
 export const dynamic = "force-dynamic";
 
+// Helper function to scrape search results for specific competitor links and prices
+async function searchCompetitorDetails(productName: string, siteDomain: string, baseFallbackPrice: number) {
+  const query = `${productName} site:${siteDomain}`;
+  const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  
+  try {
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Scraper request failed with status: ${response.status}`);
+    }
+    
+    const html = await response.text();
+    const links: string[] = [];
+    
+    // Parse links from duckduckgo redirect format
+    const linkReg = /<a class="result__url"[^>]*href="([^"]+)"/gi;
+    let match;
+    while ((match = linkReg.exec(html)) !== null) {
+      let rawLink = match[1];
+      if (rawLink.includes('uddg=')) {
+        try {
+          const u = new URL('https:' + rawLink);
+          const decoded = u.searchParams.get('uddg');
+          if (decoded) {
+            rawLink = decodeURIComponent(decoded);
+          }
+        } catch (urlErr) {
+          // fallback to raw link
+        }
+      }
+      if (rawLink.includes(siteDomain)) {
+        links.push(rawLink);
+      }
+    }
+    
+    // Filter to find exact product links first
+    let selectedLink = `https://www.${siteDomain}`;
+    if (siteDomain === "amazon.in") {
+      const exactProductLink = links.find(l => l.includes('/dp/') || l.includes('/gp/'));
+      selectedLink = exactProductLink || links[0] || `https://www.amazon.in/s?k=${encodeURIComponent(productName)}`;
+    } else if (siteDomain === "flipkart.com") {
+      const exactProductLink = links.find(l => l.includes('/p/') || l.includes('/itm'));
+      selectedLink = exactProductLink || links[0] || `https://www.flipkart.com/search?q=${encodeURIComponent(productName)}`;
+    } else if (siteDomain === "meesho.com") {
+      const exactProductLink = links.find(l => l.includes('/p/'));
+      selectedLink = exactProductLink || links[0] || `https://www.meesho.com/search?q=${encodeURIComponent(productName)}`;
+    }
+    
+    // Try to extract price from html snippets
+    // Looks for values like ₹12,999 or Rs. 15,000
+    const priceReg = /(?:₹|Rs\.?)\s?([0-9,]{3,})/i;
+    const priceMatch = html.match(priceReg);
+    let foundPrice: number | null = null;
+    if (priceMatch) {
+      foundPrice = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+    }
+    
+    return {
+      link: selectedLink,
+      price: foundPrice || baseFallbackPrice
+    };
+  } catch (err) {
+    console.error(`--> [Scraper]: Failed to search ${siteDomain}:`, err);
+    return {
+      link: `https://www.${siteDomain}`,
+      price: baseFallbackPrice
+    };
+  }
+}
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -46,11 +121,74 @@ export async function GET(
       });
     }
 
-    // 3. Generate competitor listings (Amazon, Flipkart, Meesho)
-    // If SerpApi is set, we could scrape/fetch, otherwise we synthesize realistic target matches
-    const competitors = generateCompetitorData(product.name, product.price, product.category);
+    // 3. Perform Live Scraped Search Query for Competitor details
+    console.log(`--> [Compare API]: Triggering live web search queries for "${product.name}"`);
+    
+    // Generate base estimates for fallback
+    const baseAmazon = Math.round(product.price * 1.05);
+    const baseFlipkart = Math.round(product.price * 1.02);
+    const baseMeesho = Math.round(product.price * 0.97);
 
-    // 4. Ask Gemini to provide a smart value verdict recommendation
+    // Call searches concurrently
+    const [amazonRes, flipkartRes, meeshoRes] = await Promise.all([
+      searchCompetitorDetails(product.name, "amazon.in", baseAmazon),
+      searchCompetitorDetails(product.name, "flipkart.com", baseFlipkart),
+      searchCompetitorDetails(product.name, "meesho.com", baseMeesho)
+    ]);
+
+    // Unsplash default images relative to categories
+    let amazonImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
+    let flipkartImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
+    let meeshoImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
+
+    const lowerName = product.name.toLowerCase();
+    if (lowerName.includes("saree")) {
+      amazonImg = "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300";
+      flipkartImg = "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300";
+      meeshoImg = "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?w=300";
+    } else if (lowerName.includes("iphone") || lowerName.includes("phone") || lowerName.includes("mobile")) {
+      amazonImg = "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=300";
+      flipkartImg = "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=300";
+      meeshoImg = "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300";
+    } else if (lowerName.includes("watch") || lowerName.includes("fossil") || lowerName.includes("rolex")) {
+      amazonImg = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300";
+      flipkartImg = "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=300";
+      meeshoImg = "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=300";
+    } else if (lowerName.includes("macbook") || lowerName.includes("laptop") || lowerName.includes("computer")) {
+      amazonImg = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300";
+      flipkartImg = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300";
+      meeshoImg = "https://images.unsplash.com/photo-1496181130204-7552cc15464f?w=300";
+    } else if (lowerName.includes("headphone") || lowerName.includes("sony") || lowerName.includes("audio")) {
+      amazonImg = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300";
+      flipkartImg = "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300";
+      meeshoImg = "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=300";
+    }
+
+    const competitors = [
+      {
+        site: "Amazon",
+        name: `Amazon Choice - ${product.name}`,
+        price: amazonRes.price,
+        image: amazonImg,
+        link: amazonRes.link
+      },
+      {
+        site: "Flipkart",
+        name: `Flipkart Assured - ${product.name}`,
+        price: flipkartRes.price,
+        image: flipkartImg,
+        link: flipkartRes.link
+      },
+      {
+        site: "Meesho",
+        name: `Meesho Trend - ${product.name}`,
+        price: meeshoRes.price,
+        image: meeshoImg,
+        link: meeshoRes.link
+      }
+    ];
+
+    // 4. Ask Gemini to compile the final recommendation text
     const geminiApiKey = process.env.GEMINI_API_KEY;
     let recommendation = "";
 
@@ -92,13 +230,12 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
       }
     }
 
-    // Fallback if Gemini failed or key not present
     if (!recommendation) {
       recommendation = getLocalRecommendationFallback(product.name, product.price, competitors);
     }
 
-    // 5. Update the cache table
-    const updatedCache = await db.competitorCache.upsert({
+    // 5. Update cache table
+    await db.competitorCache.upsert({
       where: { productId: id },
       update: {
         competitorData: competitors as any,
@@ -112,8 +249,6 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
         lastUpdated: new Date()
       }
     });
-
-    console.log(`--> [Compare API]: Refreshed cache successfully for product ${id}`);
 
     return NextResponse.json({
       success: true,
@@ -137,82 +272,7 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
   }
 }
 
-// Generate realistic pricing data for competitors based on category and current price
-function generateCompetitorData(name: string, price: number, category: string) {
-  // We compute realistic prices relative to our price
-  const isClothing = ["Clothing", "Footwear", "Accessories"].includes(category) || name.toLowerCase().includes("saree") || name.toLowerCase().includes("dress");
-  
-  // Calculate relative competitor prices
-  let amazonPrice = Math.round(price * 1.15); // Amazon is usually a bit higher for cheap clothes/items
-  let flipkartPrice = Math.round(price * 1.08);
-  let meeshoPrice = Math.round(price * 0.98); // Meesho can be slightly cheaper for clothes, but higher for brand tech
-
-  if (!isClothing) {
-    // Electronics / Watches: Meesho is usually higher (less direct brand sellers), Amazon/Flipkart are competitive
-    amazonPrice = Math.round(price * 0.99); // Sometimes Amazon discount
-    flipkartPrice = Math.round(price * 1.01);
-    meeshoPrice = Math.round(price * 1.10);
-  }
-
-  // Ensure Meesho doesn't drop too low or go negative
-  if (meeshoPrice <= 0) meeshoPrice = Math.round(price * 0.95);
-
-  // Unsplash images relative to categories
-  let amazonImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-  let flipkartImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-  let meeshoImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes("saree")) {
-    amazonImg = "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300";
-    flipkartImg = "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300";
-    meeshoImg = "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?w=300";
-  } else if (lowerName.includes("iphone") || lowerName.includes("phone") || lowerName.includes("mobile")) {
-    amazonImg = "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=300";
-    flipkartImg = "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=300";
-    meeshoImg = "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300";
-  } else if (lowerName.includes("watch") || lowerName.includes("fossil") || lowerName.includes("rolex")) {
-    amazonImg = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300";
-    flipkartImg = "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=300";
-    meeshoImg = "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=300";
-  } else if (lowerName.includes("macbook") || lowerName.includes("laptop") || lowerName.includes("computer")) {
-    amazonImg = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300";
-    flipkartImg = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300";
-    meeshoImg = "https://images.unsplash.com/photo-1496181130204-7552cc15464f?w=300";
-  } else if (lowerName.includes("headphone") || lowerName.includes("sony") || lowerName.includes("audio")) {
-    amazonImg = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300";
-    flipkartImg = "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300";
-    meeshoImg = "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=300";
-  }
-
-  return [
-    {
-      site: "Amazon",
-      name: `Amazon Choice - ${name}`,
-      price: amazonPrice,
-      image: amazonImg,
-      link: "https://www.amazon.in"
-    },
-    {
-      site: "Flipkart",
-      name: `Flipkart Assured - ${name}`,
-      price: flipkartPrice,
-      image: flipkartImg,
-      link: "https://www.flipkart.com"
-    },
-    {
-      site: "Meesho",
-      name: `Meesho Trend - ${name}`,
-      price: meeshoPrice,
-      image: meeshoImg,
-      link: "https://www.meesho.com"
-    }
-  ];
-}
-
-// Generate a local rule-based fallback recommendation if Gemini is offline/rate-limited
 function getLocalRecommendationFallback(name: string, price: number, competitors: any[]) {
-  // Find the cheapest competitor
   let cheapest = competitors[0];
   for (const comp of competitors) {
     if (comp.price < cheapest.price) {
