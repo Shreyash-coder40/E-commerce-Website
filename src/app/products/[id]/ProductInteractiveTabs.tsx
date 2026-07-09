@@ -41,7 +41,34 @@ export default function ProductInteractiveTabs({
   category,
   session,
 }: ProductInteractiveTabsProps) {
-  const [activeTab, setActiveTab] = useState<"specs" | "reviews" | "qas" | "policies">("specs");
+  const [activeTab, setActiveTab] = useState<"specs" | "reviews" | "qas" | "policies" | "compare">("specs");
+
+  // Price Comparison Hub State
+  const [compareData, setCompareData] = useState<any>(null);
+  const [loadingCompare, setLoadingCompare] = useState(false);
+  const [compareError, setCompareError] = useState("");
+
+  const fetchComparisonData = async () => {
+    if (compareData) return; // already loaded
+    setLoadingCompare(true);
+    setCompareError("");
+    try {
+      const res = await fetch(`/api/products/${productId}/compare`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load comparison data.");
+      setCompareData(data);
+    } catch (err: any) {
+      setCompareError(err.message || "An error occurred while comparing prices.");
+    } finally {
+      setLoadingCompare(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeTab === "compare") {
+      fetchComparisonData();
+    }
+  }, [activeTab]);
 
   // Reviews State
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
@@ -192,6 +219,16 @@ export default function ProductInteractiveTabs({
           }`}
         >
           🛡️ Return & Policies
+        </button>
+        <button
+          onClick={() => setActiveTab("compare")}
+          className={`flex-1 min-w-[120px] py-4 px-6 text-sm font-bold text-center border-b-2 transition cursor-pointer ${
+            activeTab === "compare"
+              ? "border-indigo-500 text-indigo-400 bg-slate-900/40"
+              : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-950/40"
+          }`}
+        >
+          🔍 Compare Prices
         </button>
       </div>
 
@@ -444,6 +481,141 @@ export default function ProductInteractiveTabs({
                 We safeguard your payment data via Razorpay tokenized routing. Supports standard credit/debit cards, Net Banking, and instant UPI. No credentials are saved on store databases.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* PANEL 5: CROSS-WEB PRICE COMPARISON */}
+        {activeTab === "compare" && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* AI Recommendation Verdict Banner */}
+            {compareData && (
+              <div className="p-6 bg-indigo-950/20 border border-indigo-900/40 rounded-3xl relative overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.15)]">
+                {/* Visual neon indicator light */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-indigo-950/80 border border-indigo-850 px-2.5 py-1 rounded-full text-[10px] font-black text-indigo-400 uppercase tracking-widest shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                  Gemini AI Verdict
+                </div>
+                <div className="text-white text-sm leading-relaxed prose prose-invert font-semibold max-w-none">
+                  {/* Clean custom rendering for basic markdown tags */}
+                  {compareData.recommendation.split("\n").map((para: string, idx: number) => {
+                    if (!para.trim()) return null;
+                    const cleanText = para.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                    return (
+                      <p 
+                        key={idx} 
+                        className="mb-2 last:mb-0" 
+                        dangerouslySetInnerHTML={{ __html: cleanText }} 
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {compareError && (
+              <div className="p-4 bg-rose-950/20 border border-rose-900/30 text-rose-450 rounded-2xl text-sm font-semibold">
+                ⚠️ {compareError}
+              </div>
+            )}
+
+            {/* Loading Spinner */}
+            {loadingCompare && (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-full border-t-2 border-indigo-500 border-r-2 border-transparent animate-spin"></div>
+                  <div className="absolute inset-0 h-12 w-12 rounded-full border-2 border-indigo-500/10"></div>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-white tracking-wide">Syncing Real-Time Market Prices...</p>
+                  <p className="text-xs text-slate-500 mt-1">Calling Google Shopping API & Gemini matching engines</p>
+                </div>
+              </div>
+            )}
+
+            {/* Side-by-Side Pricing Matrix Card Grid */}
+            {compareData && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                {/* 1. OUR PRODUCT (NextShop) - Highlighted card */}
+                <div className="bg-slate-900/80 border-2 border-indigo-500/60 rounded-3xl p-5 flex flex-col justify-between shadow-[0_0_25px_rgba(99,102,241,0.1)] hover:scale-[1.02] transition relative group">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-violet-600 border border-indigo-400 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm z-10">
+                    Our Store
+                  </div>
+                  <div>
+                    <div className="relative aspect-square w-full bg-slate-950/60 rounded-2xl overflow-hidden border border-slate-800/80 mb-4 flex items-center justify-center p-3">
+                      <img 
+                        src={compareData.ourProduct.image} 
+                        alt={compareData.ourProduct.name} 
+                        className="object-contain max-h-full max-w-full p-1"
+                      />
+                    </div>
+                    <span className="inline-block px-2 py-0.5 bg-indigo-950 text-indigo-400 font-bold text-[9px] uppercase tracking-wider rounded border border-indigo-900/40 mb-2">
+                      NextShop Storefront
+                    </span>
+                    <h4 className="text-sm font-bold text-white line-clamp-2 leading-tight">
+                      {compareData.ourProduct.name}
+                    </h4>
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-slate-800/60">
+                    <p className="text-2xl font-black text-white tracking-tight">
+                      ₹{Number(compareData.ourProduct.price).toLocaleString("en-IN")}
+                    </p>
+                    <div className="mt-3 w-full py-2.5 text-center bg-indigo-950 text-indigo-400 border border-indigo-900/60 rounded-xl text-xs font-black uppercase tracking-wide">
+                      Selected Offer
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Competitors (Amazon, Flipkart, Meesho) */}
+                {compareData.competitors.map((comp: any) => {
+                  let brandColorText = "text-amber-500 border-amber-900/40 bg-amber-950/20";
+                  let brandBtnStyle = "bg-amber-600 hover:bg-amber-500 shadow-amber-600/10";
+                  
+                  if (comp.site === "Flipkart") {
+                    brandColorText = "text-blue-400 border-blue-900/40 bg-blue-950/20";
+                    brandBtnStyle = "bg-blue-600 hover:bg-blue-500 shadow-blue-600/10";
+                  } else if (comp.site === "Meesho") {
+                    brandColorText = "text-pink-400 border-pink-900/40 bg-pink-950/20";
+                    brandBtnStyle = "bg-pink-600 hover:bg-pink-500 shadow-pink-600/10";
+                  }
+
+                  return (
+                    <div key={comp.site} className="bg-slate-950/30 border border-slate-800/80 hover:border-slate-700/60 rounded-3xl p-5 flex flex-col justify-between hover:scale-[1.02] transition group">
+                      <div>
+                        <div className="relative aspect-square w-full bg-slate-950/60 rounded-2xl overflow-hidden border border-slate-850 mb-4 flex items-center justify-center p-3">
+                          <img 
+                            src={comp.image} 
+                            alt={comp.name} 
+                            className="object-contain max-h-full max-w-full p-1"
+                          />
+                        </div>
+                        <span className={`inline-block px-2 py-0.5 font-bold text-[9px] uppercase tracking-wider rounded border ${brandColorText} mb-2`}>
+                          {comp.site} Verified
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-300 line-clamp-2 leading-tight group-hover:text-white transition">
+                          {comp.name}
+                        </h4>
+                      </div>
+                      <div className="mt-5 pt-4 border-t border-slate-850">
+                        <p className="text-2xl font-black text-white tracking-tight">
+                          ₹{Number(comp.price).toLocaleString("en-IN")}
+                        </p>
+                        <a
+                          href={comp.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`mt-3 block w-full py-2.5 text-center text-white font-extrabold rounded-xl text-xs transition shadow-md tracking-wide active:scale-[0.98] ${brandBtnStyle}`}
+                        >
+                          🔗 View Deal
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+
+              </div>
+            )}
           </div>
         )}
       </div>

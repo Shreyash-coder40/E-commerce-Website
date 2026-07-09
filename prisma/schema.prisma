@@ -232,3 +232,11 @@ model Subscription {
   @@index([userId])
   @@index([nextBillingDate, status])
 }
+
+model CompetitorCache {
+  id              String   @id @default(uuid())
+  productId       String   @unique
+  competitorData  Json     // Array of matches: [{ name, price, link, site, image }]
+  recommendation  String   @db.Text
+  lastUpdated     DateTime @default(now())
+}
