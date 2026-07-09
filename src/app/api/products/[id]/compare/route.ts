@@ -136,33 +136,10 @@ export async function GET(
       searchCompetitorDetails(product.name, "meesho.com", baseMeesho)
     ]);
 
-    // Unsplash default images relative to categories
-    let amazonImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-    let flipkartImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-    let meeshoImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
-
-    const lowerName = product.name.toLowerCase();
-    if (lowerName.includes("saree")) {
-      amazonImg = "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=300";
-      flipkartImg = "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=300";
-      meeshoImg = "https://images.unsplash.com/photo-1621184455862-c163dfb30e0f?w=300";
-    } else if (lowerName.includes("iphone") || lowerName.includes("phone") || lowerName.includes("mobile")) {
-      amazonImg = "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=300";
-      flipkartImg = "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=300";
-      meeshoImg = "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=300";
-    } else if (lowerName.includes("watch") || lowerName.includes("fossil") || lowerName.includes("rolex")) {
-      amazonImg = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300";
-      flipkartImg = "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=300";
-      meeshoImg = "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=300";
-    } else if (lowerName.includes("macbook") || lowerName.includes("laptop") || lowerName.includes("computer")) {
-      amazonImg = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300";
-      flipkartImg = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300";
-      meeshoImg = "https://images.unsplash.com/photo-1496181130204-7552cc15464f?w=300";
-    } else if (lowerName.includes("headphone") || lowerName.includes("sony") || lowerName.includes("audio")) {
-      amazonImg = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300";
-      flipkartImg = "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=300";
-      meeshoImg = "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=300";
-    }
+    const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300";
+    let amazonImg = productImg;
+    let flipkartImg = productImg;
+    let meeshoImg = productImg;
 
     const competitors = [
       {
