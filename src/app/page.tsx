@@ -9,10 +9,18 @@ import { fetchGemini } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
+// In-memory cache for semantic search queries to bypass API latency (L1 Cache)
+const semanticSearchCache = new Map<string, {
+  productsList: any[];
+  timestamp: number;
+}>();
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes TTL
+
 export default async function HomePage({ searchParams }: { searchParams: Promise<any> }) {
   const resolvedSearchParams = await searchParams;
   const category = resolvedSearchParams?.category || "";
   const search = resolvedSearchParams?.search || "";
+  const semantic = resolvedSearchParams?.semantic === "true";
 
   // 1. Fetch live categories for the filter component layout
   const rawCategories = await db.product.findMany({
@@ -20,8 +28,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     distinct: ["category"],
   });
   const categoriesList = rawCategories.map((c) => c.category);
-
-  const semantic = resolvedSearchParams?.semantic === "true";
 
   // 2. Query products using regular filter parameters
   let productsList = await db.product.findMany({
@@ -35,8 +41,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   });
 
   if (search && semantic && productsList.length > 0) {
-    try {
-      const prompt = `You are a semantic search engine for an e-commerce platform. Match the user's search query against this list of products.
+    const cacheKey = `${category}::${search.trim().toLowerCase()}`;
+    const cachedEntry = semanticSearchCache.get(cacheKey);
+
+    if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL)) {
+      console.log(`[Semantic Cache]: HIT for key "${cacheKey}"`);
+      productsList = cachedEntry.productsList;
+    } else {
+      try {
+        const prompt = `You are a semantic search engine for an e-commerce platform. Match the user's search query against this list of products.
 Rate the relevance of each product to the query on a scale of 0 to 100 (where 100 is a perfect conceptual match, and 0 is completely unrelated).
 
 User Search Query: "${search}"
@@ -87,6 +100,12 @@ Respond in STRICT JSON format:
               }))
               .filter((p) => p.searchScore >= 35)
               .sort((a, b) => b.searchScore - a.searchScore) as any;
+
+            // Save to memory cache
+            semanticSearchCache.set(cacheKey, {
+              productsList,
+              timestamp: Date.now()
+            });
           }
         }
       }
@@ -98,6 +117,7 @@ Respond in STRICT JSON format:
         p.description.toLowerCase().includes(search.toLowerCase())
       );
     }
+  }
   } else if (search && semantic) {
     // If keys are missing, fall back to standard keyword matching
     productsList = productsList.filter(p => 
