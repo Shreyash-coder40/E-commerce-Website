@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
+import { fetchGemini } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -394,12 +395,10 @@ export async function GET(
     ];
 
     // 5. Ask Gemini to compile the final recommendation text
-    const geminiApiKey = process.env.GEMINI_API_KEY;
     let recommendation = "";
 
-    if (geminiApiKey) {
-      try {
-        const prompt = `You are a professional e-commerce pricing analyst. Compare our store's product with competitors' listings.
+    try {
+      const prompt = `You are a professional e-commerce pricing analyst. Compare our store's product with competitors' listings.
 
 Our Product:
 - Name: "${product.name}"
@@ -414,25 +413,17 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
 2. If ours is not the cheapest, mention shipping speed, safety, or return policies to justify why buying from us is still a great choice.
 3. Be professional, honest, and persuasive. Format with standard markdown (e.g. bolding key numbers).`;
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.3 }
-            })
-          }
-        );
+      const response = await fetchGemini("gemini-flash-latest", {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3 }
+      });
 
-        if (response.ok) {
-          const resData = await response.json();
-          recommendation = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        }
-      } catch (geminiErr) {
-        console.error("--> [Compare API]: Gemini call failed, falling back to local reasoning:", geminiErr);
+      if (response.ok) {
+        const resData = await response.json();
+        recommendation = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
       }
+    } catch (geminiErr) {
+      console.error("--> [Compare API]: Gemini call failed, falling back to local reasoning:", geminiErr);
     }
 
     if (!recommendation) {

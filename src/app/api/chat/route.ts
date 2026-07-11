@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
+import { fetchGemini } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,13 @@ export async function POST(req: Request) {
       select: { productId: true, question: true, answer: true }
     });
 
-    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const hasGeminiKey = !!(
+      process.env.GEMINI_API_KEY ||
+      process.env.GEMINI_API_KEY_2 ||
+      process.env.GEMINI_API_KEY_3 ||
+      process.env.GEMINI_API_KEY_4 ||
+      process.env.GEMINI_API_KEY_5
+    );
     let aiResponseText = "";
     let resolvedFilters: any = null;
     let matchedProducts = productsList;
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
       }
     }
 
-    if (geminiApiKey) {
+    if (hasGeminiKey) {
       // STAGE 1: STRICT EXTRACTOR & INTENT PARSER LAYER
       const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce assistant. Your job is to extract structured JSON search parameters from the user's query and conversation history.
 
@@ -94,22 +101,15 @@ Guidelines for "resolved_filters":
       }
 
       try {
-        const parserResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: parserHistory,
-              systemInstruction: {
-                parts: [{ text: intentParserPrompt }]
-              },
-              generationConfig: {
-                responseMimeType: "application/json"
-              }
-            }),
+        const parserResponse = await fetchGemini("gemini-flash-latest", {
+          contents: parserHistory,
+          systemInstruction: {
+            parts: [{ text: intentParserPrompt }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json"
           }
-        );
+        });
 
         if (parserResponse.ok) {
           const parserData = await parserResponse.json();
@@ -220,19 +220,12 @@ Write a friendly, highly interactive, and context-aware conversational response.
       }
 
       try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: responseHistory,
-              systemInstruction: {
-                parts: [{ text: responseGeneratorPrompt }]
-              }
-            }),
+        const response = await fetchGemini("gemini-flash-latest", {
+          contents: responseHistory,
+          systemInstruction: {
+            parts: [{ text: responseGeneratorPrompt }]
           }
-        );
+        });
 
         if (response.ok) {
           const resData = await response.json();

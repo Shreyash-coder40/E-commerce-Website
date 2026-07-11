@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
+import { fetchGemini } from "@/app/lib/gemini";
 
 interface RouteParams {
   params: Promise<{
@@ -63,11 +64,8 @@ export async function POST(req: Request, { params }: RouteParams) {
     // 5. Gemini AI Spam & Manipulation Scanner
     let isSuspicious = false;
     let spamExplanation: string | null = null;
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-
-    if (geminiApiKey) {
-      try {
-        const prompt = `You are an AI content moderator for an e-commerce platform. Analyze this product review and evaluate if it is suspicious, fake, bot-generated, advertising spam, or contains a rating/comment mismatch.
+    try {
+      const prompt = `You are an AI content moderator for an e-commerce platform. Analyze this product review and evaluate if it is suspicious, fake, bot-generated, advertising spam, or contains a rating/comment mismatch.
 
 Product Name: "${product.name}"
 Review Rating: ${ratingNum} out of 5 stars
@@ -84,35 +82,27 @@ Rules for Flagging:
 - Advertising/Spam: Look for promo links, suspicious phone numbers, URLs, or unrelated marketing text.
 - Bot Signatures: Repetitive copy-paste templates or nonsense gibberish.`;
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { 
-                temperature: 0.1,
-                responseMimeType: "application/json"
-              }
-            })
-          }
-        );
-
-        if (response.ok) {
-          const resData = await response.json();
-          const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          try {
-            const parsed = JSON.parse(rawText);
-            isSuspicious = !!parsed.isSuspicious;
-            spamExplanation = parsed.spamExplanation || null;
-          } catch (jsonErr) {
-            console.error("--> [AI Moderator]: Failed to parse JSON response:", jsonErr, rawText);
-          }
+      const response = await fetchGemini("gemini-flash-latest", {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { 
+          temperature: 0.1,
+          responseMimeType: "application/json"
         }
-      } catch (geminiErr) {
-        console.error("--> [AI Moderator]: Request failed, saving as unflagged:", geminiErr);
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        try {
+          const parsed = JSON.parse(rawText);
+          isSuspicious = !!parsed.isSuspicious;
+          spamExplanation = parsed.spamExplanation || null;
+        } catch (jsonErr) {
+          console.error("--> [AI Moderator]: Failed to parse JSON response:", jsonErr, rawText);
+        }
       }
+    } catch (geminiErr) {
+      console.error("--> [AI Moderator]: Request failed or rate limited, saving as unflagged:", geminiErr);
     }
 
     // 6. Create Review

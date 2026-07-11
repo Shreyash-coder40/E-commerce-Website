@@ -5,6 +5,7 @@ import ProductFilters from "@/app/components/ProductFilters";
 import Image from "next/image";
 import HomeAddToCartButton from "@/app/components/HomeAddToCartButton";
 import CopyCouponButton from "@/app/components/CopyCouponButton";
+import { fetchGemini } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +21,92 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   });
   const categoriesList = rawCategories.map((c) => c.category);
 
+  const semantic = resolvedSearchParams?.semantic === "true";
+
   // 2. Query products using regular filter parameters
-  const products = await db.product.findMany({
+  let productsList = await db.product.findMany({
     where: {
       category: category ? category : undefined,
-      name: search ? { contains: search, mode: "insensitive" } : undefined,
+      // If semantic search is active, we fetch all products in the category and rank them via AI.
+      // Otherwise, we do standard SQL contains matching.
+      name: (search && !semantic) ? { contains: search, mode: "insensitive" } : undefined,
     },
     orderBy: { createdAt: "desc" },
   });
 
+  if (search && semantic && productsList.length > 0) {
+    try {
+      const prompt = `You are a semantic search engine for an e-commerce platform. Match the user's search query against this list of products.
+Rate the relevance of each product to the query on a scale of 0 to 100 (where 100 is a perfect conceptual match, and 0 is completely unrelated).
+
+User Search Query: "${search}"
+
+Products List:
+${productsList.map((p, idx) => `${idx + 1}. ID: "${p.id}" | Name: "${p.name}" | Description: "${p.description}" | Category: "${p.category}"`).join("\n")}
+
+Rules for Scoring:
+- Conceptual matches (e.g. searching "warm clothes" matching a wool jacket, or "something to listen to music" matching headphones) should get very high scores (80-100).
+- Partially related products should get moderate scores (30-70).
+- Irrelevant products should get low scores (0-20).
+
+Respond in STRICT JSON format:
+{
+  "scores": [
+    { "id": "product_id_string", "score": number, "explanation": "Short 1-sentence reason for this score explaining the semantic match to the user." }
+  ]
+}`;
+
+      const response = await fetchGemini("gemini-flash-latest", {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: "application/json"
+        }
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const parsed = JSON.parse(rawText);
+          const scoresMap = new Map<string, number>();
+          const explanationMap = new Map<string, string>();
+          
+          if (Array.isArray(parsed.scores)) {
+            parsed.scores.forEach((item: any) => {
+              scoresMap.set(item.id, Number(item.score) || 0);
+              explanationMap.set(item.id, item.explanation || "");
+            });
+
+            // Filter products with score >= 35, and sort them descending by score
+            productsList = productsList
+              .map((p) => ({
+                ...p,
+                searchScore: scoresMap.get(p.id) ?? 0,
+                searchExplanation: explanationMap.get(p.id) ?? ""
+              }))
+              .filter((p) => p.searchScore >= 35)
+              .sort((a, b) => b.searchScore - a.searchScore) as any;
+          }
+        }
+      }
+    } catch (geminiErr) {
+      console.error("--> [Semantic Search]: Gemini ranking failed, falling back to standard search:", geminiErr);
+      // Fallback: standard keyword matching
+      productsList = productsList.filter(p => 
+        p.name.toLowerCase().includes(search.toLowerCase()) || 
+        p.description.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+  } else if (search && semantic) {
+    // If keys are missing, fall back to standard keyword matching
+    productsList = productsList.filter(p => 
+      p.name.toLowerCase().includes(search.toLowerCase()) || 
+      p.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
+  const products = productsList;
   const featuredProduct = products[0] || null;
 
   return (
@@ -117,6 +195,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                         ✨ Popular
                       </span>
                     )}
+                    {/* AI Semantic Match Badge */}
+                    {(product as any).searchScore !== undefined && (
+                      <span 
+                        className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-0.5 sm:py-1 rounded-md z-10 shadow-md transition hover:scale-105 select-none"
+                        title={(product as any).searchExplanation}
+                      >
+                        🧠 AI Match: {(product as any).searchScore}%
+                      </span>
+                    )}
                     <Image
                       src={product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"}
                       alt={product.name}
@@ -125,7 +212,18 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                     />
                   </div>
                   <h3 className="text-xs sm:text-sm font-extrabold text-card-text-primary group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-1 mb-0.5 sm:mb-1">{product.name}</h3>
-                  <p className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-extrabold mb-1.5 sm:mb-3">{product.category}</p>
+                  <p className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-extrabold mb-1.5 sm:mb-2">{product.category}</p>
+                  
+                  {/* AI Match Explanation */}
+                  {(product as any).searchExplanation && (
+                    <div 
+                      className="text-[9px] sm:text-[10px] text-indigo-600 dark:text-indigo-400 font-medium leading-relaxed bg-indigo-500/5 dark:bg-indigo-500/10 p-2 rounded-xl border border-indigo-500/10 dark:border-indigo-500/20 mb-3 flex items-start gap-1 cursor-default hover:border-indigo-500/30 transition duration-200"
+                      title={(product as any).searchExplanation}
+                    >
+                      <span className="shrink-0">💡</span>
+                      <span className="line-clamp-2">{(product as any).searchExplanation}</span>
+                    </div>
+                  )}
                 </Link>
                 <div>
                   <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap mb-1 sm:mb-2">

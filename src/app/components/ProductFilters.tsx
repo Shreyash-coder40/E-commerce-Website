@@ -50,30 +50,47 @@ export default function ProductFilters({
       <div className="flex flex-col sm:flex-row gap-4">
         
         {/* Search Input Box */}
-        <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg
-              className="h-5 w-5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        <div className="flex-1 flex flex-col gap-2">
+          <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              name="search"
+              defaultValue={searchParams.get("search") || ""}
+              placeholder="Search for items, clothing, electronics..."
+              className="w-full pl-10 pr-4 py-3 bg-input-bg border border-input-border rounded-xl text-sm font-medium text-input-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition"
+            />
+          </form>
+          {/* AI Semantic Search Toggle Pill */}
+          <div className="flex items-center gap-3 px-1 mt-1">
+            <label className="relative inline-flex items-center cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={searchParams.get("semantic") === "true"}
+                onChange={(e) => updateQueryParams("semantic", e.target.checked ? "true" : "")}
+                className="sr-only peer"
               />
-            </svg>
+              <div className="w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-indigo-650 peer-checked:to-violet-650"></div>
+              <span className="ml-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 peer-checked:text-indigo-600 dark:peer-checked:text-indigo-400 flex items-center gap-1.5 transition-colors">
+                🧠 AI Semantic Search (Smart Meaning Match)
+              </span>
+            </label>
           </div>
-          <input
-            type="text"
-            name="search"
-            defaultValue={searchParams.get("search") || ""}
-            placeholder="Search for items, clothing, electronics..."
-            className="w-full pl-10 pr-4 py-3 bg-input-bg border border-input-border rounded-xl text-sm font-medium text-input-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition"
-          />
-        </form>
+        </div>
  
         {/* Dynamic Category Filtering Dropdown Menu */}
         <div className="sm:w-64">

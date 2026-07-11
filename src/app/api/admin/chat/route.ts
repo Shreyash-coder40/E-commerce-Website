@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
+import { fetchGemini } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -152,7 +153,13 @@ export async function POST(req: Request) {
       }
     });
 
-    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const hasGeminiKey = !!(
+      process.env.GEMINI_API_KEY ||
+      process.env.GEMINI_API_KEY_2 ||
+      process.env.GEMINI_API_KEY_3 ||
+      process.env.GEMINI_API_KEY_4 ||
+      process.env.GEMINI_API_KEY_5
+    );
     let aiResponseText = "";
 
     // Strict user/model history formatting
@@ -172,7 +179,7 @@ export async function POST(req: Request) {
       }
     }
 
-    if (geminiApiKey) {
+    if (hasGeminiKey) {
       // SINGLE UNIFIED PROMPT: Handles intent resolution + response in one API call
       const unifiedSystemPrompt = `You are the NextShop AI Admin Assistant Agent — a powerful, context-aware business intelligence assistant with FULL READ and WRITE access to the store's database.
 
@@ -254,23 +261,16 @@ You can CREATE and UPDATE products in the database. When the admin requests to a
       }
 
       try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: responseHistory,
-              systemInstruction: {
-                parts: [{ text: unifiedSystemPrompt }]
-              },
-              generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 2048,
-              }
-            }),
+        const response = await fetchGemini("gemini-flash-latest", {
+          contents: responseHistory,
+          systemInstruction: {
+            parts: [{ text: unifiedSystemPrompt }]
+          },
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048,
           }
-        );
+        });
 
         if (response.ok) {
           const resData = await response.json();
