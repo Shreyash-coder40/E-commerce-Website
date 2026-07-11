@@ -32,22 +32,99 @@ export async function POST(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Comment text cannot be empty." }, { status: 400 });
     }
 
-    // 3. Retrieve user from email
-    const dbUser = await db.user.findUnique({
-      where: { email: session.user.email },
-    });
+    // 3. Retrieve user & product details
+    const [dbUser, product] = await Promise.all([
+      db.user.findUnique({ where: { email: session.user.email } }),
+      db.product.findUnique({ where: { id: productId }, select: { name: true } })
+    ]);
 
     if (!dbUser) {
       return NextResponse.json({ error: "User profile not found." }, { status: 404 });
     }
 
-    // 4. Create Review
+    if (!product) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+
+    // 4. Verified Purchase Check
+    const purchase = await db.order.findFirst({
+      where: {
+        userId: dbUser.id,
+        isPaid: true,
+        items: {
+          some: {
+            productId: productId
+          }
+        }
+      }
+    });
+    const verifiedPurchase = !!purchase;
+
+    // 5. Gemini AI Spam & Manipulation Scanner
+    let isSuspicious = false;
+    let spamExplanation: string | null = null;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+
+    if (geminiApiKey) {
+      try {
+        const prompt = `You are an AI content moderator for an e-commerce platform. Analyze this product review and evaluate if it is suspicious, fake, bot-generated, advertising spam, or contains a rating/comment mismatch.
+
+Product Name: "${product.name}"
+Review Rating: ${ratingNum} out of 5 stars
+Review Comment: "${comment.trim()}"
+
+Analyze and respond in STRICT JSON format:
+{
+  "isSuspicious": boolean,
+  "spamExplanation": "Short explanation of why it was flagged, or null if it is safe and authentic."
+}
+
+Rules for Flagging:
+- Rating Mismatch: E.g., leaving a 5-star rating while writing negative text like "broke instantly, terrible", or a 1-star rating but writing "amazing product, love it".
+- Advertising/Spam: Look for promo links, suspicious phone numbers, URLs, or unrelated marketing text.
+- Bot Signatures: Repetitive copy-paste templates or nonsense gibberish.`;
+
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: { 
+                temperature: 0.1,
+                responseMimeType: "application/json"
+              }
+            })
+          }
+        );
+
+        if (response.ok) {
+          const resData = await response.json();
+          const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          try {
+            const parsed = JSON.parse(rawText);
+            isSuspicious = !!parsed.isSuspicious;
+            spamExplanation = parsed.spamExplanation || null;
+          } catch (jsonErr) {
+            console.error("--> [AI Moderator]: Failed to parse JSON response:", jsonErr, rawText);
+          }
+        }
+      } catch (geminiErr) {
+        console.error("--> [AI Moderator]: Request failed, saving as unflagged:", geminiErr);
+      }
+    }
+
+    // 6. Create Review
     const newReview = await db.review.create({
       data: {
         productId,
         userId: dbUser.id,
         rating: ratingNum,
         comment: comment.trim(),
+        verifiedPurchase,
+        isSuspicious,
+        spamExplanation
       },
       include: {
         user: { select: { name: true } },

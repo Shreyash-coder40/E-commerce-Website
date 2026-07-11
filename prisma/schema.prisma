@@ -96,14 +96,17 @@ model Product {
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rating    Int      @default(5)
-  comment   String
-  createdAt DateTime @default(now())
+  id               String   @id @default(uuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating           Int      @default(5)
+  comment          String
+  verifiedPurchase Boolean  @default(false)
+  isSuspicious     Boolean  @default(false)
+  spamExplanation  String?
+  createdAt        DateTime @default(now())
 }
 
 model QuestionAnswer {

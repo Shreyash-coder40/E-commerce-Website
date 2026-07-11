@@ -12,6 +12,9 @@ interface Review {
   comment: string;
   createdAt: string | Date;
   user: UserCompact;
+  verifiedPurchase?: boolean;
+  isSuspicious?: boolean;
+  spamExplanation?: string | null;
 }
 
 interface QuestionAnswer {
@@ -78,6 +81,7 @@ export default function ProductInteractiveTabs({
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState("");
+  const [revealedReviews, setRevealedReviews] = useState<string[]>([]);
 
   // Q&A State
   const [qas, setQas] = useState<QuestionAnswer[]>(initialQas);
@@ -363,20 +367,74 @@ export default function ProductInteractiveTabs({
                 <p className="text-sm text-slate-500 py-4">No customer feedback has been posted yet.</p>
               ) : (
                 <div className="divide-y divide-slate-800/60">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-sm text-white">
-                          {review.user?.name || "Verified Shopper"}
-                        </span>
-                        <span className="text-[10px] text-slate-500 font-medium" suppressHydrationWarning>
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </span>
+                  {reviews.map((review) => {
+                    const isFlagged = !!review.isSuspicious;
+                    const isRevealed = revealedReviews.includes(review.id);
+                    return (
+                      <div key={review.id} className="py-5 first:pt-0 last:pb-0 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-bold text-sm text-white">
+                              {review.user?.name || "Verified Shopper"}
+                            </span>
+                            {review.verifiedPurchase && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-950/45 border border-emerald-800/40 px-2 py-0.5 rounded-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-2.5 h-2.5">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                Verified Purchase
+                              </span>
+                            )}
+                            {isFlagged && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-400 bg-rose-950/45 border border-rose-800/40 px-2 py-0.5 rounded-md">
+                                ⚠️ Flagged
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-medium" suppressHydrationWarning>
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {renderStars(review.rating)}
+                        </div>
+
+                        {isFlagged && (
+                          <div className="bg-amber-950/20 border border-amber-900/35 rounded-xl p-3 text-xs text-amber-400 flex items-start gap-2.5">
+                            <span className="text-sm">⚠️</span>
+                            <div className="flex-1 space-y-1">
+                              <p className="font-bold">Flagged by AI Security</p>
+                              <p className="text-[11px] text-amber-500/90 leading-relaxed">
+                                This review was flagged as suspicious. {review.spamExplanation || "It exhibits bot-like patterns or generic template wording."}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (isRevealed) {
+                                    setRevealedReviews(revealedReviews.filter(id => id !== review.id));
+                                  } else {
+                                    setRevealedReviews([...revealedReviews, review.id]);
+                                  }
+                                }}
+                                className="text-[10px] font-extrabold text-indigo-400 hover:text-indigo-300 underline cursor-pointer mt-1 block"
+                              >
+                                {isRevealed ? "Hide Content" : "Show Content Anyway"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <p className={`text-sm leading-relaxed transition-all duration-300 ${
+                          isFlagged && !isRevealed 
+                            ? "text-slate-600 blur-sm select-none pointer-events-none" 
+                            : "text-slate-350 font-medium"
+                        }`}>
+                          {review.comment}
+                        </p>
                       </div>
-                      {renderStars(review.rating)}
-                      <p className="text-sm text-slate-350 whitespace-pre-wrap">{review.comment}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

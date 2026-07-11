@@ -14,6 +14,9 @@ interface Review {
   comment: string;
   createdAt: string | Date;
   user: UserCompact;
+  verifiedPurchase?: boolean;
+  isSuspicious?: boolean;
+  spamExplanation?: string | null;
 }
 
 interface QuestionAnswer {
@@ -51,6 +54,24 @@ export default function ReviewsQasAdminClient({
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  const handleReviewDelete = async (reviewId: string) => {
+    if (!confirm("Are you sure you want to delete this review? This action cannot be undone.")) {
+      return;
+    }
+    try {
+      const response = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete review.");
+      }
+      setReviews(reviews.filter((r) => r.id !== reviewId));
+    } catch (err: any) {
+      setError(err.message || "An error occurred while deleting the review.");
+    }
+  };
 
   const startAnswering = (qa: QuestionAnswer) => {
     setEditingQaId(qa.id);
@@ -152,23 +173,64 @@ export default function ReviewsQasAdminClient({
             </p>
           ) : (
             <div className="divide-y divide-slate-800/60 max-h-[600px] overflow-y-auto pr-2 space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="py-4 first:pt-0 last:pb-0 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="font-bold text-sm text-white">
-                        {review.user?.name || "Verified Shopper"}
-                      </p>
-                      <p className="text-[10px] text-slate-500 font-medium">{review.user?.email}</p>
+              {reviews.map((review) => {
+                const isFlagged = !!review.isSuspicious;
+                return (
+                  <div 
+                    key={review.id} 
+                    className={`py-4 px-4 rounded-2xl first:pt-4 last:pb-4 space-y-3 border transition ${
+                      isFlagged 
+                        ? "bg-rose-950/10 border-rose-900/30" 
+                        : "bg-slate-950/10 border-transparent hover:border-slate-800/40"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-sm text-white">
+                            {review.user?.name || "Verified Shopper"}
+                          </p>
+                          {review.verifiedPurchase && (
+                            <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-900/20 px-1.5 py-0.5 rounded">
+                              ✓ Verified
+                            </span>
+                          )}
+                          {isFlagged && (
+                            <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-rose-400 bg-rose-950/40 border border-rose-900/20 px-1.5 py-0.5 rounded animate-pulse">
+                              ⚠️ Suspicious
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">{review.user?.email}</p>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-semibold" suppressHydrationWarning>
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-slate-500 font-semibold" suppressHydrationWarning>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </span>
+
+                    <div className="flex justify-between items-center gap-4">
+                      {renderStars(review.rating)}
+                      <button
+                        onClick={() => handleReviewDelete(review.id)}
+                        className="text-[10px] font-extrabold text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 border border-rose-900/25 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                      >
+                        Delete Review
+                      </button>
+                    </div>
+
+                    <p className="text-sm text-slate-350 font-semibold whitespace-pre-wrap leading-relaxed">{review.comment}</p>
+
+                    {isFlagged && (
+                      <div className="bg-rose-950/20 border border-rose-900/35 rounded-xl p-3 text-[11px] text-rose-400 space-y-0.5 leading-relaxed">
+                        <p className="font-bold text-xs">⚠️ AI Spam Inspector Flagged:</p>
+                        <p className="text-rose-500/90 font-medium">
+                          {review.spamExplanation || "Identified mismatch, advertising template, or repetitive text pattern."}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  {renderStars(review.rating)}
-                  <p className="text-sm text-slate-300 font-semibold whitespace-pre-wrap">{review.comment}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
