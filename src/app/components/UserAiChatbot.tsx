@@ -38,7 +38,58 @@ export default function UserAiChatbot() {
   const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // PDF attachment & client-side extraction states
+  const [attachedPdf, setAttachedPdf] = useState<{ name: string; text: string } | null>(null);
+  const [readingPdf, setReadingPdf] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const loadPdfJs = () => {
+    return new Promise((resolve, reject) => {
+      if ((window as any).pdfjsLib) {
+        resolve((window as any).pdfjsLib);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js";
+      script.onload = () => {
+        const pdfjsLib = (window as any).pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+        resolve(pdfjsLib);
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setReadingPdf(true);
+    try {
+      const pdfjsLib: any = await loadPdfJs();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = "";
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+        fullText += `--- Page ${i} ---\n${pageText}\n`;
+      }
+      
+      setAttachedPdf({ name: file.name, text: fullText });
+    } catch (err) {
+      console.error("PDF text extraction failed:", err);
+      alert("Failed to read PDF file content. Make sure it is not corrupted or scanned image-only.");
+    } finally {
+      setReadingPdf(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -55,19 +106,34 @@ export default function UserAiChatbot() {
   };
 
   const handleSendMessage = async (textToSend: string) => {
-    if (!textToSend.trim() || loading) return;
+    if ((!textToSend.trim() && !attachedPdf) || loading) return;
 
-    const userMsg: Message = { sender: "user", text: textToSend };
+    // Use empty space if sending document-only query
+    const messageContent = textToSend.trim() || `Analyze the attached document: ${attachedPdf?.name}`;
+    
+    // Create clean message for local visual state
+    const visualText = messageContent + (attachedPdf ? ` 📄 [Doc: ${attachedPdf.name}]` : "");
+    const userMsg: Message = { sender: "user", text: visualText };
     setMessages((prev) => [...prev, userMsg]);
     setInputValue("");
     setLoading(true);
+
+    // Format query text to inject full PDF text contents into model context
+    let apiMessage = messageContent;
+    if (attachedPdf) {
+      apiMessage = `[Attached Document: ${attachedPdf.name}]\n\n--- Start of Document content ---\n${attachedPdf.text}\n--- End of Document content ---\n\nUser Question: ${messageContent}`;
+    }
+
+    // Keep reference and reset attachment state immediately
+    const currentPdf = attachedPdf;
+    setAttachedPdf(null);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: textToSend,
+          message: apiMessage,
           history: messages.slice(-10)
         }),
       });
@@ -389,19 +455,61 @@ export default function UserAiChatbot() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Attached Document Visual Indicators */}
+          {readingPdf && (
+            <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 flex items-center text-xs text-indigo-400 font-bold gap-2 animate-pulse">
+              <span className="h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
+              <span>Parsing document text...</span>
+            </div>
+          )}
+          {attachedPdf && (
+            <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-emerald-400 font-semibold gap-2 animate-slide-in">
+              <div className="flex items-center gap-2">
+                <span>📄</span>
+                <span className="truncate max-w-[200px]">{attachedPdf.name}</span>
+                <span className="text-[10px] text-slate-500 font-bold">({Math.round(attachedPdf.text.length / 1024)} KB text extracted)</span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setAttachedPdf(null)} 
+                className="text-slate-400 hover:text-white font-black cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {/* Footer form box */}
-          <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-800 bg-slate-950/60 flex gap-2 backdrop-blur-xs">
+          <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2 backdrop-blur-xs">
+            <input 
+              type="file"
+              ref={fileInputRef}
+              onChange={handlePdfUpload}
+              accept=".pdf"
+              className="hidden"
+            />
+            
+            <button
+              type="button"
+              disabled={loading || readingPdf}
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach PDF Document"
+              className="h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-850 text-slate-400 hover:text-white transition flex items-center justify-center cursor-pointer disabled:opacity-40 flex-shrink-0"
+            >
+              📎
+            </button>
+
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask about price, warranty, reviews, or say 'add to cart'..."
+              placeholder={attachedPdf ? "Ask something about the attached PDF..." : "Ask about price, warranty, reviews, or say 'add to cart'..."}
               className="flex-1 bg-slate-950/45 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
             />
             <button
               type="submit"
-              disabled={loading || !inputValue.trim()}
-              className="bg-indigo-650 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40"
+              disabled={loading || readingPdf || (!inputValue.trim() && !attachedPdf)}
+              className="bg-indigo-650 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40 flex-shrink-0"
             >
               Send
             </button>
