@@ -55,157 +55,33 @@ export async function POST(req: Request) {
     }
 
     if (hasGeminiKey) {
-      // STAGE 1: STRICT EXTRACTOR & INTENT PARSER LAYER
-      const intentParserPrompt = `You are a strict Intent Parser Layer for an e-commerce assistant. Your job is to extract structured JSON search parameters from the user's query and conversation history.
+      // SINGLE UNIFIED CALL: Performs intent extraction, matching, and response generation in one pass
+      const unifiedSystemPrompt = `You are the friendly, expert NextShop AI Shopping Assistant.
+Your goal is to parse user intent, match items from the live database catalog, suggest them, and output cart actions all in a single conversational turn.
 
-You must output a JSON object matching this exact schema:
-{
-  "extracted_filters": {
-    "category": string or null,
-    "product_type": string or null,
-    "color": array of strings or null,
-    "material": array of strings or null,
-    "vibe_or_style": string or null,
-    "max_price": number or null,
-    "occasion": string or null
-  },
-  "metadata": {
-    "is_follow_up": boolean,
-    "wants_to_browse": boolean
-  },
-  "resolved_filters": {
-    "category": string or null,
-    "product_type": string or null,
-    "color": array of strings or null,
-    "material": array of strings or null,
-    "vibe_or_style": string or null,
-    "max_price": number or null,
-    "occasion": string or null
-  }
-}
+=== LIVE CATALOG ===
+${JSON.stringify(productsList.map(p => ({ id: p.id, name: p.name, price: p.price, category: p.category, stock: p.stock, description: p.description.substring(0, 150) + "..." })))}
 
-Guidelines for "resolved_filters":
-1. If "is_follow_up" is true, you must merge the category, product_type, color, material, vibe_or_style, max_price, and occasion from the previous turns in the conversation history with the new query. For example, if the previous query was for "traditional kurtas" and the user asks "do you have blue?", the resolved_filters color should contain ["blue"], category should be "clothing", and product_type should be "kurta".
-2. If "is_follow_up" is false, "resolved_filters" should match "extracted_filters".
-3. Return ONLY a single, clean JSON object conforming to the schema. Do not include markdown code wrapping blocks.`;
+=== REVIEWS LOG ===
+${JSON.stringify(reviewsList.slice(0, 15))}
 
-      // Copy cleaned history array
-      const parserHistory = [...cleanedHistory];
-      if (parserHistory.length > 0 && parserHistory[parserHistory.length - 1].role === "user") {
-        parserHistory[parserHistory.length - 1].parts[0].text += "\n" + message;
-      } else {
-        parserHistory.push({
-          role: "user",
-          parts: [{ text: message }]
-        });
-      }
+=== Q&A INDEX ===
+${JSON.stringify(qasList.slice(0, 15))}
 
-      try {
-        const parserResponse = await fetchGemini("gemini-flash-latest", {
-          contents: parserHistory,
-          systemInstruction: {
-            parts: [{ text: intentParserPrompt }]
-          },
-          generationConfig: {
-            responseMimeType: "application/json"
-          }
-        });
-
-        if (parserResponse.ok) {
-          const parserData = await parserResponse.json();
-          const jsonText = parserData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (jsonText) {
-            try {
-              const parsed = JSON.parse(jsonText);
-              resolvedFilters = parsed.resolved_filters || parsed.extracted_filters;
-            } catch (jsonErr) {
-              console.error("JSON parsing error on customer intent parser:", jsonErr, jsonText);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Stage 1 Customer Intent Parser API call failed:", err);
-      }
-
-      // STAGE 2: DATABASE FILTERING & SCORING
-      if (resolvedFilters) {
-        matchedProducts = productsList.filter((p) => {
-          // A. Category matching (lenient to protect updated/custom category updates)
-          if (resolvedFilters.category) {
-            const pCat = p.category.toLowerCase();
-            const filterCat = resolvedFilters.category.toLowerCase();
-            const prodName = p.name.toLowerCase();
-            const pType = (resolvedFilters.product_type || "").toLowerCase();
-            const nameMatchesType = pType && prodName.includes(pType);
-
-            if (!nameMatchesType && pCat !== filterCat && !pCat.includes(filterCat) && !filterCat.includes(pCat) && pCat !== "updated") {
-              return false;
-            }
-          }
-          // B. Max Price constraint
-          if (resolvedFilters.max_price && p.price > resolvedFilters.max_price) {
-            return false;
-          }
-          return true;
-        });
-
-        // Relevancy scoring
-        const scoredProducts = matchedProducts.map((p) => {
-          let score = 0;
-          const searchFields = `${p.name} ${p.description} ${p.category} ${JSON.stringify(p.specifications || {})}`.toLowerCase();
-
-          if (resolvedFilters.product_type && searchFields.includes(resolvedFilters.product_type.toLowerCase())) {
-            score += 15;
-          }
-          if (resolvedFilters.color && Array.isArray(resolvedFilters.color)) {
-            resolvedFilters.color.forEach((c: string) => {
-              if (searchFields.includes(c.toLowerCase())) score += 10;
-            });
-          }
-          if (resolvedFilters.material && Array.isArray(resolvedFilters.material)) {
-            resolvedFilters.material.forEach((m: string) => {
-              if (searchFields.includes(m.toLowerCase())) score += 10;
-            });
-          }
-          if (resolvedFilters.vibe_or_style && searchFields.includes(resolvedFilters.vibe_or_style.toLowerCase())) {
-            score += 8;
-          }
-          if (resolvedFilters.occasion && searchFields.includes(resolvedFilters.occasion.toLowerCase())) {
-            score += 8;
-          }
-
-          return { product: p, score };
-        });
-
-        scoredProducts.sort((a, b) => b.score - a.score);
-        matchedProducts = scoredProducts.map(sp => sp.product);
-      }
-
-      // STAGE 3: RESPONSE SYNTHESIS
-      const responseGeneratorPrompt = `You are a helpful, expert AI Shopping Assistant for our NextShop e-commerce store.
-
-We have resolved the customer's search filter criteria from their message and conversation context history:
-${JSON.stringify(resolvedFilters || {})}
-
-Here is the real-time matching database catalog of items:
-${JSON.stringify(matchedProducts.slice(0, 5))}
-
-And here is the customer reviews index for these matches:
-${JSON.stringify(reviewsList.filter(r => matchedProducts.some(p => p.id === r.productId)).slice(0, 10))}
-
-And the Q&As log for context:
-${JSON.stringify(qasList.filter(q => matchedProducts.some(p => p.id === q.productId)).slice(0, 10))}
-
-Write a friendly, highly interactive, and context-aware conversational response.
-1. Present the matching products to the customer. Explain naturally why they match their criteria (e.g. noting material cotton/linen/leather, color, and occasion vibe if they mentioned any).
-2. If no products are found, politely inform them, and list 2-3 categories or products that we *do* have as recommendations.
-3. Keep the conversation engaging, interactive, and personalized (like ChatGPT/Gemini). Avoid stating the technical search filters directly; talk to them like a helpful salesperson!
-4. If they decided to add a product to their cart, output this exact action block on a separate line at the end:
+=== CONVERSATION OBJECTIVES ===
+1. Recommend matching products from the live catalog above. Explain why they match the user's color, price, material, category, or vibe criteria.
+2. If no products are found, politely suggest other categories or popular products in our store.
+3. Keep the conversation extremely friendly, direct, and sales-focused. Do not mention system variables or technical details.
+4. If the user explicitly asks to add an item to their cart, output this exact action block on a separate line at the end:
 \`\`\`action
 {
   "type": "ADD_TO_CART",
   "productId": "insert_matching_product_id"
 }
+\`\`\`
+5. At the very end of your response, list the product IDs you recommended in this exact format so the system can display them visually to the user:
+\`\`\`recommended
+["product_id_1", "product_id_2"]
 \`\`\``;
 
       // Copy cleaned history and append user query
@@ -223,14 +99,29 @@ Write a friendly, highly interactive, and context-aware conversational response.
         const response = await fetchGemini("gemini-flash-latest", {
           contents: responseHistory,
           systemInstruction: {
-            parts: [{ text: responseGeneratorPrompt }]
+            parts: [{ text: unifiedSystemPrompt }]
           }
         });
 
         if (response.ok) {
           const resData = await response.json();
           aiResponseText = resData.candidates?.[0]?.content?.parts?.[0]?.text || "No response text found from Gemini.";
-          finalProductsToReturn = matchedProducts.slice(0, 5);
+
+          // Extract recommended product cards
+          const recRegex = /```recommended\s*([\s\S]*?)\`\`\`/i;
+          const recMatch = aiResponseText.match(recRegex);
+          if (recMatch) {
+            try {
+              const ids = JSON.parse(recMatch[1].trim());
+              if (Array.isArray(ids)) {
+                finalProductsToReturn = productsList.filter(p => ids.includes(p.id));
+              }
+              // Clean up the recommended tags from the final text
+              aiResponseText = aiResponseText.replace(recRegex, "").trim();
+            } catch (e) {
+              console.error("Failed to parse recommended product IDs from response:", e);
+            }
+          }
         } else {
           const errText = await response.text();
           console.error("Gemini Public API call failed:", response.status, errText);
