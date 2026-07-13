@@ -25,6 +25,22 @@ export default function OrderActions({ order }: OrderActionsProps) {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
 
+  const handleOpenCancel = () => {
+    setCancelReason("Order placed by mistake");
+    setCancelDescription("");
+    setImageFile(null);
+    setImageUrl(null);
+    setShowCancelModal(true);
+  };
+
+  const handleOpenReturn = () => {
+    setReturnReason("Defective or damaged product");
+    setReturnDescription("");
+    setImageFile(null);
+    setImageUrl(null);
+    setShowReturnModal(true);
+  };
+
   // Check cancellation eligibility (PENDING or PROCESSING)
   const canCancel = ["PENDING", "PROCESSING"].includes(order.status);
 
@@ -71,7 +87,7 @@ export default function OrderActions({ order }: OrderActionsProps) {
     setIsCancelling(true);
 
     try {
-      const reasonText = `${cancelReason}${cancelDescription ? ` - ${cancelDescription}` : ""}`;
+      const reasonText = `Reason: ${cancelReason} | Description: ${cancelDescription}${imageUrl ? ` | Image: ${imageUrl}` : ""}`;
       const res = await fetch(`/api/orders/${order.id}/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -134,7 +150,7 @@ export default function OrderActions({ order }: OrderActionsProps) {
     <div className="flex gap-2 items-center flex-wrap pt-4 border-t border-gray-100 mt-4">
       {canCancel && (
         <button
-          onClick={() => setShowCancelModal(true)}
+          onClick={handleOpenCancel}
           className="text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl shadow-sm border border-rose-100 transition duration-200 cursor-pointer"
         >
           🚫 Cancel Order
@@ -143,7 +159,7 @@ export default function OrderActions({ order }: OrderActionsProps) {
 
       {canReturn && (
         <button
-          onClick={() => setShowReturnModal(true)}
+          onClick={handleOpenReturn}
           className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2.5 rounded-xl shadow-sm border border-indigo-100 transition duration-200 cursor-pointer"
         >
           🔄 Return Order
@@ -187,6 +203,22 @@ export default function OrderActions({ order }: OrderActionsProps) {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Upload Proof Image (Optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer"
+                />
+                {isUploadingImage && <p className="text-[10px] text-rose-600 animate-pulse mt-1.5 font-bold">Uploading proof photo...</p>}
+                {imageUrl && (
+                  <div className="mt-3 relative w-full h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
+                    <img src={imageUrl} alt="Cancellation proof preview" className="max-h-full max-w-full object-contain" />
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 justify-end pt-2">
                 <button
                   type="button"
@@ -197,7 +229,7 @@ export default function OrderActions({ order }: OrderActionsProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCancelling}
+                  disabled={isCancelling || isUploadingImage}
                   className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 px-4 py-2.5 rounded-xl shadow-lg shadow-rose-600/10 transition duration-200 cursor-pointer disabled:opacity-50"
                 >
                   {isCancelling ? "Submitting..." : "Submit Cancel Request"}

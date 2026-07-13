@@ -513,12 +513,24 @@ export default function AdminOrderManager({ initialOrders, initialCustomers }: A
                         <div>
                           <h5 className="font-extrabold text-slate-400 uppercase tracking-wider mb-2">Customer Justification</h5>
                           {isCancelRequest ? (
-                            <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3.5 space-y-1">
-                              <p className="font-bold text-rose-450">Reason selected: {order.cancellationReason}</p>
+                            <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                              <p className="font-bold text-rose-400">Reason: {reason}</p>
+                              {description && <p className="text-slate-300 font-medium leading-relaxed">Description: {description}</p>}
+                              {imageUrl && (
+                                <div className="mt-3">
+                                  <p className="font-bold text-slate-500 mb-1.5 uppercase text-[10px]">Customer Proof Image:</p>
+                                  <a href={imageUrl} target="_blank" rel="noopener noreferrer" className="inline-block group relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 hover:shadow-md transition">
+                                    <img src={imageUrl} alt="Cancellation justification preview" className="h-28 max-w-full object-contain" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                      <span className="text-white text-[10px] font-bold">Zoom Photo 🔍</span>
+                                    </div>
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className="bg-slate-950/40 border border-slate-800 rounded-xl p-3.5 space-y-2">
-                              <p className="font-bold text-indigo-455">Reason: {reason}</p>
+                              <p className="font-bold text-indigo-400">Reason: {reason}</p>
                               <p className="text-slate-300 font-medium leading-relaxed">Description: {description}</p>
                               {imageUrl && (
                                 <div className="mt-3">
