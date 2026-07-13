@@ -85,6 +85,7 @@ model Product {
   images             String[]
   warranty           String?             // Warranty information (specifically for electronics items)
   specifications     Json?               // Structured technical specs (e.g. {"RAM": "8GB", "Storage": "128GB"})
+  embedding          Json?               // 768-dimension floating-point vector coordinates
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 

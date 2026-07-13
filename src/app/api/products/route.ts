@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
+import { embedText } from "@/app/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Generate vector embedding
+    let embeddingVector: number[] | null = null;
+    try {
+      const textToEmbed = `${name} ${category} ${description}`;
+      embeddingVector = await embedText(textToEmbed);
+    } catch (embedErr) {
+      console.error("--> [Product Creation]: Failed to generate vector embedding:", embedErr);
+    }
+
     const newProduct = await db.product.create({
       data: {
         name,
@@ -50,6 +60,7 @@ export async function POST(req: Request) {
         images: images || [],
         warranty: warranty || null,
         specifications: specifications || null,
+        embedding: embeddingVector || undefined
       },
     });
 

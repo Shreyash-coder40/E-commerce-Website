@@ -68,3 +68,67 @@ export async function fetchGemini(
 
   throw lastError || new Error("All configured Gemini API keys failed or were rate-limited.");
 }
+
+export async function embedText(text: string): Promise<number[]> {
+  const keys: string[] = [];
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
+  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
+  if (process.env.GEMINI_API_KEY_4) keys.push(process.env.GEMINI_API_KEY_4);
+  if (process.env.GEMINI_API_KEY_5) keys.push(process.env.GEMINI_API_KEY_5);
+
+  if (keys.length === 0) {
+    throw new Error("No Gemini API keys are configured in environment variables.");
+  }
+
+  let lastError: any = null;
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+
+    if (!key || key.trim() === "") {
+      continue;
+    }
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${key}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "models/gemini-embedding-001",
+          content: {
+            parts: [{ text }]
+          }
+        })
+      });
+
+      if (response.status === 429) {
+        console.warn(`[AI Rotator - Embedding]: Key ${i + 1} hit rate limits (429). Trying next key...`);
+        lastError = new Error(`Key ${i + 1} rate limited (429)`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`[AI Rotator - Embedding]: Key ${i + 1} failed with status ${response.status}: ${errorText}. Trying next key...`);
+        lastError = new Error(`Key ${i + 1} failed (status ${response.status}): ${errorText}`);
+        continue;
+      }
+
+      const resData = await response.json();
+      const embedding = resData.embedding?.values;
+      if (!Array.isArray(embedding)) {
+        throw new Error("Invalid embedding response structure from Google API.");
+      }
+
+      return embedding;
+    } catch (err: any) {
+      console.error(`[AI Rotator - Embedding]: Key ${i + 1} threw error:`, err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("All configured Gemini API keys failed to generate embedding.");
+}

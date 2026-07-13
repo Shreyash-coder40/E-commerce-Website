@@ -5,7 +5,8 @@ import ProductFilters from "@/app/components/ProductFilters";
 import Image from "next/image";
 import HomeAddToCartButton from "@/app/components/HomeAddToCartButton";
 import CopyCouponButton from "@/app/components/CopyCouponButton";
-import { fetchGemini } from "@/app/lib/gemini";
+import { fetchGemini, embedText } from "@/app/lib/gemini";
+import { cosineSimilarity } from "@/app/lib/vector";
 
 export const dynamic = "force-dynamic";
 
@@ -49,77 +50,49 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       productsList = cachedEntry.productsList;
     } else {
       try {
-        const prompt = `You are a semantic search engine for an e-commerce platform. Match the user's search query against this list of products.
-Rate the relevance of each product to the query on a scale of 0 to 100 (where 100 is a perfect conceptual match, and 0 is completely unrelated).
+        console.log(`--> [Vector Search]: Generating embedding for query "${search}"...`);
+        const queryVector = await embedText(search.trim());
 
-User Search Query: "${search}"
-
-Products List:
-${productsList.map((p, idx) => `${idx + 1}. ID: "${p.id}" | Name: "${p.name}" | Description: "${p.description}" | Category: "${p.category}"`).join("\n")}
-
-Rules for Scoring:
-- Conceptual matches (e.g. searching "warm clothes" matching a wool jacket, or "something to listen to music" matching headphones) should get very high scores (80-100).
-- Partially related products should get moderate scores (30-70).
-- Irrelevant products should get low scores (0-20).
-
-Respond in STRICT JSON format:
-{
-  "scores": [
-    { "id": "product_id_string", "score": number, "explanation": "Short 1-sentence reason for this score explaining the semantic match to the user." }
-  ]
-}`;
-
-      const response = await fetchGemini("gemini-flash-latest", {
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
-      });
-
-      if (response.ok) {
-        const resData = await response.json();
-        const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawText) {
-          const parsed = JSON.parse(rawText);
-          const scoresMap = new Map<string, number>();
-          const explanationMap = new Map<string, string>();
-          
-          if (Array.isArray(parsed.scores)) {
-            parsed.scores.forEach((item: any) => {
-              scoresMap.set(item.id, Number(item.score) || 0);
-              explanationMap.set(item.id, item.explanation || "");
-            });
-
-            // Filter products with score >= 35, and sort them descending by score
-            productsList = productsList
-              .map((p) => ({
-                ...p,
-                searchScore: scoresMap.get(p.id) ?? 0,
-                searchExplanation: explanationMap.get(p.id) ?? ""
-              }))
-              .filter((p) => p.searchScore >= 35)
-              .sort((a, b) => b.searchScore - a.searchScore) as any;
-
-            // Save to memory cache
-            semanticSearchCache.set(cacheKey, {
-              productsList,
-              timestamp: Date.now()
-            });
+        const ratedProducts = productsList.map((p) => {
+          const productVector = p.embedding as number[] | null;
+          let similarity = 0;
+          if (Array.isArray(productVector)) {
+            similarity = cosineSimilarity(queryVector, productVector);
+          } else {
+            // Fallback: if embedding is missing, run basic keyword check to assign a score
+            const matchesKeyword = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                                   p.description.toLowerCase().includes(search.toLowerCase());
+            similarity = matchesKeyword ? 0.40 : 0.0;
           }
-        }
+
+          return {
+            ...p,
+            searchScore: Math.round(similarity * 100),
+            searchExplanation: `Matches search concept (similarity: ${Math.round(similarity * 100)}%) based on catalog details.`
+          };
+        });
+
+        // Filter products with score >= 35, and sort them descending by score
+        productsList = ratedProducts
+          .filter((p) => p.searchScore >= 35)
+          .sort((a, b) => b.searchScore - a.searchScore) as any;
+
+        // Save to memory cache
+        semanticSearchCache.set(cacheKey, {
+          productsList,
+          timestamp: Date.now()
+        });
+      } catch (geminiErr) {
+        console.error("--> [Vector Search]: Vector matching failed, falling back to standard search:", geminiErr);
+        // Fallback: standard keyword matching
+        productsList = productsList.filter(p => 
+          p.name.toLowerCase().includes(search.toLowerCase()) || 
+          p.description.toLowerCase().includes(search.toLowerCase())
+        );
       }
-    } catch (geminiErr) {
-      console.error("--> [Semantic Search]: Gemini ranking failed, falling back to standard search:", geminiErr);
-      // Fallback: standard keyword matching
-      productsList = productsList.filter(p => 
-        p.name.toLowerCase().includes(search.toLowerCase()) || 
-        p.description.toLowerCase().includes(search.toLowerCase())
-      );
     }
-  }
   } else if (search && semantic) {
-    // If keys are missing, fall back to standard keyword matching
+    // If search is active but products are empty, fall back to standard keyword matching
     productsList = productsList.filter(p => 
       p.name.toLowerCase().includes(search.toLowerCase()) || 
       p.description.toLowerCase().includes(search.toLowerCase())
