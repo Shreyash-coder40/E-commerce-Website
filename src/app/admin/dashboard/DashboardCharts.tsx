@@ -6,6 +6,8 @@ interface OrderData {
   id: string;
   totalAmount: number;
   createdAt: string | Date;
+  isPaid: boolean;
+  status: string;
 }
 
 interface DashboardChartsProps {
@@ -13,24 +15,29 @@ interface DashboardChartsProps {
 }
 
 export default function DashboardCharts({ orders }: DashboardChartsProps) {
-  const [metricMode, setMetricMode] = useState<"revenue" | "aov">("revenue");
+  const [hoveredPoint, setHoveredPoint] = useState<{ idx: number; type: "sales" | "losses" } | null>(null);
 
-  // Group last 7 days of sales dynamically
+  // Group last 7 days dynamically
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
     return d.toISOString().split("T")[0];
   }).reverse();
 
-  // Map database orders into daily tracking buckets
+  // Map database orders into daily metrics tracking sales vs. losses
   const dailyMetrics = last7Days.map((dateStr) => {
     const dayOrders = orders.filter((o) => {
       const orderDate = new Date(o.createdAt).toISOString().split("T")[0];
       return orderDate === dateStr;
     });
 
-    const totalRevenue = dayOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-    const aov = dayOrders.length > 0 ? totalRevenue / dayOrders.length : 0;
+    // Sales: Paid orders that are NOT cancelled or return-approved
+    const daySales = dayOrders.filter((o) => o.isPaid && o.status !== "CANCELLED" && o.status !== "RETURN_APPROVED");
+    const salesRevenue = daySales.reduce((sum, o) => sum + o.totalAmount, 0);
+
+    // Losses: Cancelled or return-approved orders
+    const dayLosses = dayOrders.filter((o) => o.status === "CANCELLED" || o.status === "RETURN_APPROVED");
+    const lossRevenue = dayLosses.reduce((sum, o) => sum + o.totalAmount, 0);
 
     // Format readable date labels (e.g., "Jun 24")
     const label = new Date(dateStr).toLocaleDateString("en-US", {
@@ -38,87 +45,211 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
       day: "numeric",
     });
 
-    return { label, revenue: totalRevenue, aov, orderCount: dayOrders.length };
+    return {
+      label,
+      sales: salesRevenue,
+      losses: lossRevenue,
+      salesCount: daySales.length,
+      lossesCount: dayLosses.length,
+    };
   });
 
-  // Calculate high points to scale the graph heights accurately
-  const maxRevenue = Math.max(...dailyMetrics.map((m) => m.revenue), 10);
-  const maxAOV = Math.max(...dailyMetrics.map((m) => m.aov), 10);
-  const currentMax = metricMode === "revenue" ? maxRevenue : maxAOV;
+  // Rolling 7-day metrics for card summaries
+  const rollingSales = dailyMetrics.reduce((sum, m) => sum + m.sales, 0);
+  const rollingLosses = dailyMetrics.reduce((sum, m) => sum + m.losses, 0);
+  const rollingNet = rollingSales - rollingLosses;
+
+  // Max value to scale heights accurately
+  const maxVal = Math.max(...dailyMetrics.map((m) => Math.max(m.sales, m.losses)), 100);
+
+  // Generate coordinates for SVG drawing
+  const width = 700;
+  const height = 200;
+  const paddingLeft = 40;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 20;
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
+  const salesPoints = dailyMetrics.map((m, idx) => ({
+    x: paddingLeft + (idx / 6) * chartWidth,
+    y: (height - paddingBottom) - (m.sales / maxVal) * chartHeight
+  }));
+
+  const lossesPoints = dailyMetrics.map((m, idx) => ({
+    x: paddingLeft + (idx / 6) * chartWidth,
+    y: (height - paddingBottom) - (m.losses / maxVal) * chartHeight
+  }));
+
+  // Path strings
+  const salesPath = salesPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const lossesPath = lossesPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+
+  // Filled area path strings
+  const salesAreaPath = `${salesPath} L ${salesPoints[salesPoints.length - 1].x} ${height - paddingBottom} L ${salesPoints[0].x} ${height - paddingBottom} Z`;
+  const lossesAreaPath = `${lossesPath} L ${lossesPoints[lossesPoints.length - 1].x} ${height - paddingBottom} L ${lossesPoints[0].x} ${height - paddingBottom} Z`;
 
   return (
-    <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 shadow-sm mb-10">
-      
-      {/* Chart Header Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800/60 pb-4 mb-6">
-        <div>
-          <h3 className="text-base font-bold text-white">Store Velocity Pulse</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Tracking immediate volume fluctuations over the last rolling 7 days.</p>
+    <div className="space-y-6 mb-10">
+      {/* 1. Quick Financial Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1: Gross Sales */}
+        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Gross Sales</p>
+            <h4 className="text-xl font-black text-white mt-1">₹{rollingSales.toLocaleString("en-IN")}</h4>
+            <p className="text-[10px] text-slate-500 mt-1">From successfully paid checkouts</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            📊
+          </div>
         </div>
-        
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-          <button
-            onClick={() => setMetricMode("revenue")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-              metricMode === "revenue" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Gross Revenue
-          </button>
-          <button
-            onClick={() => setMetricMode("aov")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-              metricMode === "aov" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Avg Order Value (AOV)
-          </button>
+
+        {/* Card 2: Financial Losses */}
+        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Financial Losses</p>
+            <h4 className="text-xl font-black text-rose-400 mt-1">₹{rollingLosses.toLocaleString("en-IN")}</h4>
+            <p className="text-[10px] text-slate-500 mt-1">From cancellations & approved returns</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+            📉
+          </div>
+        </div>
+
+        {/* Card 3: Net Profit Performance */}
+        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Net Profit Trend</p>
+            <h4 className={`text-xl font-black mt-1 ${rollingNet >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+              ₹{rollingNet.toLocaleString("en-IN")}
+            </h4>
+            <p className="text-[10px] text-slate-500 mt-1">Net performance over the period</p>
+          </div>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+            rollingNet >= 0 
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+              : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+          }`}>
+            {rollingNet >= 0 ? "📈" : "📉"}
+          </div>
         </div>
       </div>
 
-      {/* The Flexbox Bar Chart Matrix */}
-      <div className="h-64 flex items-end justify-between gap-2 pt-4 px-2 relative border-b border-slate-800/60">
-        
-        {/* Background Grid Accent Lines */}
-        <div className="absolute inset-x-0 top-0 border-t border-dashed border-slate-800/40 pointer-events-none h-full flex flex-col justify-between">
-          <div className="w-full border-b border-dashed border-slate-800/40"></div>
-          <div className="w-full border-b border-dashed border-slate-800/40"></div>
-          <div className="w-full border-b border-dashed border-slate-800/40"></div>
-        </div>
-
-        {dailyMetrics.map((day, idx) => {
-          const currentVal = metricMode === "revenue" ? day.revenue : day.aov;
-          // Calculate percentage height for the CSS block safely bounded to 100%
-          const barHeight = `${Math.min((currentVal / currentMax) * 100, 100)}%`;
-
-          return (
-            <div key={idx} className="flex-1 flex flex-col items-center group relative z-10">
-              
-              {/* Floating Tooltip Indicator */}
-              <div className="absolute -top-12 bg-slate-900 border border-slate-800 text-white text-[10px] font-black px-2.5 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow pointer-events-none whitespace-nowrap">
-                {metricMode === "revenue" ? `Revenue: ₹${day.revenue.toLocaleString("en-IN")}` : `AOV: ₹${day.aov.toLocaleString("en-IN")}`}
-                <span className="block text-[9px] font-normal text-slate-400 text-center">{day.orderCount} checkouts</span>
-              </div>
-
-              {/* Graphical Pillars */}
-              <div 
-                style={{ height: barHeight }} 
-                className={`w-full max-w-[40px] rounded-t-xl transition-all duration-500 ease-out min-h-[4px] ${
-                  currentVal > 0 
-                    ? "bg-gradient-to-t from-indigo-600 to-violet-600 shadow-sm group-hover:from-indigo-500 group-hover:to-violet-500" 
-                    : "bg-slate-800"
-                }`}
-              />
-
-              {/* X-Axis Date Labels */}
-              <span className="text-[10px] font-bold text-slate-400 mt-3 whitespace-nowrap select-none">
-                {day.label}
-              </span>
+      {/* 2. Interactive SVG Line Graph Canvas */}
+      <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 shadow-sm relative">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-base font-bold text-white">Financial Trendlines</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Visualizing gross sales vs. returns and cancellation losses.</p>
+          </div>
+          {/* Legend */}
+          <div className="flex items-center gap-4 text-[10px] font-bold">
+            <div className="flex items-center gap-1.5 text-indigo-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block shadow"></span>
+              Gross Sales
             </div>
-          );
-        })}
-      </div>
+            <div className="flex items-center gap-1.5 text-rose-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow"></span>
+              Refund/Cancel Loss
+            </div>
+          </div>
+        </div>
 
+        {/* Line Chart Grid Area */}
+        <div className="relative h-60 w-full">
+          {/* Tooltip Overlay */}
+          {hoveredPoint && (
+            <div 
+              style={{ 
+                left: `${((hoveredPoint.idx / 6) * 90) + 5}%`,
+                top: `${hoveredPoint.type === "sales" ? salesPoints[hoveredPoint.idx].y - 45 : lossesPoints[hoveredPoint.idx].y - 45}px`
+              }}
+              className="absolute transform -translate-x-1/2 bg-slate-950/95 border border-slate-800 text-white text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-xl pointer-events-none z-30 transition-all duration-150 whitespace-nowrap"
+            >
+              {hoveredPoint.type === "sales" ? (
+                <>
+                  <p className="text-indigo-400">💰 Sales: ₹{dailyMetrics[hoveredPoint.idx].sales.toLocaleString("en-IN")}</p>
+                  <p className="text-slate-400 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].salesCount} successful checkouts</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-rose-400">🚫 Loss: ₹{dailyMetrics[hoveredPoint.idx].losses.toLocaleString("en-IN")}</p>
+                  <p className="text-slate-400 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].lossesCount} cancellation/return requests</p>
+                </>
+              )}
+              <span className="block text-[8px] text-slate-500 text-center mt-0.5">{dailyMetrics[hoveredPoint.idx].label}</span>
+            </div>
+          )}
+
+          {/* SVG Canvas */}
+          <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+              </linearGradient>
+              <linearGradient id="lossesGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+
+            {/* Background Grid Accent Lines */}
+            <line x1="40" y1="20" x2="680" y2="20" stroke="#1e293b" strokeDasharray="4 4" />
+            <line x1="40" y1="100" x2="680" y2="100" stroke="#1e293b" strokeDasharray="4 4" />
+            <line x1="40" y1="180" x2="680" y2="180" stroke="#334155" strokeWidth="1" />
+
+            {/* Shaded Area Fills */}
+            <path d={salesAreaPath} fill="url(#salesGrad)" />
+            <path d={lossesAreaPath} fill="url(#lossesGrad)" />
+
+            {/* Path Trendlines */}
+            <path d={salesPath} fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={lossesPath} fill="none" stroke="#f43f5e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+            {/* Sales Nodes */}
+            {salesPoints.map((p, idx) => (
+              <circle
+                key={`sales-node-${idx}`}
+                cx={p.x}
+                cy={p.y}
+                r={hoveredPoint?.idx === idx && hoveredPoint?.type === "sales" ? 7 : 4.5}
+                fill="#6366f1"
+                stroke="#ffffff"
+                strokeWidth={1.5}
+                className="cursor-pointer transition-all duration-150"
+                onMouseEnter={() => setHoveredPoint({ idx, type: "sales" })}
+                onMouseLeave={() => setHoveredPoint(null)}
+              />
+            ))}
+
+            {/* Losses Nodes */}
+            {lossesPoints.map((p, idx) => (
+              <circle
+                key={`losses-node-${idx}`}
+                cx={p.x}
+                cy={p.y}
+                r={hoveredPoint?.idx === idx && hoveredPoint?.type === "losses" ? 7 : 4.5}
+                fill="#f43f5e"
+                stroke="#ffffff"
+                strokeWidth={1.5}
+                className="cursor-pointer transition-all duration-150"
+                onMouseEnter={() => setHoveredPoint({ idx, type: "losses" })}
+                onMouseLeave={() => setHoveredPoint(null)}
+              />
+            ))}
+          </svg>
+        </div>
+
+        {/* X-Axis Date Labels Container */}
+        <div className="flex justify-between items-center mt-3 px-[40px] text-[10px] font-bold text-slate-400">
+          {dailyMetrics.map((day, idx) => (
+            <span key={idx}>{day.label}</span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

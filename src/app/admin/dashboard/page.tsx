@@ -47,8 +47,7 @@ export default async function AdminDashboardPage() {
     }),
     // Fetch order history specifically to power the chart engine metrics
     db.order.findMany({
-      where: { isPaid: true },
-      select: { id: true, totalAmount: true, createdAt: true },
+      select: { id: true, totalAmount: true, createdAt: true, isPaid: true, status: true },
     }),
     db.user.findMany({
       where: {
