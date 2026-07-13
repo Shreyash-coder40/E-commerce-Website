@@ -22,65 +22,88 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    // 2. Fetch live store statistics & metadata catalog from database
-    const productsList = await db.product.findMany({
-      select: { id: true, name: true, price: true, stock: true, category: true }
-    });
+    // Define query dates
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // 2. Fetch live store statistics & metadata concurrently using Promise.all
+    let [
+      productsList,
+      paidOrders,
+      customersList,
+      returnedOrders,
+      orderItemsSales,
+      allReviews,
+      allQAs
+    ] = await Promise.all([
+      db.product.findMany({
+        select: { id: true, name: true, price: true, stock: true, category: true }
+      }),
+      db.order.findMany({
+        where: { isPaid: true },
+        select: {
+          id: true,
+          totalAmount: true,
+          shippingCost: true,
+          taxAmount: true,
+          createdAt: true,
+          user: { select: { name: true, email: true } },
+          items: {
+            select: {
+              quantity: true,
+              product: { select: { name: true } }
+            }
+          }
+        }
+      }),
+      db.user.findMany({
+        where: { role: "CUSTOMER" },
+        select: { name: true, email: true, createdAt: true }
+      }),
+      db.order.findMany({
+        where: { status: "RETURN_APPROVED" },
+        select: { totalAmount: true, createdAt: true, id: true }
+      }),
+      db.orderItem.findMany({
+        where: {
+          order: { isPaid: true, createdAt: { gte: thirtyDaysAgo } }
+        },
+        select: {
+          productId: true,
+          quantity: true,
+          order: { select: { createdAt: true } }
+        }
+      }),
+      db.review.findMany({
+        select: {
+          productId: true,
+          rating: true,
+          comment: true,
+          product: { select: { name: true } },
+          user: { select: { name: true } }
+        }
+      }),
+      db.questionAnswer.findMany({
+        select: {
+          id: true,
+          productId: true,
+          question: true,
+          answer: true,
+          product: { select: { name: true } }
+        }
+      })
+    ]);
 
     const totalProducts = productsList.length;
     const lowStockProducts = productsList.filter((p) => p.stock > 0 && p.stock <= 5);
     const outOfStockProducts = productsList.filter((p) => p.stock === 0);
-
-    const paidOrders = await db.order.findMany({
-      where: { isPaid: true },
-      select: {
-        id: true,
-        totalAmount: true,
-        shippingCost: true,
-        taxAmount: true,
-        createdAt: true,
-        user: { select: { name: true, email: true } },
-        items: {
-          select: {
-            quantity: true,
-            product: { select: { name: true } }
-          }
-        }
-      }
-    });
-
-    const customersList = await db.user.findMany({
-      where: { role: "CUSTOMER" },
-      select: { name: true, email: true, createdAt: true }
-    });
 
     const totalOrdersCount = paidOrders.length;
     const totalRevenue = paidOrders.reduce((sum, o) => sum + o.totalAmount, 0);
     const totalShipping = paidOrders.reduce((sum, o) => sum + o.shippingCost, 0);
     const totalTax = paidOrders.reduce((sum, o) => sum + o.taxAmount, 0);
     const estimatedProfit = totalRevenue * 0.40;
-
-    // A. Query returned orders to compute return losses trend
-    const returnedOrders = await db.order.findMany({
-      where: { status: "RETURN_APPROVED" },
-      select: { totalAmount: true, createdAt: true, id: true }
-    });
     const totalReturnLosses = returnedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-
-    // B. Calculate Sales Velocity (Quantity sold per product)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    let orderItemsSales = await db.orderItem.findMany({
-      where: {
-        order: { isPaid: true, createdAt: { gte: thirtyDaysAgo } }
-      },
-      select: {
-        productId: true,
-        quantity: true,
-        order: { select: { createdAt: true } }
-      }
-    });
 
     let daysSpan = 30;
 
@@ -129,28 +152,6 @@ export async function POST(req: Request) {
         daysOfInventoryLeft: daysOfInventory === 9999 ? "Infinite (No Sales)" : daysOfInventory,
         restockUrgency: p.stock === 0 ? "CRITICAL (Out of stock)" : (p.stock <= 5 || (typeof daysOfInventory === "number" && daysOfInventory <= 7) ? "HIGH" : "NORMAL")
       };
-    });
-
-    // C. Query all customer reviews in the store database
-    const allReviews = await db.review.findMany({
-      select: {
-        productId: true,
-        rating: true,
-        comment: true,
-        product: { select: { name: true } },
-        user: { select: { name: true } }
-      }
-    });
-
-    // D. Query all Q&A questions and answers in the store database
-    const allQAs = await db.questionAnswer.findMany({
-      select: {
-        id: true,
-        productId: true,
-        question: true,
-        answer: true,
-        product: { select: { name: true } }
-      }
     });
 
     const hasGeminiKey = !!(

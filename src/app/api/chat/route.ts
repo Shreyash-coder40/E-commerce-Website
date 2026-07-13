@@ -13,17 +13,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    const productsList = await db.product.findMany({
-      select: { id: true, name: true, price: true, stock: true, category: true, description: true, specifications: true, images: true }
-    });
-
-    const reviewsList = await db.review.findMany({
-      select: { productId: true, rating: true, comment: true }
-    });
-
-    const qasList = await db.questionAnswer.findMany({
-      select: { productId: true, question: true, answer: true }
-    });
+    // Fetch all catalog records concurrently using Promise.all to save latency
+    const [productsList, reviewsList, qasList] = await Promise.all([
+      db.product.findMany({
+        select: { id: true, name: true, price: true, stock: true, category: true, description: true, specifications: true, images: true }
+      }),
+      db.review.findMany({
+        select: { productId: true, rating: true, comment: true }
+      }),
+      db.questionAnswer.findMany({
+        select: { productId: true, question: true, answer: true }
+      })
+    ]);
 
     const hasGeminiKey = !!(
       process.env.GEMINI_API_KEY ||
