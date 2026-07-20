@@ -175,12 +175,12 @@ export default function AiAssistantConsole() {
     const parts = text.split(/\*\*([\s\S]*?)\*\*/g);
     for (let i = 0; i < parts.length; i++) {
       if (i % 2 === 1) {
-        formatted.push(<strong key={i} className="font-extrabold text-white">{parts[i]}</strong>);
+        formatted.push(<strong key={i} className="font-extrabold text-slate-900">{parts[i]}</strong>);
       } else {
         const subparts = parts[i].split(/\*([\s\S]*?)\*/g);
         for (let j = 0; j < subparts.length; j++) {
           if (j % 2 === 1) {
-            formatted.push(<em key={`${i}-${j}`} className="italic text-slate-300">{subparts[j]}</em>);
+            formatted.push(<em key={`${i}-${j}`} className="italic text-slate-650">{subparts[j]}</em>);
           } else {
             formatted.push(subparts[j]);
           }
@@ -219,29 +219,29 @@ export default function AiAssistantConsole() {
       }
 
       if (trimmed.startsWith("###")) {
-        elements.push(<h3 key={idx} className="text-sm font-black text-indigo-300 mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
+        elements.push(<h3 key={idx} className="text-sm font-black text-[#0077B6] mt-3 mb-1.5 uppercase tracking-wider">{formatInline(trimmed.replace(/^###\s*/, ""))}</h3>);
       } else if (trimmed.startsWith("####")) {
-        elements.push(<h4 key={idx} className="text-xs font-black text-slate-200 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
+        elements.push(<h4 key={idx} className="text-xs font-black text-slate-700 mt-2 mb-1 uppercase tracking-wider">{formatInline(trimmed.replace(/^####\s*/, ""))}</h4>);
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         elements.push(
-          <li key={idx} className="text-xs text-slate-200 ml-4 list-disc mb-1 leading-relaxed font-semibold">
+          <li key={idx} className="text-xs text-slate-700 ml-4 list-disc mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.substring(2))}
           </li>
         );
       } else if (/^\d+\.\s/.test(trimmed)) {
         elements.push(
-          <li key={idx} className="text-xs text-slate-200 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
+          <li key={idx} className="text-xs text-slate-700 ml-4 list-decimal mb-1 leading-relaxed font-semibold">
             {formatInline(trimmed.replace(/^\d+\.\s*/, ""))}
           </li>
         );
       } else if (trimmed.startsWith("`") && trimmed.endsWith("`")) {
         elements.push(
-          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-200 text-[10px] font-mono rounded font-semibold my-1">
+          <code key={idx} className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-900 text-[10px] font-mono rounded font-semibold my-1">
             {trimmed.replace(/`/g, "")}
           </code>
         );
       } else if (trimmed !== "") {
-        elements.push(<p key={idx} className="text-xs text-slate-200 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
+        elements.push(<p key={idx} className="text-xs text-slate-700 leading-relaxed mb-2.5 font-semibold">{formatInline(line)}</p>);
       }
     });
 
@@ -258,20 +258,20 @@ export default function AiAssistantConsole() {
     const dataRows = rows.slice(1);
 
     return (
-      <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-800 rounded-xl shadow-sm">
-        <table className="min-w-full divide-y divide-slate-800 text-[11px] text-left">
-          <thead className="bg-slate-950/60">
+      <div key={keyIdx} className="overflow-x-auto my-3 border border-slate-200 rounded-xl shadow-sm">
+        <table className="min-w-full divide-y divide-slate-200 text-[11px] text-left">
+          <thead className="bg-slate-50">
             <tr>
               {headers.map((h, i) => (
-                <th key={i} className="px-3 py-2 font-bold text-slate-400 uppercase tracking-wider">{h}</th>
+                <th key={i} className="px-3 py-2 font-bold text-slate-500 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-transparent">
+          <tbody className="divide-y divide-slate-200 bg-transparent">
             {dataRows.map((row, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-slate-950/40 transition">
+              <tr key={rowIdx} className="hover:bg-slate-50/50 transition">
                 {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="px-3 py-2 text-slate-300 font-medium">{cell}</td>
+                  <td key={cellIdx} className="px-3 py-2 text-slate-700 font-medium">{cell}</td>
                 ))}
               </tr>
             ))}
@@ -282,37 +282,29 @@ export default function AiAssistantConsole() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#FAFAFA] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Huge Semi-Transparent Logo Watermark in Background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
-        <div className="text-[12vw] font-black tracking-tighter text-indigo-500/[0.09] rotate-12 flex items-center gap-4 whitespace-nowrap">
+        <div className="text-[12vw] font-black tracking-tighter text-slate-100 rotate-12 flex items-center gap-4 whitespace-nowrap">
           <span>🛒</span> NEXT<span>SHOP</span>
         </div>
       </div>
-
-      {/* Glowing Ambient Background Orbs */}
-      <div className="absolute top-10 left-10 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-fuchsia-500/15 rounded-full blur-3xl animate-pulse" />
-      
-      {/* Decorative Grid Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
 
       <div className="w-full max-w-6xl mx-auto relative z-10">
         {/* Header navigation bar */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               🤖 NextShop AI Agent Command Center
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Audit financials, execute database CRUD writes, and forecast inventory via LLM processing.
             </p>
           </div>
           <div>
             <Link
               href="/admin/dashboard"
-              className="text-xs font-bold text-slate-300 bg-slate-800/40 border border-slate-700/60 px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-800 hover:text-white transition inline-flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+              className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 hover:text-slate-900 transition inline-flex items-center gap-1.5 cursor-pointer"
             >
               ← Back to Dashboard
             </Link>
@@ -324,56 +316,56 @@ export default function AiAssistantConsole() {
           
           {/* Left Panel: Statistics & Operations Command Center */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-4">
-              <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest">Console Parameters</h3>
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+              <h3 className="text-xs font-black text-[#0077B6] uppercase tracking-widest">Console Parameters</h3>
               
-              <div className="divide-y divide-slate-800/60">
+              <div className="divide-y divide-slate-100">
                 <div className="py-2.5 first:pt-0">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Total Catalog Items</p>
-                  <p className="text-lg font-black text-white mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Catalog Items</p>
+                  <p className="text-lg font-black text-slate-800 mt-0.5">
                     {loadingStats ? "..." : stats.totalProducts} products
                   </p>
                 </div>
                 <div className="py-2.5">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Out of Stock</p>
-                  <p className="text-lg font-black text-rose-550 mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Out of Stock</p>
+                  <p className="text-lg font-black text-rose-650 mt-0.5">
                     {loadingStats ? "..." : stats.outOfStockCount} items
                   </p>
                 </div>
                 <div className="py-2.5">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">Low Stock Alerts</p>
-                  <p className="text-lg font-black text-amber-500 mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Low Stock Alerts</p>
+                  <p className="text-lg font-black text-amber-600 mt-0.5">
                     {loadingStats ? "..." : stats.lowStockCount} items
                   </p>
                 </div>
               </div>
 
               <div className="pt-2">
-                <span className="text-[9px] font-bold bg-indigo-950/40 border border-indigo-900/50 text-indigo-400 px-2 py-1 rounded-lg inline-flex items-center gap-1">
+                <span className="text-[9px] font-bold bg-indigo-50 border border-indigo-100 text-[#0077B6] px-2 py-1 rounded-lg inline-flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" /> Database Sync Active
                 </span>
               </div>
             </div>
 
             {/* AI Prompt suggest deck */}
-            <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-3">
-              <h4 className="text-xs font-black text-white uppercase tracking-wider">Suggested Audits</h4>
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Suggested Audits</h4>
               <div className="space-y-2">
                 <button
                   onClick={() => handleSendMessage("Show me the profit and loss report")}
-                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 border border-slate-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   📊 Profit & Loss analysis
                 </button>
                 <button
                   onClick={() => handleSendMessage("Which products need restocking based on sales velocity?")}
-                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 border border-slate-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   🚨 Inventory Restocking warning
                 </button>
                 <button
                   onClick={() => handleSendMessage("Summarize the reviews for Nike Shoes")}
-                  className="w-full text-left bg-slate-950/40 hover:bg-slate-950/80 text-xs font-bold text-slate-200 border border-slate-800 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+                  className="w-full text-left bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 border border-slate-200 px-3.5 py-2.5 rounded-xl transition cursor-pointer"
                 >
                   💬 Review Sentiment Check
                 </button>
@@ -382,23 +374,23 @@ export default function AiAssistantConsole() {
           </div>
 
           {/* Right Panel: Conversation Terminal Dashboard */}
-          <div className="lg:col-span-3 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-sm flex flex-col h-[520px] max-h-[calc(100vh-14rem)] overflow-hidden">
+          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col h-[520px] max-h-[calc(100vh-14rem)] overflow-hidden">
             {/* Terminal Top bar */}
-            <div className="p-4 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">NextShop_Agent_CLI_v1.0.0</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">NextShop_Agent_CLI_v1.0.0</span>
               </div>
               <button
                 onClick={() => setMessages([messages[0]])}
-                className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                className="text-[10px] font-bold text-[#0077B6] hover:text-[#005f91] cursor-pointer"
               >
                 Clear Terminal log
               </button>
             </div>
 
             {/* Conversation list logs */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-transparent">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FAFAFA]">
               {messages.map((msg, i) => {
                 const isWriteSuccess = msg.text.includes("Database Write Success");
                 const isUpdateSuccess = msg.text.includes("Database Update Success");
@@ -409,10 +401,10 @@ export default function AiAssistantConsole() {
                     className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {isWriteSuccess || isUpdateSuccess ? (
-                      <div className="bg-emerald-950/40 border-l-4 border-emerald-500 p-4 rounded-xl text-xs space-y-2 text-emerald-300 border border-y-slate-800/80 border-r-slate-800/80 shadow-sm max-w-[85%] rounded-bl-none animate-pulse-once">
+                      <div className="bg-emerald-50 border border-emerald-250 p-4 rounded-xl text-xs space-y-2 text-emerald-950 shadow-sm max-w-[85%] rounded-bl-none animate-pulse-once">
                         <div className="flex items-center gap-2">
                           <span className="text-base">✅</span>
-                          <span className="font-extrabold uppercase tracking-wider text-[10px] text-emerald-450">Database Action Confirmed</span>
+                          <span className="font-extrabold uppercase tracking-wider text-[10px] text-emerald-800">Database Action Confirmed</span>
                         </div>
                         <div className="space-y-1 font-medium">
                           {parseMarkdown(msg.text)}
@@ -420,10 +412,10 @@ export default function AiAssistantConsole() {
                       </div>
                     ) : (
                       <div
-                        className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-xs ${
+                        className={`max-w-[85%] rounded-2xl p-4 shadow-xs text-xs ${
                           msg.sender === "user"
-                            ? "bg-sky-600 text-white font-bold border border-sky-500 rounded-br-none"
-                            : "bg-slate-950/60 border border-slate-800 text-slate-200 rounded-bl-none"
+                            ? "bg-[#0077B6] text-white font-bold rounded-br-none"
+                            : "bg-white border border-slate-200 text-slate-800 rounded-bl-none"
                         }`}
                       >
                         {parseMarkdown(msg.text)}
@@ -434,13 +426,13 @@ export default function AiAssistantConsole() {
               })}
               {loadingChat && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 rounded-bl-none shadow-sm flex items-center gap-2">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 rounded-bl-none shadow-xs flex items-center gap-2">
                     <div className="flex gap-1">
-                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-75" />
-                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-150" />
-                      <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full animate-bounce delay-300" />
+                      <span className="h-1.5 w-1.5 bg-[#0077B6] rounded-full animate-bounce delay-75" />
+                      <span className="h-1.5 w-1.5 bg-[#0077B6] rounded-full animate-bounce delay-150" />
+                      <span className="h-1.5 w-1.5 bg-[#0077B6] rounded-full animate-bounce delay-300" />
                     </div>
-                    <span className="text-[10px] text-slate-400 font-bold font-mono">Agent reasoning catalog metrics...</span>
+                    <span className="text-[10px] text-slate-500 font-bold font-mono">Agent reasoning catalog metrics...</span>
                   </div>
                 </div>
               )}
@@ -449,22 +441,22 @@ export default function AiAssistantConsole() {
 
             {/* Attached Document Visual Indicators */}
             {readingPdf && (
-              <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 flex items-center text-xs text-indigo-400 font-bold gap-2 animate-pulse">
-                <span className="h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
+              <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center text-xs text-[#0077B6] font-bold gap-2 animate-pulse">
+                <span className="h-2 w-2 rounded-full bg-[#0077B6] animate-ping" />
                 <span>Parsing document text...</span>
               </div>
             )}
             {attachedPdf && (
-              <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between text-xs text-emerald-400 font-semibold gap-2 animate-slide-in">
+              <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-emerald-600 font-semibold gap-2 animate-slide-in">
                 <div className="flex items-center gap-2">
                   <span>📄</span>
-                  <span className="truncate max-w-[200px]">{attachedPdf.name}</span>
-                  <span className="text-[10px] text-slate-500 font-bold">({Math.round(attachedPdf.text.length / 1024)} KB text extracted)</span>
+                  <span className="truncate max-w-[200px] text-slate-800">{attachedPdf.name}</span>
+                  <span className="text-[10px] text-slate-450 font-bold">({Math.round(attachedPdf.text.length / 1024)} KB text extracted)</span>
                 </div>
                 <button 
                   type="button" 
                   onClick={() => setAttachedPdf(null)} 
-                  className="text-slate-400 hover:text-white font-black cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-800 transition"
+                  className="text-slate-450 hover:text-slate-700 font-black cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-200 transition"
                 >
                   ✕
                 </button>
@@ -472,7 +464,7 @@ export default function AiAssistantConsole() {
             )}
 
             {/* Chat Input Console Box */}
-            <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2">
+            <form onSubmit={handleFormSubmit} className="p-4 border-t border-slate-200 bg-slate-50 flex items-center gap-2">
               <input 
                 type="file"
                 ref={fileInputRef}
@@ -486,7 +478,7 @@ export default function AiAssistantConsole() {
                 disabled={loadingChat || readingPdf}
                 onClick={() => fileInputRef.current?.click()}
                 title="Attach PDF Document"
-                className="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-850 text-slate-400 hover:text-white transition flex items-center justify-center cursor-pointer disabled:opacity-40 flex-shrink-0"
+                className="h-10 w-10 rounded-xl bg-white border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition flex items-center justify-center cursor-pointer disabled:opacity-40 flex-shrink-0"
               >
                 📎
               </button>
@@ -496,12 +488,12 @@ export default function AiAssistantConsole() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder={attachedPdf ? "Ask something about the attached PDF..." : "Type command (e.g. Price audits, inventory warning alerts, product creation)..."}
-                className="flex-1 bg-slate-950/45 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-800 font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] transition"
               />
               <button
                 type="submit"
                 disabled={loadingChat || readingPdf || (!inputValue.trim() && !attachedPdf)}
-                className="bg-indigo-650 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40 flex-shrink-0"
+                className="bg-[#FF6B35] hover:bg-orange-600 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md transition cursor-pointer disabled:opacity-40 flex-shrink-0"
               >
                 Execute
               </button>

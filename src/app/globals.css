@@ -2,52 +2,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F8FAFC;
-  --foreground: #0F172A;
-  --card-bg: #FFFFFF;
+  --background: #FAFAFA; /* Soft Alabaster Off-white */
+  --foreground: #0F172A; /* Deep Dark Charcoal Text */
+  --card-bg: #FFFFFF; /* Pure White */
   --card-border: #E2E8F0;
-  --card-hover-shadow: rgba(99, 102, 241, 0.08);
+  --card-hover-shadow: rgba(0, 119, 182, 0.08); /* Ocean Blue shadow */
   --card-text-primary: #0F172A;
   --card-text-secondary: #64748B;
   --input-bg: #FFFFFF;
   --input-border: #E2E8F0;
   --input-text: #0F172A;
-  --pill-unselected-bg: #FFFFFF;
+  --pill-unselected-bg: #FAFAFA;
   --pill-unselected-border: #E2E8F0;
   --pill-unselected-text: #475569;
-  --navbar-bg: rgba(255, 255, 255, 0.8);
-  --navbar-border: #E2E8F0;
-  --navbar-text: #0F172A;
-  --scrollbar-track: #F8FAFC;
+  --navbar-bg: #0077B6; /* Deep Corporate Ocean Blue (30%) */
+  --navbar-border: #005f92;
+  --navbar-text: #FFFFFF; /* High-contrast White text */
+  --scrollbar-track: #FAFAFA;
   --scrollbar-thumb: #CBD5E1;
-  --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
+  --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
   --hero-border: #E2E8F0;
-  --hero-glow: rgba(99, 102, 241, 0.04);
+  --hero-glow: rgba(0, 119, 182, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #090A0F;
-    --foreground: #F8FAFC;
-    --card-bg: rgba(18, 24, 41, 0.6);
-    --card-border: rgba(30, 41, 59, 0.8);
-    --card-hover-shadow: rgba(99, 102, 241, 0.25);
-    --card-text-primary: #F8FAFC;
-    --card-text-secondary: #94A3B8;
-    --input-bg: rgba(18, 24, 41, 0.6);
-    --input-border: #1E293B;
-    --input-text: #FFFFFF;
-    --pill-unselected-bg: rgba(18, 24, 41, 0.4);
-    --pill-unselected-border: #1E293B;
-    --pill-unselected-text: #94A3B8;
-    --navbar-bg: rgba(15, 23, 42, 0.8);
-    --navbar-border: #1E293B;
+    /* Keep a clean, elegant light-focused theme for high conversion */
+    --background: #FAFAFA;
+    --foreground: #0F172A;
+    --card-bg: #FFFFFF;
+    --card-border: #E2E8F0;
+    --card-hover-shadow: rgba(0, 119, 182, 0.12);
+    --card-text-primary: #0F172A;
+    --card-text-secondary: #64748B;
+    --input-bg: #FFFFFF;
+    --input-border: #E2E8F0;
+    --input-text: #0F172A;
+    --pill-unselected-bg: #FAFAFA;
+    --pill-unselected-border: #E2E8F0;
+    --pill-unselected-text: #475569;
+    --navbar-bg: #0077B6;
+    --navbar-border: #005f92;
     --navbar-text: #FFFFFF;
-    --scrollbar-track: #090A0F;
-    --scrollbar-thumb: #1D243B;
-    --hero-bg: linear-gradient(135deg, #121829 0%, #0A0D17 100%);
-    --hero-border: rgba(30, 41, 59, 0.8);
-    --hero-glow: rgba(99, 102, 241, 0.20);
+    --scrollbar-track: #FAFAFA;
+    --scrollbar-thumb: #CBD5E1;
+    --hero-bg: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+    --hero-border: #E2E8F0;
+    --hero-glow: rgba(0, 119, 182, 0.04);
   }
 }
 
@@ -68,6 +69,32 @@
   --color-navbar-border: var(--navbar-border);
   --color-navbar-text: var(--navbar-text);
   --color-hero-border: var(--hero-border);
+
+  /* Remap indigo (primary 30%) to deep corporate ocean blue */
+  --color-indigo-50: #f0f9ff;
+  --color-indigo-100: #e0f2fe;
+  --color-indigo-200: #bae6fd;
+  --color-indigo-300: #7dd3fc;
+  --color-indigo-400: #38bdf8;
+  --color-indigo-500: #0ea5e9;
+  --color-indigo-600: #0077B6;
+  --color-indigo-700: #0284c7;
+  --color-indigo-800: #0369a1;
+  --color-indigo-900: #075985;
+  --color-indigo-950: #0c4a6e;
+
+  /* Remap violet/purple (usually used for visual accents) to safety orange */
+  --color-violet-50: #fff7ed;
+  --color-violet-100: #ffedd5;
+  --color-violet-200: #fed7aa;
+  --color-violet-300: #fdba74;
+  --color-violet-400: #fb923c;
+  --color-violet-500: #f97316;
+  --color-violet-600: #FF6B35;
+  --color-violet-700: #ea580c;
+  --color-violet-800: #c2410c;
+  --color-violet-900: #7c2d12;
+  --color-violet-950: #431407;
 }
 
 body {

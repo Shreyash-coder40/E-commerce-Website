@@ -16,13 +16,17 @@ async function searchDuckDuckGoFallback(productName: string, siteDomain: string,
   const query = `${productName} site:${siteDomain}`;
   const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
   
+  // Timeout wrapper: abort DDG fetch if it takes > 5 seconds
+  const ddgController = new AbortController();
+  const ddgTimeout = setTimeout(() => ddgController.abort(), 5000);
   try {
     const response = await fetch(searchUrl, {
+      signal: ddgController.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     });
-    
+    clearTimeout(ddgTimeout);
     if (!response.ok) {
       throw new Error(`DDG fallback request failed with status: ${response.status}`);
     }
@@ -79,6 +83,7 @@ async function searchDuckDuckGoFallback(productName: string, siteDomain: string,
       price: foundPrice || baseFallbackPrice
     };
   } catch (err) {
+    clearTimeout(ddgTimeout);
     console.error(`--> [Compare API Fallback]: Failed to search ${siteDomain}:`, err);
     return {
       link: `https://www.${siteDomain}`,
@@ -223,17 +228,44 @@ export async function GET(
       return NextResponse.json({ error: "Product not found." }, { status: 404 });
     }
 
-    // 2. Check for cached competitor data (valid for 12 hours)
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    // 2. Check for cached competitor data.
+    // Fresh cache = < 48 hours  → return immediately (fast path).
+    // Stale cache = 48–96 hours → return immediately AND refresh in background.
+    // No cache / very old cache → run full pipeline and wait.
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const ninetyaSixHoursAgo = new Date(Date.now() - 96 * 60 * 60 * 1000);
     const cachedData = await db.competitorCache.findUnique({
       where: { productId: id }
     });
 
-    if (cachedData && new Date(cachedData.lastUpdated) > twelveHoursAgo) {
-      console.log(`--> [Compare API]: Returning cached data for product ${id}`);
+    const isFreshCache = cachedData && new Date(cachedData.lastUpdated) > fortyEightHoursAgo;
+    const isStaleCache = cachedData && !isFreshCache && new Date(cachedData.lastUpdated) > ninetyaSixHoursAgo;
+
+    // Fresh: serve immediately
+    if (isFreshCache) {
+      console.log(`--> [Compare API]: Returning fresh cache for product ${id}`);
       return NextResponse.json({
         success: true,
         source: "cache",
+        productId: id,
+        ourProduct: {
+          name: product.name,
+          price: product.price,
+          image: product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+        },
+        competitors: cachedData.competitorData,
+        recommendation: cachedData.recommendation
+      });
+    }
+
+    // Stale: serve stale data immediately, then refresh in background
+    if (isStaleCache) {
+      console.log(`--> [Compare API]: Serving stale cache instantly, triggering background refresh for product ${id}`);
+      // Fire-and-forget background refresh (no await)
+      void refreshCompetitorData(product, id);
+      return NextResponse.json({
+        success: true,
+        source: "stale_cache",
         productId: id,
         ourProduct: {
           name: product.name,
@@ -394,7 +426,7 @@ export async function GET(
       }
     ];
 
-    // 5. Ask Gemini to compile the final recommendation text
+    // 5. Ask Gemini to compile the final recommendation text (with 4s timeout)
     let recommendation = "";
 
     try {
@@ -413,17 +445,22 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
 2. If ours is not the cheapest, mention shipping speed, safety, or return policies to justify why buying from us is still a great choice.
 3. Be professional, honest, and persuasive. Format with standard markdown (e.g. bolding key numbers).`;
 
-      const response = await fetchGemini("gemini-flash-latest", {
+      const geminiPromise = fetchGemini("gemini-flash-latest", {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.3 }
       });
+      const timeoutPromise = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error("Gemini timeout")), 4000)
+      );
 
-      if (response.ok) {
+      const response = await Promise.race([geminiPromise, timeoutPromise]) as Response | null;
+
+      if (response && response.ok) {
         const resData = await response.json();
         recommendation = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
       }
     } catch (geminiErr) {
-      console.error("--> [Compare API]: Gemini call failed, falling back to local reasoning:", geminiErr);
+      console.error("--> [Compare API]: Gemini call failed or timed out, falling back to local reasoning:", geminiErr);
     }
 
     if (!recommendation) {
@@ -465,6 +502,40 @@ Provide a short, direct recommendation (2-3 sentences max) for the customer.
       { error: error.message || "Failed to compile competitor price comparison." },
       { status: 500 }
     );
+  }
+}
+
+// Background refresh function used for stale-while-revalidate pattern
+async function refreshCompetitorData(product: any, id: string) {
+  try {
+    const baseAmazon = Math.round(product.price * 1.05);
+    const baseFlipkart = Math.round(product.price * 1.02);
+    const baseMeesho = Math.round(product.price * 0.97);
+
+    const [ddgAmazon, ddgFlipkart, ddgMeesho] = await Promise.all([
+      searchDuckDuckGoFallback(product.name, "amazon.in", baseAmazon, product.price),
+      searchDuckDuckGoFallback(product.name, "flipkart.com", baseFlipkart, product.price),
+      searchDuckDuckGoFallback(product.name, "meesho.com", baseMeesho, product.price)
+    ]);
+
+    const productImg = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500";
+    const altImages = getAlternativeImages(product.name, product.category || "", productImg);
+    const competitors = [
+      { site: "Amazon", name: `Amazon Choice - ${product.name}`, price: ddgAmazon.price, image: altImages.amazon, link: ddgAmazon.link },
+      { site: "Flipkart", name: `Flipkart Assured - ${product.name}`, price: ddgFlipkart.price, image: altImages.flipkart, link: ddgFlipkart.link },
+      { site: "Meesho", name: `Meesho Trend - ${product.name}`, price: ddgMeesho.price, image: altImages.meesho, link: ddgMeesho.link }
+    ];
+
+    const recommendation = getLocalRecommendationFallback(product.name, product.price, competitors);
+
+    await db.competitorCache.upsert({
+      where: { productId: id },
+      update: { competitorData: competitors as any, recommendation, lastUpdated: new Date() },
+      create: { productId: id, competitorData: competitors as any, recommendation, lastUpdated: new Date() }
+    });
+    console.log(`--> [Compare API]: Background refresh complete for product ${id}`);
+  } catch (err) {
+    console.error(`--> [Compare API]: Background refresh failed for product ${id}:`, err);
   }
 }
 

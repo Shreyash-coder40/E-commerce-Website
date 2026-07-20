@@ -217,6 +217,10 @@ ${JSON.stringify(allReviews.slice(0, 20))}
 === CUSTOMER Q&A (${allQAs.length} total) ===
 ${JSON.stringify(allQAs.slice(0, 20))}
 
+=== NEW ADMIN SYSTEM FEATURES ===
+1. Return Fraud Risk Scanner: Admins can evaluate pending returns and order cancellations for buyer fraud (returns abuse, empty box claims, wardrobing) using the "Run AI Fraud Check" button or POSTing to "/api/admin/orders/[id]/check-fraud". This provides a risk badge (LOW/MEDIUM/HIGH), risk signals, and forensic reasoning.
+2. Sales vs. Losses Dual Line Chart: The admin dashboard features a premium custom responsive dual-line SVG graph mapping 7-day Gross Sales (Indigo fill) alongside Financial Losses (Rose fill) to easily visual total profits and returns overhead.
+
 === YOUR CAPABILITIES ===
 You can CREATE and UPDATE products in the database. When the admin requests to add or modify a product:
 

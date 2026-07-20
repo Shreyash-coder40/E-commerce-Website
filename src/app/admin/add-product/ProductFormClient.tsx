@@ -165,14 +165,14 @@ export default function ProductFormClient() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-950/20 border border-red-900/30 text-sm font-semibold text-red-400 rounded-xl">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-sm font-bold text-rose-700 rounded-xl">
           ⚠️ {error}
         </div>
       )}
 
       {/* Product Name */}
       <div>
-        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider mb-2">
           Product Name
         </label>
         <input
@@ -180,13 +180,13 @@ export default function ProductFormClient() {
           required
           name="name"
           placeholder="e.g. iPhone 15 Pro Max"
-          className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider mb-2">
           Product Description
         </label>
         <textarea
@@ -194,14 +194,14 @@ export default function ProductFormClient() {
           name="description"
           rows={4}
           placeholder="Provide features, box inclusions, and specification sheets..."
-          className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition resize-none"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-medium transition resize-none"
         />
       </div>
 
       {/* Pricing Input Grid Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider mb-2">
             Original M.R.P. (₹ / $)
           </label>
           <input
@@ -210,11 +210,11 @@ export default function ProductFormClient() {
             value={mrpInput}
             onChange={(e) => setMrpInput(e.target.value)}
             placeholder="e.g. 79999"
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider mb-2">
             Special Selling Price (₹ / $) <span className="text-red-500">*</span>
           </label>
           <input
@@ -224,24 +224,24 @@ export default function ProductFormClient() {
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}
             placeholder="e.g. 65999"
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
       </div>
 
       {/* DYNAMIC REAL-TIME FLIPKART STYLE PREVIEW BADGE CONTAINER */}
       {hasLiveDiscount && (
-        <div className="p-4 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl flex items-baseline gap-3">
-          <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-900/40 px-2 py-0.5 rounded-md">
+        <div className="p-4 bg-emerald-50 border border-emerald-250 rounded-2xl flex items-baseline gap-3">
+          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md uppercase tracking-wider">
             Live Preview:
           </span>
-          <span className="text-2xl font-black text-white">
+          <span className="text-2xl font-black text-slate-900">
             ₹{priceVal.toLocaleString("en-IN")}
           </span>
-          <span className="text-sm text-slate-500 line-through">
+          <span className="text-sm text-slate-450 line-through">
             ₹{mrpVal.toLocaleString("en-IN")}
           </span>
-          <span className="text-sm font-black text-emerald-400">
+          <span className="text-sm font-black text-emerald-755">
             {liveDiscountPercent}% off
           </span>
         </div>
@@ -250,7 +250,7 @@ export default function ProductFormClient() {
       {/* Category and Stock */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-2">
             Category Classification
           </label>
           <input
@@ -258,18 +258,18 @@ export default function ProductFormClient() {
             required
             name="category"
             placeholder="e.g. Mobiles, Electronics"
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-2">
             Initial Warehouse Stock Units
           </label>
           <input
             type="number"
             name="stock"
             placeholder="e.g. 25"
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
       </div>
@@ -277,25 +277,25 @@ export default function ProductFormClient() {
       {/* Warranty and Technical Specifications */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-2">
             Warranty Information Cover
           </label>
           <input
             type="text"
             name="warranty"
             placeholder="e.g. 1 Year Manufacturer Warranty Cover"
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-555 uppercase tracking-wider mb-2">
             Specs (Write 'Key: Value', one per line)
           </label>
           <textarea
             name="specsText"
             rows={3}
             placeholder={`e.g.\nRAM: 8 GB\nStorage: 128 GB\nProcessor: A17 Pro`}
-            className="w-full px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
           />
         </div>
       </div>
@@ -303,13 +303,13 @@ export default function ProductFormClient() {
       {/* Multiple Image Component Manager */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-slate-550 uppercase tracking-wider">
             Product Showcase Images
           </label>
           <button
             type="button"
             onClick={handleAddImageField}
-            className="text-xs font-extrabold text-indigo-600 hover:text-indigo-500 transition flex items-center gap-1"
+            className="text-xs font-extrabold text-[#0077B6] hover:text-[#005f91] transition flex items-center gap-1 cursor-pointer"
           >
             ➕ Add More Images
           </button>
@@ -317,28 +317,28 @@ export default function ProductFormClient() {
         
         <div className="space-y-4">
           {imageUrls.map((url, idx) => (
-            <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-900/30 border border-slate-800/80 rounded-2xl shadow-sm">
+            <div key={idx} className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl shadow-xs">
               <div className="flex gap-2 items-center">
                 <input
                   type="url"
                   value={url}
                   onChange={(e) => handleImageChange(idx, e.target.value)}
                   placeholder={`Image URL #${idx + 1} (e.g. https://images.unsplash.com/...)`}
-                  className="flex-1 px-4 py-3 bg-slate-950/45 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 focus:bg-slate-950/80 transition"
+                  className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0077B6]/25 focus:border-[#0077B6] font-semibold transition"
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveImageField(idx)}
-                  className="p-3 bg-slate-800/40 hover:bg-red-950/20 text-slate-400 hover:text-red-400 border border-slate-700/60 rounded-xl transition text-sm font-bold shadow-sm backdrop-blur-md"
+                  className="p-3 bg-white hover:bg-rose-50 text-slate-450 hover:text-rose-600 border border-slate-200 rounded-xl transition text-sm font-bold shadow-xs cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <label className="relative flex items-center justify-center px-4 py-2 border border-slate-800 rounded-xl bg-slate-800/40 hover:bg-slate-800 hover:text-white text-xs font-bold text-slate-300 shadow-sm cursor-pointer transition backdrop-blur-md">
+                <label className="relative flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 hover:text-slate-900 text-xs font-bold text-slate-650 shadow-xs cursor-pointer transition">
                   {uploadingIndex === idx ? (
                     <span className="flex items-center gap-1.5">
-                      <svg className="animate-spin h-3.5 w-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-3.5 w-3.5 text-[#0077B6]" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -356,7 +356,7 @@ export default function ProductFormClient() {
                   />
                 </label>
                 {url && (
-                  <span className="text-[11px] text-green-600 font-bold flex items-center gap-1">
+                  <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
                     ✓ Image Link Connected
                   </span>
                 )}
@@ -371,7 +371,7 @@ export default function ProductFormClient() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 text-sm font-bold text-white bg-[#FF6B35] hover:bg-orange-600 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {loading ? "Publishing to Marketplace Catalog..." : "🚀 Publish Product Listing"}
         </button>

@@ -95,42 +95,42 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
       {/* 1. Quick Financial Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Gross Sales */}
-        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-card-border rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Gross Sales</p>
-            <h4 className="text-xl font-black text-white mt-1">₹{rollingSales.toLocaleString("en-IN")}</h4>
-            <p className="text-[10px] text-slate-500 mt-1">From successfully paid checkouts</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Gross Sales</p>
+            <h4 className="text-xl font-black text-slate-900 mt-1">₹{rollingSales.toLocaleString("en-IN")}</h4>
+            <p className="text-[10px] text-slate-400 mt-1">From successfully paid checkouts</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
             📊
           </div>
         </div>
 
         {/* Card 2: Financial Losses */}
-        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-card-border rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Financial Losses</p>
-            <h4 className="text-xl font-black text-rose-400 mt-1">₹{rollingLosses.toLocaleString("en-IN")}</h4>
-            <p className="text-[10px] text-slate-500 mt-1">From cancellations & approved returns</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Financial Losses</p>
+            <h4 className="text-xl font-black text-rose-600 mt-1">₹{rollingLosses.toLocaleString("en-IN")}</h4>
+            <p className="text-[10px] text-slate-400 mt-1">From cancellations & approved returns</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 font-bold text-sm">
             📉
           </div>
         </div>
 
         {/* Card 3: Net Profit Performance */}
-        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div className="bg-white border border-card-border rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7-Day Net Profit Trend</p>
-            <h4 className={`text-xl font-black mt-1 ${rollingNet >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">7-Day Net Profit Trend</p>
+            <h4 className={`text-xl font-black mt-1 ${rollingNet >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
               ₹{rollingNet.toLocaleString("en-IN")}
             </h4>
-            <p className="text-[10px] text-slate-500 mt-1">Net performance over the period</p>
+            <p className="text-[10px] text-slate-400 mt-1">Net performance over the period</p>
           </div>
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
             rollingNet >= 0 
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
-              : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+              ? "bg-emerald-50 border-emerald-100 text-emerald-600" 
+              : "bg-rose-55 border-rose-100 text-rose-600"
           }`}>
             {rollingNet >= 0 ? "📈" : "📉"}
           </div>
@@ -138,20 +138,20 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
       </div>
 
       {/* 2. Interactive SVG Line Graph Canvas */}
-      <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-6 shadow-sm relative">
+      <div className="bg-white border border-card-border rounded-2xl p-6 shadow-xs relative">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-base font-bold text-white">Financial Trendlines</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Visualizing gross sales vs. returns and cancellation losses.</p>
+            <h3 className="text-base font-bold text-slate-900">Financial Trendlines</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Visualizing gross sales vs. returns and cancellation losses.</p>
           </div>
           {/* Legend */}
           <div className="flex items-center gap-4 text-[10px] font-bold">
-            <div className="flex items-center gap-1.5 text-indigo-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block shadow"></span>
+            <div className="flex items-center gap-1.5 text-indigo-600">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block shadow-sm"></span>
               Gross Sales
             </div>
-            <div className="flex items-center gap-1.5 text-rose-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow"></span>
+            <div className="flex items-center gap-1.5 text-rose-600">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-sm"></span>
               Refund/Cancel Loss
             </div>
           </div>
@@ -166,20 +166,20 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
                 left: `${((hoveredPoint.idx / 6) * 90) + 5}%`,
                 top: `${hoveredPoint.type === "sales" ? salesPoints[hoveredPoint.idx].y - 45 : lossesPoints[hoveredPoint.idx].y - 45}px`
               }}
-              className="absolute transform -translate-x-1/2 bg-slate-950/95 border border-slate-800 text-white text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-xl pointer-events-none z-30 transition-all duration-150 whitespace-nowrap"
+              className="absolute transform -translate-x-1/2 bg-white border border-slate-200 text-slate-800 text-[10px] font-black px-2.5 py-1.5 rounded-xl shadow-xl pointer-events-none z-30 transition-all duration-150 whitespace-nowrap"
             >
               {hoveredPoint.type === "sales" ? (
                 <>
-                  <p className="text-indigo-400">💰 Sales: ₹{dailyMetrics[hoveredPoint.idx].sales.toLocaleString("en-IN")}</p>
-                  <p className="text-slate-400 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].salesCount} successful checkouts</p>
+                  <p className="text-indigo-600">💰 Sales: ₹{dailyMetrics[hoveredPoint.idx].sales.toLocaleString("en-IN")}</p>
+                  <p className="text-slate-500 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].salesCount} successful checkouts</p>
                 </>
               ) : (
                 <>
-                  <p className="text-rose-400">🚫 Loss: ₹{dailyMetrics[hoveredPoint.idx].losses.toLocaleString("en-IN")}</p>
-                  <p className="text-slate-400 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].lossesCount} cancellation/return requests</p>
+                  <p className="text-rose-650">🚫 Loss: ₹{dailyMetrics[hoveredPoint.idx].losses.toLocaleString("en-IN")}</p>
+                  <p className="text-slate-500 text-[9px] font-normal">{dailyMetrics[hoveredPoint.idx].lossesCount} cancellation/return requests</p>
                 </>
               )}
-              <span className="block text-[8px] text-slate-500 text-center mt-0.5">{dailyMetrics[hoveredPoint.idx].label}</span>
+              <span className="block text-[8px] text-slate-400 text-center mt-0.5">{dailyMetrics[hoveredPoint.idx].label}</span>
             </div>
           )}
 
@@ -197,9 +197,9 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
             </defs>
 
             {/* Background Grid Accent Lines */}
-            <line x1="40" y1="20" x2="680" y2="20" stroke="#1e293b" strokeDasharray="4 4" />
-            <line x1="40" y1="100" x2="680" y2="100" stroke="#1e293b" strokeDasharray="4 4" />
-            <line x1="40" y1="180" x2="680" y2="180" stroke="#334155" strokeWidth="1" />
+            <line x1="40" y1="20" x2="680" y2="20" stroke="#f1f5f9" strokeDasharray="4 4" />
+            <line x1="40" y1="100" x2="680" y2="100" stroke="#f1f5f9" strokeDasharray="4 4" />
+            <line x1="40" y1="180" x2="680" y2="180" stroke="#e2e8f0" strokeWidth="1" />
 
             {/* Shaded Area Fills */}
             <path d={salesAreaPath} fill="url(#salesGrad)" />
@@ -244,7 +244,7 @@ export default function DashboardCharts({ orders }: DashboardChartsProps) {
         </div>
 
         {/* X-Axis Date Labels Container */}
-        <div className="flex justify-between items-center mt-3 px-[40px] text-[10px] font-bold text-slate-400">
+        <div className="flex justify-between items-center mt-3 px-[40px] text-[10px] font-bold text-slate-500">
           {dailyMetrics.map((day, idx) => (
             <span key={idx}>{day.label}</span>
           ))}
