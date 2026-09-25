@@ -24,23 +24,30 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const search = resolvedSearchParams?.search || "";
   const semantic = resolvedSearchParams?.semantic === "true";
 
-  // 1. Fetch live categories for the filter component layout
-  const rawCategories = await db.product.findMany({
-    select: { category: true },
-    distinct: ["category"],
-  });
-  const categoriesList = rawCategories.map((c) => c.category);
+  let categoriesList: string[] = [];
+  let productsList: any[] = [];
 
-  // 2. Query products using regular filter parameters
-  let productsList = await db.product.findMany({
-    where: {
-      category: category ? category : undefined,
-      // If semantic search is active, we fetch all products in the category and rank them via AI.
-      // Otherwise, we do standard SQL contains matching.
-      name: (search && !semantic) ? { contains: search, mode: "insensitive" } : undefined,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    // 1. Fetch live categories for the filter component layout
+    const rawCategories = await db.product.findMany({
+      select: { category: true },
+      distinct: ["category"],
+    });
+    categoriesList = rawCategories.map((c) => c.category);
+
+    // 2. Query products using regular filter parameters
+    productsList = await db.product.findMany({
+      where: {
+        category: category ? category : undefined,
+        // If semantic search is active, we fetch all products in the category and rank them via AI.
+        // Otherwise, we do standard SQL contains matching.
+        name: (search && !semantic) ? { contains: search, mode: "insensitive" } : undefined,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("[HomePage] Failed to fetch products from database:", error);
+  }
 
   if (search && semantic && productsList.length > 0) {
     const cacheKey = `${category}::${search.trim().toLowerCase()}`;
@@ -184,23 +191,37 @@ ${JSON.stringify(simplifiedCatalog, null, 2)}`;
     <div className="bg-background text-foreground min-h-screen py-6 sm:py-8 transition-colors duration-300 font-['Plus_Jakarta_Sans',sans-serif]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Brand Header Banner Card (Curved deep blue banner with pills) */}
-        <div className="w-full bg-gradient-to-r from-indigo-650 to-indigo-700 rounded-3xl p-6 sm:p-10 mb-8 text-white relative overflow-hidden shadow-lg border border-indigo-700/60">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(255,107,53,0.12),transparent_60%)] pointer-events-none" />
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Brand Header Banner Card (Rich Deep Navy/Indigo Gradient with High-Contrast Typography) */}
+        <div className="w-full bg-gradient-to-br from-[#0B132B] via-[#1C2541] to-[#0D1B2A] rounded-3xl p-6 sm:p-10 mb-8 text-white relative overflow-hidden shadow-2xl border border-slate-700/50">
+          {/* Subtle Ambient Glows and Decorative Orbs */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.15),transparent_50%)] pointer-events-none" />
+
           <div className="relative z-10 max-w-2xl">
-            <span className="text-xs font-black uppercase tracking-widest text-orange-400 bg-white/10 px-3 py-1 rounded-full border border-white/10">Premium Marketplace</span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mt-4">
-              NEXT<span className="text-orange-600">SHOP</span>
+            <div className="inline-flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-400/10 px-3.5 py-1.5 rounded-full border border-amber-400/20 backdrop-blur-md shadow-xs">
+                ✨ Premium Marketplace
+              </span>
+            </div>
+            
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mt-4 drop-shadow-sm">
+              NEXT<span className="text-[#FF6B35]">SHOP</span>
             </h1>
-            <p className="text-xs sm:text-sm text-white/80 mt-2 font-medium">
+            
+            <p className="text-xs sm:text-sm text-slate-300 mt-2.5 font-medium leading-relaxed max-w-xl">
               Browse authentic items across multiple categories with verified pricing and real-time smart product matching.
             </p>
+
             {/* Category Pills inside Banner */}
-            <div className="flex gap-2 sm:gap-3 mt-6 flex-wrap items-center">
+            <div className="flex gap-2 sm:gap-2.5 mt-6 flex-wrap items-center">
               <Link 
                 href="/"
-                className={`text-xs font-bold px-4 py-2 rounded-xl transition ${!category ? 'bg-orange-600 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'}`}
+                className={`text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                  !category 
+                    ? 'bg-[#FF6B35] text-white shadow-lg shadow-orange-500/30 scale-105' 
+                    : 'bg-white/10 text-slate-200 hover:bg-white/20 hover:text-white border border-white/15 backdrop-blur-sm'
+                }`}
               >
                 All Categories
               </Link>
@@ -208,7 +229,11 @@ ${JSON.stringify(simplifiedCatalog, null, 2)}`;
                 <Link
                   key={cat}
                   href={`/?category=${encodeURIComponent(cat)}`}
-                  className={`text-xs font-bold px-4 py-2 rounded-xl transition ${category === cat ? 'bg-orange-600 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20 border border-white/15'}`}
+                  className={`text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                    category === cat 
+                      ? 'bg-[#FF6B35] text-white shadow-lg shadow-orange-500/30 scale-105' 
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20 hover:text-white border border-white/15 backdrop-blur-sm'
+                  }`}
                 >
                   {cat}
                 </Link>

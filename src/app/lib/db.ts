@@ -6,9 +6,21 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Create a single database pool connection
+const connectionString = process.env.DATABASE_URL;
+
+// Create a single database pool connection with SSL support for cloud Postgres (Supabase, Neon, RDS, etc.)
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: connectionString || "postgresql://postgres:postgres@localhost:5432/ecommerce?sslmode=disable",
+  ssl:
+    connectionString &&
+    !connectionString.includes("localhost") &&
+    !connectionString.includes("127.0.0.1")
+      ? { rejectUnauthorized: false }
+      : undefined,
+});
+
+pool.on("error", (err) => {
+  console.error("Unexpected error on idle PostgreSQL client pool", err);
 });
 
 const adapter = new PrismaPg(pool);

@@ -4,11 +4,19 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 
+dotenv.config({ path: ".env.local" });
 dotenv.config();
 
-// Create direct connection pool using DIRECT_URL for migrations/seeding stability
+// Create direct connection pool using DIRECT_URL or DATABASE_URL with SSL support
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
 const pool = new pg.Pool({
-  connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
+  connectionString: connectionString || "postgresql://postgres:postgres@localhost:5432/ecommerce?sslmode=disable",
+  ssl:
+    connectionString &&
+    !connectionString.includes("localhost") &&
+    !connectionString.includes("127.0.0.1")
+      ? { rejectUnauthorized: false }
+      : undefined,
 });
 
 const adapter = new PrismaPg(pool);

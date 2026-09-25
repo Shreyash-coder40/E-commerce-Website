@@ -7,13 +7,17 @@ import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(db),
   ...authConfig,
+  adapter: PrismaAdapter(db),
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
+    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -25,24 +29,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+        try {
+          const user = await db.user.findUnique({
+            where: { email: credentials.email as string },
+          });
 
-        if (!user || !user.password) {
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isValid = await bcrypt.compare(
+            credentials.password as string, 
+            user.password
+          );
+    
+          if (!isValid) {
+            return null;
+          }
+
+          return user;
+        } catch (error) {
+          console.error("[Auth] Credentials authorization error:", error);
           return null;
         }
-
-        const isValid = await bcrypt.compare(
-          credentials.password as string, 
-          user.password
-        );
-  
-        if (!isValid) {
-          return null;
-        }
-
-        return user;
       },
     }),
   ],

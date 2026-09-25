@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
-import Razorpay from "razorpay";
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_mockKeyId12345",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "mockSecret12345",
-});
+import { getRazorpayClient } from "@/app/lib/razorpay";
 
 export async function POST(req: Request) {
   try {
@@ -107,6 +102,7 @@ export async function POST(req: Request) {
     });
 
     // 5. Create Razorpay Payment Invoice Order
+    const razorpay = getRazorpayClient();
     const amountInPaisa = Math.round(finalTotalAmount * 100);
     const rzpOrder = await razorpay.orders.create({
       amount: amountInPaisa,

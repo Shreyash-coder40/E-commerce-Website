@@ -50,7 +50,7 @@ export default function FlipkartDealsBanner({ products }: { products: Product[] 
   return (
     <div className="w-full bg-white border border-card-border rounded-3xl overflow-hidden shadow-sm mb-8">
       {/* Header Bar */}
-      <div className="bg-gradient-to-r from-indigo-650 via-indigo-700 to-indigo-800 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-indigo-700 text-white">
+      <div className="bg-gradient-to-r from-[#0B132B] via-[#1C2541] to-[#0D1B2A] px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-700/50 text-white">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-orange-600 flex items-center justify-center text-xl shadow-md shrink-0">
             ⚡

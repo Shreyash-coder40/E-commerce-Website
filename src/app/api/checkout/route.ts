@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 import { auth } from "@/auth";
-import Razorpay from "razorpay";
-
-// Initialize Razorpay SDK
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "",
-});
+import { getRazorpayClient } from "@/app/lib/razorpay";
 
 export async function POST(req: Request) {
   try {
@@ -88,6 +82,7 @@ export async function POST(req: Request) {
     });
 
     // 4. Create Razorpay Payment Order using the grand total amount
+    const razorpay = getRazorpayClient();
     const amountInPaisa = Math.round(finalTotalAmount * 100);
     const rzpOrder = await razorpay.orders.create({
       amount: amountInPaisa,
